@@ -1,5 +1,5 @@
 module Bplmodels
-  module datastreams
+  module Datastreams
     class FileContentDatastream  < ActiveFedora::Datastream
       # TODO: All the version functionality here + what's in the GF model should probably move into a mixin
       def get_version(version_id)

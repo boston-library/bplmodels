@@ -1,5 +1,5 @@
 module Bplmodels
-  module datastreams
+  module Datastreams
     class ModsDescMetadata < ActiveFedora::NokogiriDatastream
       # MODS XML constants.
 

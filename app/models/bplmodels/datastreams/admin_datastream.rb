@@ -1,5 +1,5 @@
 module Bplmodels
-  module datastreams
+  module Datastreams
     class AdminDatastream < ActiveFedora::NokogiriDatastream
       include OM::XML::Document
 
