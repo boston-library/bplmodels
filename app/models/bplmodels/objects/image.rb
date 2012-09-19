@@ -8,8 +8,8 @@ module Bplmodels
 
     belongs_to :collection, :class_name => 'Collection', :property => :is_member_of_collection
 
-    has_metadata :name => "descMetadata", :type => ModsDescMetadata
-    has_metadata :name => "admin", :type => AdminDatastream
+    has_metadata :name => "descMetadata", :type => Datastreams::ModsDescMetadata
+    has_metadata :name => "admin", :type => Datastreams::AdminDatastream
 
     #has_file_datastream :name => "productionMaster", :type => FileContentDatastream
     #has_file_datastream :name => "accessMaster", :type => FileContentDatastream

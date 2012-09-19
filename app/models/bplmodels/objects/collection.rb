@@ -6,7 +6,7 @@ module Bplmodels
 
     #has_relationship "similar_audio", :has_part, :type=>AudioRecord
 
-    has_metadata :name => "descMetadata", :type => ModsDescMetadata
+    has_metadata :name => "descMetadata", :type => Datastreams::ModsDescMetadata
 
     delegate :title, :to=>'descMetadata', :at => [:mods, :titleInfo, :title], :unique=>true
     delegate :abstract, :to => "descMetadata"
