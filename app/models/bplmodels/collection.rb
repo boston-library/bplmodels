@@ -5,7 +5,14 @@ module Bplmodels
     include ActiveFedora::Relationships
 
     #has_relationship "similar_audio", :has_part, :type=>AudioRecord
-    #has_and_belongs_to_many :images, :class_name=> "Multiresimage", :property=> :has_image
+    has_and_belongs_to_many :images, :class_name=> "Bplmodels::Image", :property=> :has_image
+
+    # Uses the Hydra Rights Metadata Schema for tracking access permissions & copyright
+    has_metadata :name => "rightsMetadata", :type => Hydra::Datastream::RightsMetadata
+
+    # Uses the Hydra modsCollection profile for collection list
+    has_metadata :name => "members", :type => Hydra::ModsCollectionMembers
+
 
     has_metadata :name => "descMetadata", :type => ModsDescMetadata
 
@@ -25,5 +32,27 @@ module Bplmodels
       self.datastreams["rightsMetadata"].update_permissions( "group"=>{"Repository Administrators"=>"discover"} )
       self.save
     end
+
+
+    #A collection can have another collection as a member, or an image
+    def insert_member(fedora_object)
+      if (fedora_object.instance_of?(Bplmodels::Image))
+
+        #add to the members ds
+        members.insert_member(:member_id=>fedora_object.pid, :member_title=>fedora_object.titleSet_display, :member_type=>'image')
+
+        #add to the rels-ext ds
+        fedora_object.collections << self
+        self.images << fedora_object
+        #self.add_relationship(:has_image, "info:fedora/#{fedora_object.pid}")
+
+      end
+
+      fedora_object.save!
+      self.save!
+
+    end
+
+
   end
 end

@@ -6,10 +6,14 @@ module Bplmodels
     include Hydra::ModelMethods
     include ActiveFedora::Relationships
 
-    belongs_to :collection, :class_name => 'Bplmodels::Collection', :property => :is_member_of_collection
+
 
     has_metadata :name => "descMetadata", :type => ModsDescMetadata
     has_metadata :name => "admin", :type => AdminDatastream
+
+    # Uses the Hydra Rights Metadata Schema for tracking access permissions & copyright
+    has_metadata :name => "rightsMetadata", :type => Hydra::Datastream::RightsMetadata
+
 
     #has_file_datastream :name => "productionMaster", :type => FileContentDatastream
     #has_file_datastream :name => "accessMaster", :type => FileContentDatastream
