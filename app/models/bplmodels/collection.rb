@@ -5,6 +5,7 @@ module Bplmodels
     include ActiveFedora::Relationships
 
     #has_relationship "similar_audio", :has_part, :type=>AudioRecord
+    #has_and_belongs_to_many :images, :class_name=> "Multiresimage", :property=> :has_image
 
     has_metadata :name => "descMetadata", :type => ModsDescMetadata
 
