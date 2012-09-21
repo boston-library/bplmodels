@@ -11,7 +11,7 @@ module Bplmodels
     has_metadata :name => "rightsMetadata", :type => Hydra::Datastream::RightsMetadata
 
     # Uses the Hydra modsCollection profile for collection list
-    has_metadata :name => "members", :type => Hydra::ModsCollectionMembers
+    #has_metadata :name => "members", :type => Hydra::ModsCollectionMembers
 
 
     has_metadata :name => "descMetadata", :type => ModsDescMetadata
