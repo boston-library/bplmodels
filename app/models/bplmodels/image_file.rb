@@ -7,7 +7,7 @@ module Bplmodels
 
     belongs_to :collection, :class_name => 'Bplmodels::Collection', :property => :is_member_of_collection
 
-    has_and_belongs_to_many :images, :class_name => "Bplmodels::Image", :property => :is_image_of
+    has_and_belongs_to_many :image, :class_name => "Bplmodels::Image", :property => :is_image_of
 
     # Uses the Hydra Rights Metadata Schema for tracking access permissions & copyright
     has_metadata :name => "rightsMetadata", :type => Hydra::Datastream::RightsMetadata
