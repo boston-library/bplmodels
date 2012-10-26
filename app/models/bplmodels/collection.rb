@@ -16,11 +16,11 @@ module Bplmodels
       if (fedora_object.instance_of?(Bplmodels::ObjectBase))
 
         #add to the members ds
-        members.insert_member(:member_id=>fedora_object.pid, :member_title=>fedora_object.titleSet_display, :member_type=>fedora_object.fedora_name
+        #members.insert_member(:member_id=>fedora_object.pid, :member_title=>fedora_object.titleSet_display, :member_type=>fedora_object.fedora_name
 
         #add to the rels-ext ds
-        fedora_object.collections << self
-        self.objects << fedora_object
+        #fedora_object.collections << self
+        #self.objects << fedora_object
         #self.add_relationship(:has_image, "info:fedora/#{fedora_object.pid}")
       elsif (fedora_object.instance_of?(Bplmodels::Institution))
         #add to the members ds
