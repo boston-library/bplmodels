@@ -133,14 +133,8 @@ module Bplmodels
           }
 
           xml.accessCondition(:type=>"use and reproduction") {
-            xml.text "Rights status not evaluated."
-          }
-
-          xml.accessCondition(:type=>"use and reproduction") {
             xml.text "Contact host institution for more information."
           }
-
-          xml.accessCondition(:type=>"restriction on access")
 
           xml.abstract
 

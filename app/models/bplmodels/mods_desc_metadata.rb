@@ -121,10 +121,6 @@ module Bplmodels
       builder = Nokogiri::XML::Builder.new do |xml|
         xml.mods(MODS_PARAMS) {
 
-          xml.typeOfResource {
-            xml.text "still image"
-          }
-
           xml.language {
             xml.languageTerm(:type=>"text", :authority=>"iso639-2b", :authorityURI=>"http://id.loc.gov/vocabulary/iso639-2", :valueURI=>"http://id.loc.gov/vocabulary/iso639-2/epo", :lang=>"eng")
           }
@@ -141,21 +137,40 @@ module Bplmodels
             }
           }
 
-          xml.accessCondition(:type=>"use and reproduction") {
-            xml.text "Rights status not evaluated."
-          }
-
-          xml.accessCondition(:type=>"use and reproduction") {
-            xml.text "Contact host institution for more information."
-          }
-
-          xml.accessCondition(:type=>"restriction on access")
-
           xml.abstract
 
         }
       end
       return builder.doc
+    end
+
+    define_template :rights do |xml, value, type|
+      xml.accessCondition(:type=>type) {
+        xml.text value
+      }
+    end
+
+    def insert_rights(value=nil, type=nil)
+      add_child_node(ng_xml.root, :rights, value, type)
+    end
+
+    def remove_rights(index)
+      self.find_by_terms(:rights).slice(index.to_i).remove
+    end
+
+
+    define_template :type_of_resource do |xml, value, manuscript|
+      xml.typeOfResource {
+        xml.text value
+      }
+    end
+
+    def insert_type_of_resource(value=nil, manuscript=nil)
+      add_child_node(ng_xml.root, :type_of_resource, value, manuscript)
+    end
+
+    def remove_type_of_resource(index)
+      self.find_by_terms(:type_of_resource).slice(index.to_i).remove
     end
 
     define_template :publisher do |xml, value|
@@ -257,15 +272,26 @@ module Bplmodels
 
 
     define_template :name do |xml, name, type, role|
-
-      xml.name(:type=>type) {
-        xml.role {
-          xml.roleTerm(:type=>"text", :authority=>"marcrelator")   {
-             xml.text role
+      if type != nil && type != ""
+        xml.name(:type=>type) {
+          xml.role {
+            xml.roleTerm(:type=>"text", :authority=>"marcrelator")   {
+              xml.text role
+            }
           }
+          xml.namePart(name)
         }
-        xml.namePart(name)
-      }
+      else
+        xml.name {
+          xml.role {
+            xml.roleTerm(:type=>"text", :authority=>"marcrelator")   {
+              xml.text role
+            }
+          }
+          xml.namePart(name)
+        }
+      end
+
     end
 
     def insert_name(name=nil, type=nil, role=nil)
