@@ -175,7 +175,7 @@ module Bplmodels
     end
 
 
-    define_template :genre do |xml, value|
+    define_template :genre do |xml, value, is_general|
       if is_general
         xml.genre(:authority=>"gmgpc", :displayLabel=>"general") {
           xml.text value
