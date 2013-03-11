@@ -1,5 +1,5 @@
 module Bplmodels
-  class ModsDescMetadata < ActiveFedora::NokogiriDatastream
+  class ModsDescCollectionMetadata < ActiveFedora::NokogiriDatastream
     #include Hydra::Datastream::CommonModsIndexMethods
     # MODS XML constants.
 
@@ -51,7 +51,7 @@ module Bplmodels
 
       t.type_of_resource(:path=>"typeOfResource")
 
-      t.genre(:path=>"genre", :attributes=>{ :authority => "gmgpc"})
+      t.genre(:path=>"genre", :attributes=>{ :type => "gmgpc"})
 
       t.origin_info(:path=>"originInfo") {
         t.publisher(:type=>:string)
@@ -60,15 +60,15 @@ module Bplmodels
       t.related_item(:path=>"relatedItem", :attributes=>{ :type => "host"}) {
       }
 
-      t.item_location(:path=>"location") {
-        t.physical_location(:path=>"physicalLocation") {
-          t.holding_simple(:path=>"holdingSimple") {
-            t.copy_information(:path=>"copyInformation") {
-              t.sub_location(:path=>"subLocation")
-            }
-          }
-        }
-      }
+      t.item_location(:path=>"location") do
+        t.physical_location(:path=>"physicalLocation")
+          #t.holding_simple(:path=>"holdingSimple") {
+            #t.copy_information(:path=>"copyInformation") {
+              #t.sub_location(:path=>"subLocation")
+           # }
+          #}
+        #}
+      end
 
 
 
@@ -121,23 +121,14 @@ module Bplmodels
       builder = Nokogiri::XML::Builder.new do |xml|
         xml.mods(MODS_PARAMS) {
 
-          xml.typeOfResource {
-            xml.text "still image"
-          }
-
           xml.language {
             xml.languageTerm(:type=>"text", :authority=>"iso639-2b", :authorityURI=>"http://id.loc.gov/vocabulary/iso639-2", :valueURI=>"http://id.loc.gov/vocabulary/iso639-2/epo", :lang=>"eng")
           }
 
-          xml.physicalDescription {
-            xml.internetMediaType {
-              xml.text "image/jpeg"
-            }
-          }
+          xml.relatedItem(:type=>"host")
 
-          xml.physicalDescription {
-            xml.digitalOrigin {
-              xml.text "reformatted digital"
+          xml.location {
+            xml.physicalLocation {
             }
           }
 
@@ -156,44 +147,6 @@ module Bplmodels
         }
       end
       return builder.doc
-    end
-
-    define_template :publisher do |xml, value|
-      xml.originInfo {
-        xml.publisher {
-          xml.text value
-        }
-      }
-    end
-
-    def insert_publisher(value=nil)
-      add_child_node(ng_xml.root, :publisher, value)
-    end
-
-    def remove_publisher(index)
-      self.find_by_terms(:publisher).slice(index.to_i).remove
-    end
-
-
-    define_template :genre do |xml, value|
-      if is_general
-        xml.genre(:authority=>"gmgpc", :displayLabel=>"general") {
-          xml.text value
-        }
-      else
-        xml.genre(:authority=>"gmgpc", :displayLabel=>"specific") {
-          xml.text value
-        }
-      end
-
-    end
-
-    def insert_genre(value=nil, is_general=false)
-      add_child_node(ng_xml.root, :genre, value, is_general)
-    end
-
-    def remove_genre(index)
-      self.find_by_terms(:genre).slice(index.to_i).remove
     end
 
     define_template :access_links do |xml, preview, primary|
@@ -268,10 +221,6 @@ module Bplmodels
       }
     end
 
-    def insert_name(name=nil, type=nil, role=nil)
-      add_child_node(ng_xml.root, :name, name, type, role)
-    end
-
     define_template :namePart do |xml, name|
       xml.namePart(:type=>"date") {
         xml.text name
@@ -291,14 +240,16 @@ module Bplmodels
       #end
     #end
 
+    def insert_name(name=nil, type=nil, role=nil)
+      add_child_node(ng_xml.root, :name, name, type, role)
+    end
 
-
-    def insert_namePart(index, name=nil)
+    def insert_namePart(index, name=nil, date=nil)
       add_child_node(self.find_by_terms(:name).slice(index.to_i), :namePart, name)
     end
 
-    def insert_namePartDate(index, date=nil)
-      add_child_node(self.find_by_terms(:name).slice(index.to_i), :namePart, date)
+    def insert_namePartDate(index, name=nil, date=nil)
+      add_child_node(self.find_by_terms(:name).slice(index.to_i), :namePart, name)
     end
 
 
@@ -307,7 +258,6 @@ module Bplmodels
     end
 
     define_template :date do |xml, dateStarted, dateEnding, dateQualifier, dateOther|
-
       if dateStarted != nil && dateEnding != nil && dateQualifier!= nil
         xml.originInfo {
           xml.dateCreated(:encoding=>"w3cdtf", :keyDate=>"yes", :point=>"start", :qualifier=>dateQualifier) {
@@ -340,13 +290,12 @@ module Bplmodels
         }
       elsif dateOther != nil
         xml.originInfo {
-          xml.dateOther(:keyDate=>"yes") {
+          xml.dateOther {
             xml.text dateOther
           }
         }
       else
-        #puts "error in dates?"
-
+        puts "error in dates?"
       end
     end
 
@@ -416,48 +365,6 @@ module Bplmodels
 
     def remove_subject_geographic(index)
       self.find_by_terms(:subject_geographic).slice(index.to_i).remove
-    end
-
-    define_template :host do |xml, value|
-      xml.relatedItem(:type=>"host") {
-        xml.text value
-      }
-    end
-
-    def insert_host(value=nil)
-      add_child_node(ng_xml.root, :host, value)
-    end
-
-    def remove_host(index)
-      self.find_by_terms(:host).slice(index.to_i).remove
-    end
-
-
-
-    define_template :physical_location do |xml, location, sublocation|
-
-      xml.location {
-        xml.physicalLocation {
-          xml.text location
-        }
-        if sublocation != nil
-          xml.holdingSimple {
-            xml.copyInformation {
-              xml.subLocation {
-                xml.text sublocation
-              }
-            }
-          }
-        end
-      }
-    end
-
-    def insert_physical_location(location=nil, sublocation=nil)
-      add_child_node(ng_xml.root, :physical_location, location, sublocation)
-    end
-
-    def remove_physical_location(index)
-      self.find_by_terms(:physical_location).slice(index.to_i).remove
     end
 
 

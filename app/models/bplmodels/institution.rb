@@ -12,7 +12,7 @@ module Bplmodels
         members.insert_member(:member_id=>fedora_object.pid, :member_title=>fedora_object.titleSet_display, :member_type=>fedora_object.fedora_name)
 
         #add to the rels-ext ds
-        fedora_object.institutions << self
+        fedora_object.institutions << selfinstitutioninstitution
         self.collections << fedora_object
 
       end

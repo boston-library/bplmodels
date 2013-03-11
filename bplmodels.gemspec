@@ -7,11 +7,11 @@ require "bplmodels/version"
 Gem::Specification.new do |s|
   s.name        = "bplmodels"
   s.version     = Bplmodels::VERSION
-  s.authors     = ["TODO: Your name"]
-  s.email       = ["TODO: Your email"]
-  s.homepage    = "TODO"
-  s.summary     = "TODO: Summary of Bplmodels."
-  s.description = "TODO: Description of Bplmodels."
+  s.authors     = ["Steven Anderson"]
+  s.email       = ["sanderson@bpl.org"]
+  s.homepage    = "http://www.bpl.org"
+  s.summary     = "Common Boston Library repository models."
+  s.description = "Common Boston Library repository models."
 
   s.files = Dir["{app,config,db,lib}/**/*"] + ["MIT-LICENSE", "Rakefile", "README.rdoc"]
   s.test_files = Dir["test/**/*"]

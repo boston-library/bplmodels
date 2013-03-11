@@ -4,7 +4,7 @@
 :predicate_namespaces:
   fedora-model: info:fedora/fedora-system:def/model#
   fedora-relations-model: info:fedora/fedora-system:def/relations-external#
-  nulib-rel: http://projecthydra.org/ns/relations#
+  bpllib-rel: http://projecthydra.org/ns/relations#
 
 # namespace mappings---
 # you can add specific mappings for your institution by providing the following:
