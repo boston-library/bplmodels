@@ -4,9 +4,9 @@ module Bplmodels
     # MODS XML constants.
 
     MODS_NS = 'http://www.loc.gov/mods/v3'
-    MODS_SCHEMA = 'http://www.loc.gov/standards/mods/v3/mods-3-3.xsd'
+    MODS_SCHEMA = 'http://www.loc.gov/standards/mods/v3/mods-3-4.xsd'
     MODS_PARAMS = {
-        "version"            => "3.3",
+        "version"            => "3.4",
         "xmlns:xlink"        => "http://www.w3.org/1999/xlink",
         "xmlns:xsi"          => "http://www.w3.org/2001/XMLSchema-instance",
         "xmlns"              => MODS_NS,
@@ -122,7 +122,7 @@ module Bplmodels
         xml.mods(MODS_PARAMS) {
 
           xml.language {
-            xml.languageTerm(:type=>"text", :authority=>"iso639-2b", :authorityURI=>"http://id.loc.gov/vocabulary/iso639-2", :valueURI=>"http://id.loc.gov/vocabulary/iso639-2/epo", :lang=>"eng")
+            xml.languageTerm(:type=>"text", :authority=>"iso639-2b", :authorityURI=>"http://id.loc.gov/vocabulary/iso639-2", :valueURI=>"http://id.loc.gov/vocabulary/iso639-2/eng", :lang=>"eng")
           }
 
           xml.physicalDescription {
@@ -166,7 +166,9 @@ module Bplmodels
     end
 
     def insert_type_of_resource(value=nil, manuscript=nil)
-      add_child_node(ng_xml.root, :type_of_resource, value, manuscript)
+      if value != ""
+        add_child_node(ng_xml.root, :type_of_resource, value, manuscript)
+      end
     end
 
     def remove_type_of_resource(index)
@@ -182,7 +184,9 @@ module Bplmodels
     end
 
     def insert_publisher(value=nil)
-      add_child_node(ng_xml.root, :publisher, value)
+      if(value != "")
+        add_child_node(ng_xml.root, :publisher, value)
+      end
     end
 
     def remove_publisher(index)
@@ -190,21 +194,24 @@ module Bplmodels
     end
 
 
-    define_template :genre do |xml, value, is_general|
-      if is_general
-        xml.genre(:authority=>"gmgpc", :displayLabel=>"general") {
-          xml.text value
-        }
-      else
-        xml.genre(:authority=>"gmgpc", :displayLabel=>"specific") {
-          xml.text value
-        }
+    define_template :genre do |xml, value, value_uri, is_general|
+      if value != ""
+        if is_general
+          xml.genre(:authority=>"gmgpc", :authorityURI=>value_uri, :displayLabel=>"general") {
+            xml.text value
+          }
+        else
+          xml.genre(:authority=>"gmgpc", :authorityURI=>value_uri, :displayLabel=>"specific") {
+            xml.text value
+          }
+        end
       end
-
     end
 
-    def insert_genre(value=nil, is_general=false)
-      add_child_node(ng_xml.root, :genre, value, is_general)
+    def insert_genre(value=nil, value_uri=nil, is_general=false)
+      if value != ""
+        add_child_node(ng_xml.root, :genre, value, value_uri, is_general)
+      end
     end
 
     def remove_genre(index)
@@ -238,22 +245,22 @@ module Bplmodels
           xml.subtitle(subtitle)
         }
       elsif usage != nil && nonSort!=nil && main_title != nil
-        xml.titleInfo(:language=>"eng", :usage=>usage) {
+        xml.titleInfo(:usage=>usage) {
           xml.nonSort(nonSort)
           xml.title(main_title)
         }
       elsif usage != nil && main_title != nil
-        xml.titleInfo(:language=>"eng", :usage=>usage) {
+        xml.titleInfo(:usage=>usage) {
           xml.title(main_title)
         }
 
       elsif nonSort!=nil && main_title != nil
-        xml.titleInfo(:language=>"eng") {
+        xml.titleInfo {
           xml.nonSort(nonSort)
           xml.title(main_title)
         }
       elsif main_title != nil
-        xml.titleInfo(:language=>"eng") {
+        xml.titleInfo {
           xml.title(main_title)
         }
       end
@@ -360,13 +367,13 @@ module Bplmodels
         }
       elsif dateStarted != nil
         xml.originInfo {
-          xml.dateCreated(:encoding=>"w3cdtf", :keyDate=>"yes", :point=>"start") {
+          xml.dateCreated(:encoding=>"w3cdtf", :keyDate=>"yes") {
             xml.text dateStarted
           }
         }
       elsif dateOther != nil
         xml.originInfo {
-          xml.dateOther(:keyDate=>"yes") {
+          xml.dateOther {
             xml.text dateOther
           }
         }
@@ -376,9 +383,49 @@ module Bplmodels
       end
     end
 
+    define_template :date_partial do |xml, dateStarted, dateEnding, dateQualifier, dateOther|
+
+      if dateStarted != nil && dateEnding != nil && dateQualifier!= nil
+          xml.dateCreated(:encoding=>"w3cdtf", :keyDate=>"yes", :point=>"start", :qualifier=>dateQualifier) {
+            xml.text dateStarted
+          }
+          xml.dateCreated(:encoding=>"w3cdtf", :point=>"end", :qualifier=>dateQualifier) {
+            xml.text dateEnding
+          }
+      elsif dateStarted != nil && dateEnding != nil
+          xml.dateCreated(:encoding=>"w3cdtf", :keyDate=>"yes", :point=>"start") {
+            xml.text dateStarted
+          }
+          xml.dateCreated(:encoding=>"w3cdtf", :point=>"end") {
+            xml.text dateEnding
+          }
+      elsif dateStarted != nil && dateQualifier!= nil
+          xml.dateCreated(:encoding=>"w3cdtf", :keyDate=>"yes", :point=>"start", :qualifier=>dateQualifier) {
+            xml.text dateStarted
+          }
+      elsif dateStarted != nil
+          xml.dateCreated(:encoding=>"w3cdtf", :keyDate=>"yes") {
+            xml.text dateStarted
+          }
+      elsif dateOther != nil
+          xml.dateOther {
+            xml.text dateOther
+          }
+      else
+        #puts "error in dates?"
+
+      end
+    end
+
 
     def insert_date(dateStarted=nil, dateEnding=nil, dateQualifier=nil, dateOther=nil)
-      add_child_node(ng_xml.root, :date, dateStarted, dateEnding, dateQualifier, dateOther)
+      #if self.find_by_terms(:publisher) != nil &&  elf.find_by_terms(:publisher) != ""
+        #add_child_node(self.find_by_terms(:publisher).slice(0), :date_partial, dateStarted, dateEnding, dateQualifier, dateOther)
+      #else
+        add_child_node(ng_xml.root, :date, dateStarted, dateEnding, dateQualifier, dateOther)
+      #end
+
+
     end
 
     def remove_date(index)
@@ -422,6 +469,8 @@ module Bplmodels
     end
 
 
+
+
     def insert_subject_topic(topic=nil, type=nil, authority=nil)
       add_child_node(ng_xml.root, :subject_topic, topic, type, authority)
     end
@@ -436,8 +485,17 @@ module Bplmodels
       }
     end
 
+    define_template :geographic do |xml, topic|
+        xml.geographic(topic)
+    end
+
     def insert_subject_geographic(geographic=nil, authority=nil)
-      add_child_node(ng_xml.root, :subject_geographic, geographic, authority)
+      #if self.find_by_terms(:subject_topic).slice(0) != nil &&  elf.find_by_terms(:subject_topic).slice(0) != ""
+        #add_child_node(self.find_by_terms(:subject_topic).slice(0), :geographic, geographic, authority)
+      #else
+        add_child_node(ng_xml.root, :subject_geographic, geographic, authority)
+      #end
+
     end
 
     def remove_subject_geographic(index)
@@ -446,7 +504,12 @@ module Bplmodels
 
     define_template :host do |xml, value|
       xml.relatedItem(:type=>"host") {
-        xml.text value
+        xml.titleInfo {
+          xml.title {
+            xml.text value
+          }
+        }
+
       }
     end
 
@@ -456,6 +519,26 @@ module Bplmodels
 
     def remove_host(index)
       self.find_by_terms(:host).slice(index.to_i).remove
+    end
+
+
+    define_template :related_item do |xml, value, qualifier|
+      xml.relatedItem(:type=>qualifier) {
+        xml.titleInfo {
+          xml.title {
+            xml.text value
+          }
+        }
+
+      }
+    end
+
+    def insert_related_item(value=nil, qualifier=nil)
+      add_child_node(ng_xml.root, :host, value, qualifier)
+    end
+
+    def remove_related_item(index)
+      self.find_by_terms(:related_item).slice(index.to_i).remove
     end
 
 

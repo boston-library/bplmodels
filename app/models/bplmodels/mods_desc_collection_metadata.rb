@@ -4,7 +4,7 @@ module Bplmodels
     # MODS XML constants.
 
     MODS_NS = 'http://www.loc.gov/mods/v3'
-    MODS_SCHEMA = 'http://www.loc.gov/standards/mods/v3/mods-3-3.xsd'
+    MODS_SCHEMA = 'http://www.loc.gov/standards/mods/v3/mods-3-4.xsd'
     MODS_PARAMS = {
         "version"            => "3.3",
         "xmlns:xlink"        => "http://www.w3.org/1999/xlink",
@@ -170,22 +170,22 @@ module Bplmodels
           xml.subtitle(subtitle)
         }
       elsif usage != nil && nonSort!=nil && main_title != nil
-        xml.titleInfo(:language=>"eng", :usage=>usage) {
+        xml.titleInfo(:usage=>usage) {
           xml.nonSort(nonSort)
           xml.title(main_title)
         }
       elsif usage != nil && main_title != nil
-        xml.titleInfo(:language=>"eng", :usage=>usage) {
+        xml.titleInfo(:usage=>usage) {
           xml.title(main_title)
         }
 
       elsif nonSort!=nil && main_title != nil
-        xml.titleInfo(:language=>"eng") {
+        xml.titleInfo {
           xml.nonSort(nonSort)
           xml.title(main_title)
         }
       elsif main_title != nil
-        xml.titleInfo(:language=>"eng") {
+        xml.titleInfo {
           xml.title(main_title)
         }
       end
@@ -318,7 +318,7 @@ module Bplmodels
     end
 
     define_template :note do |xml, note, noteQualifier|
-      xml.note(:qualifier=>noteQualifier) {
+      xml.note(:type=>noteQualifier) {
         xml.text note
       }
     end
