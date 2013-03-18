@@ -452,7 +452,7 @@ module Bplmodels
 
 
     def insert_extent(extent=nil)
-      if(extent.lenfgth > 1)
+      if(extent != nil && extent.length > 1)
         add_child_node(ng_xml.root, :extent, extent)
       end
     end
@@ -469,7 +469,9 @@ module Bplmodels
 
 
     def insert_note(note=nil, noteQualifier=nil)
-      add_child_node(ng_xml.root, :note, note, noteQualifier)
+      if(note != nil && note.length > 1)
+        add_child_node(ng_xml.root, :note, note, noteQualifier)
+      end
     end
 
     def remove_note(index)
