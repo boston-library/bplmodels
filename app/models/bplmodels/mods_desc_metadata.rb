@@ -16,7 +16,7 @@ module Bplmodels
     # OM terminology.
 
     set_terminology do |t|
-      t.root :path => 'mods', :xmlns => MODS_NS
+      t.root :path => 'mods', :xmlns => MODS_NS, :namespace_prefix=>'mods'
       t.originInfo  do
         t.dateOther
       end
