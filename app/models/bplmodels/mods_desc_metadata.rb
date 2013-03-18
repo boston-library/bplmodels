@@ -515,7 +515,7 @@ module Bplmodels
 
     def insert_subject_geographic(geographic=nil, authority=nil)
       if geographic != ""
-        if self.find_by_terms(:subject) != nil &&  && self.find_by_terms(:subject).slice(0) != nil
+        if self.find_by_terms(:subject) != nil && self.find_by_terms(:subject).slice(0) != nil
           add_child_node(self.find_by_terms(:subject).slice(0), :geographic, geographic, authority)
         else
           add_child_node(ng_xml.root, :subject_geographic, geographic, authority)
