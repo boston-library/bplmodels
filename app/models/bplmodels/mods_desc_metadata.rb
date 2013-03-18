@@ -202,17 +202,17 @@ module Bplmodels
 
 
     define_template :genre do |xml, value, value_uri, is_general|
-      if value != nil && value.length > 1
-        if is_general
-          xml.genre(:authority=>"gmgpc", :authorityURI=>value_uri, :displayLabel=>"general") {
-            xml.text value
-          }
-        else
-          xml.genre(:authority=>"gmgpc", :authorityURI=>value_uri, :displayLabel=>"specific") {
-            xml.text value
-          }
-        end
+
+      if is_general
+        xml.genre(:authority=>"gmgpc", :authorityURI=>value_uri, :displayLabel=>"general") {
+          xml.text value
+        }
+      else
+        xml.genre(:authority=>"gmgpc", :authorityURI=>value_uri, :displayLabel=>"specific") {
+          xml.text value
+        }
       end
+
     end
 
     def insert_genre(value=nil, value_uri=nil, is_general=false)

@@ -60,6 +60,9 @@ module Bplmodels
       t.related_item(:path=>"relatedItem", :attributes=>{ :type => "host"}) {
       }
 
+      t.ark_uri(:path=>"identifier", :attributes=>{ :type => "uri"}) {
+      }
+
       t.item_location(:path=>"location") do
         t.physical_location(:path=>"physicalLocation")
           #t.holding_simple(:path=>"holdingSimple") {
