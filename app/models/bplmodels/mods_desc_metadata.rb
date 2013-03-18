@@ -479,12 +479,12 @@ module Bplmodels
     end
 
     define_template :subject_topic do |xml, topic, type, authority|
-      if(authority == nil || authority = "")
-        xml.subject {
+      if(authority != nil && authority != "")
+        xml.subject(:authority=>authority) {
           xml.topic(topic)
         }
       else
-        xml.subject(:authority=>authority) {
+        xml.subject {
           xml.topic(topic)
         }
       end
@@ -498,8 +498,10 @@ module Bplmodels
 
     def insert_subject_topic(topic=nil, type=nil, authority=nil)
       if(topic != nil && topic.length > 1)
-        if self.find_by_terms(:subject) != nil && self.find_by_terms(:subject).slice(0) != nil
+        if self.find_by_terms(:subject) != nil && self.find_by_terms(:subject).slice(0) != nil && authority == nil && type == nil
           add_child_node(self.find_by_terms(:subject).slice(0), :topic, topic, type, authority)
+        elsif self.find_by_terms(:subject).slice(1) != nil && authority != nil && type != nil
+          add_child_node(self.find_by_terms(:subject).slice(1), :topic, topic, type, authority)
         else
           add_child_node(ng_xml.root, :subject_topic, topic, type, authority)
         end
