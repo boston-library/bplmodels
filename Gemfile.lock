@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    bplmodels (0.0.21)
+    bplmodels (0.0.22)
       rails (~> 3.2.7)
 
 GEM
@@ -86,7 +86,7 @@ GEM
     treetop (1.4.12)
       polyglot
       polyglot (>= 0.3.1)
-    tzinfo (0.3.35)
+    tzinfo (0.3.37)
 
 PLATFORMS
   ruby

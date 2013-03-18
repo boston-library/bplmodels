@@ -125,10 +125,8 @@ module Bplmodels
         xml.mods(MODS_PARAMS) {
 
           xml.language {
-            xml.languageTerm(:type=>"text", :authority=>"iso639-2b", :authorityURI=>"http://id.loc.gov/vocabulary/iso639-2", :valueURI=>"http://id.loc.gov/vocabulary/iso639-2/epo", :lang=>"eng")
+            xml.languageTerm(:type=>"text", :authority=>"iso639-2b", :authorityURI=>"http://id.loc.gov/vocabulary/iso639-2", :valueURI=>"http://id.loc.gov/vocabulary/iso639-2/eng", :lang=>"eng")
           }
-
-          xml.relatedItem(:type=>"host")
 
           xml.location {
             xml.physicalLocation {
@@ -146,7 +144,7 @@ module Bplmodels
       return builder.doc
     end
 
-    define_template :access_links do |xml, preview, primary|
+    define_template :access_links do |xml, primary|
       xml.location {
         xml.url(:access=>"primary", :access=>"object in context") {
           xml.text primary

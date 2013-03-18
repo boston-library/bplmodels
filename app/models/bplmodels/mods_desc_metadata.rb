@@ -77,6 +77,8 @@ module Bplmodels
       t.identifier_bpldc :path => 'identifier', :attributes => { :type => "bpldc number" }
       t.identifier_other :path => 'identifier', :attributes => { :type => "other" }
 
+      t.local_other :path => 'identifier', :attributes => { :type => "local-other" }
+
 
 
       t.subject  do
@@ -204,11 +206,11 @@ module Bplmodels
     define_template :genre do |xml, value, value_uri, is_general|
 
       if is_general
-        xml.genre(:authority=>"gmgpc", :authorityURI=>value_uri, :displayLabel=>"general") {
+        xml.genre(:authority=>"gmgpc", :authorityURI=>"http://id.loc.gov/vocabulary/graphicMaterials", :valueURI=>value_uri, :displayLabel=>"general") {
           xml.text value
         }
       else
-        xml.genre(:authority=>"gmgpc", :authorityURI=>value_uri, :displayLabel=>"specific") {
+        xml.genre(:authority=>"gmgpc", :authorityURI=>"http://id.loc.gov/vocabulary/graphicMaterials", :valueURI=>value_uri, :displayLabel=>"specific") {
           xml.text value
         }
       end
