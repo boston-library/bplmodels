@@ -173,7 +173,7 @@ module Bplmodels
     end
 
     def insert_type_of_resource(value=nil, manuscript=nil)
-      if value != ""
+      if value.length > 1
         add_child_node(ng_xml.root, :type_of_resource, value, manuscript)
       end
     end
@@ -191,7 +191,7 @@ module Bplmodels
     end
 
     def insert_publisher(value=nil)
-      if(value != "")
+      if(value.length > 1)
         add_child_node(ng_xml.root, :publisher, value)
       end
     end
@@ -202,7 +202,7 @@ module Bplmodels
 
 
     define_template :genre do |xml, value, value_uri, is_general|
-      if value != ""
+      if value.length > 1
         if is_general
           xml.genre(:authority=>"gmgpc", :authorityURI=>value_uri, :displayLabel=>"general") {
             xml.text value
@@ -216,7 +216,7 @@ module Bplmodels
     end
 
     def insert_genre(value=nil, value_uri=nil, is_general=false)
-      if value != ""
+      if value.length > 1
         add_child_node(ng_xml.root, :genre, value, value_uri, is_general)
       end
     end
@@ -286,7 +286,7 @@ module Bplmodels
 
 
     define_template :name do |xml, name, type, role|
-      if type != nil && type != ""
+      if type != nil && type != "" && type.length > 1
         xml.name(:type=>type) {
           xml.role {
             xml.roleTerm(:type=>"text", :authority=>"marcrelator")   {
@@ -452,7 +452,9 @@ module Bplmodels
 
 
     def insert_extent(extent=nil)
-      add_child_node(ng_xml.root, :extent, extent)
+      if(extent.lenfgth > 1)
+        add_child_node(ng_xml.root, :extent, extent)
+      end
     end
 
     def remove_extent(index)
@@ -475,20 +477,27 @@ module Bplmodels
     end
 
     define_template :subject_topic do |xml, topic, type, authority|
-      xml.subject {
-        xml.topic(topic)
-      }
+      if(authority == nil || authority = "")
+        xml.subject {
+          xml.topic(topic)
+        }
+      else
+        xml.subject(:authority=>authority) {
+          xml.topic(topic)
+        }
+      end
+
     end
 
 
     define_template :topic do |xml, topic|
-      xml.geographic(topic)
+      xml.topic(topic)
     end
 
     def insert_subject_topic(topic=nil, type=nil, authority=nil)
-      if(topic != "")
+      if(topic.length > 1)
         if self.find_by_terms(:subject) != nil && self.find_by_terms(:subject).slice(0) != nil
-          add_child_node(self.find_by_terms(:subject).slice(0), :topic, type, authority)
+          add_child_node(self.find_by_terms(:subject).slice(0), :topic, topic, type, authority)
         else
           add_child_node(ng_xml.root, :subject_topic, topic, type, authority)
         end
@@ -514,7 +523,7 @@ module Bplmodels
     end
 
     def insert_subject_geographic(geographic=nil, authority=nil)
-      if geographic != ""
+      if geographic.length > 1
         if self.find_by_terms(:subject) != nil && self.find_by_terms(:subject).slice(0) != nil
           add_child_node(self.find_by_terms(:subject).slice(0), :geographic, geographic, authority)
         else
