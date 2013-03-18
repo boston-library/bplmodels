@@ -427,7 +427,7 @@ module Bplmodels
 
     def insert_date(dateStarted=nil, dateEnding=nil, dateQualifier=nil, dateOther=nil)
       #begin
-        if self.find_by_terms(:origin_info) != nil
+        if self.find_by_terms(:origin_info) != nil && self.find_by_terms(:origin_info).slice(0) != nil
           add_child_node(self.find_by_terms(:origin_info).slice(0), :date_partial, dateStarted, dateEnding, dateQualifier, dateOther)
         else
           add_child_node(ng_xml.root, :date, dateStarted, dateEnding, dateQualifier, dateOther)
@@ -487,7 +487,7 @@ module Bplmodels
 
     def insert_subject_topic(topic=nil, type=nil, authority=nil)
       if(topic != "")
-        if self.find_by_terms(:subject) != nil
+        if self.find_by_terms(:subject) != nil && self.find_by_terms(:subject).slice(0) != nil
           add_child_node(self.find_by_terms(:subject).slice(0), :topic, type, authority)
         else
           add_child_node(ng_xml.root, :subject_topic, topic, type, authority)
