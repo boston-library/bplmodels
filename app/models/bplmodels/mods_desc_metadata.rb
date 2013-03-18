@@ -173,7 +173,7 @@ module Bplmodels
     end
 
     def insert_type_of_resource(value=nil, manuscript=nil)
-      if value.length > 1
+      if value != nil && value.length > 1
         add_child_node(ng_xml.root, :type_of_resource, value, manuscript)
       end
     end
@@ -191,7 +191,7 @@ module Bplmodels
     end
 
     def insert_publisher(value=nil)
-      if(value.length > 1)
+      if(value != nil && value.length > 1)
         add_child_node(ng_xml.root, :publisher, value)
       end
     end
@@ -202,7 +202,7 @@ module Bplmodels
 
 
     define_template :genre do |xml, value, value_uri, is_general|
-      if value.length > 1
+      if value != nil && value.length > 1
         if is_general
           xml.genre(:authority=>"gmgpc", :authorityURI=>value_uri, :displayLabel=>"general") {
             xml.text value
@@ -216,7 +216,7 @@ module Bplmodels
     end
 
     def insert_genre(value=nil, value_uri=nil, is_general=false)
-      if value.length > 1
+      if value != nil && value.length > 1
         add_child_node(ng_xml.root, :genre, value, value_uri, is_general)
       end
     end
@@ -495,7 +495,7 @@ module Bplmodels
     end
 
     def insert_subject_topic(topic=nil, type=nil, authority=nil)
-      if(topic.length > 1)
+      if(topic != nil && topic.length > 1)
         if self.find_by_terms(:subject) != nil && self.find_by_terms(:subject).slice(0) != nil
           add_child_node(self.find_by_terms(:subject).slice(0), :topic, topic, type, authority)
         else
@@ -523,7 +523,7 @@ module Bplmodels
     end
 
     def insert_subject_geographic(geographic=nil, authority=nil)
-      if geographic.length > 1
+      if geographic != nil && geographic.length > 1
         if self.find_by_terms(:subject) != nil && self.find_by_terms(:subject).slice(0) != nil
           add_child_node(self.find_by_terms(:subject).slice(0), :geographic, geographic, authority)
         else
