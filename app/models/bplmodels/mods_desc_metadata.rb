@@ -556,7 +556,7 @@ module Bplmodels
     end
 
     def insert_host(value=nil, identifier=nil)
-      add_child_node(ng_xml.root, :host, value)
+      add_child_node(ng_xml.root, :host, value, identifier)
     end
 
     def remove_host(index)
