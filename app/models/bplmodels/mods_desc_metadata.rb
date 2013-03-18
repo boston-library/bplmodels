@@ -541,18 +541,21 @@ module Bplmodels
       self.find_by_terms(:subject_geographic).slice(index.to_i).remove
     end
 
-    define_template :host do |xml, value|
+    define_template :host do |xml, value, identifier|
       xml.relatedItem(:type=>"host") {
         xml.titleInfo {
           xml.title {
             xml.text value
           }
         }
+        xml.identifier(:type="uri") {
+            xml.text identifier
+        }
 
       }
     end
 
-    def insert_host(value=nil)
+    def insert_host(value=nil, identifier=nil)
       add_child_node(ng_xml.root, :host, value)
     end
 
