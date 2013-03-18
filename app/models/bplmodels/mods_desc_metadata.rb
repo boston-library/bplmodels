@@ -160,9 +160,16 @@ module Bplmodels
 
 
     define_template :type_of_resource do |xml, value, manuscript|
-      xml.typeOfResource {
-        xml.text value
-      }
+      if(manuscript == "x")
+        xml.typeOfResource(:manuscript=>"yes") {
+          xml.text value
+        }
+      else
+        xml.typeOfResource {
+          xml.text value
+        }
+      end
+
     end
 
     def insert_type_of_resource(value=nil, manuscript=nil)
@@ -419,10 +426,15 @@ module Bplmodels
 
 
     def insert_date(dateStarted=nil, dateEnding=nil, dateQualifier=nil, dateOther=nil)
-      #if self.find_by_terms(:publisher) != nil &&  elf.find_by_terms(:publisher) != ""
-        #add_child_node(self.find_by_terms(:publisher).slice(0), :date_partial, dateStarted, dateEnding, dateQualifier, dateOther)
-      #else
-        add_child_node(ng_xml.root, :date, dateStarted, dateEnding, dateQualifier, dateOther)
+      #begin
+        if self.find_by_terms(:origin_info) != nil
+          add_child_node(self.find_by_terms(:origin_info).slice(0), :date_partial, dateStarted, dateEnding, dateQualifier, dateOther)
+        else
+          add_child_node(ng_xml.root, :date, dateStarted, dateEnding, dateQualifier, dateOther)
+        end
+
+      #rescue OM::XML::Terminology::BadPointerError
+        #add_child_node(ng_xml.root, :date, dateStarted, dateEnding, dateQualifier, dateOther)
       #end
 
 
@@ -469,10 +481,20 @@ module Bplmodels
     end
 
 
-
+    define_template :topic do |xml, topic|
+      xml.geographic(topic)
+    end
 
     def insert_subject_topic(topic=nil, type=nil, authority=nil)
-      add_child_node(ng_xml.root, :subject_topic, topic, type, authority)
+      if(topic != "")
+        if self.find_by_terms(:subject) != nil
+          add_child_node(self.find_by_terms(:subject).slice(0), :topic, type, authority)
+        else
+          add_child_node(ng_xml.root, :subject_topic, topic, type, authority)
+        end
+      end
+
+
     end
 
     def remove_subject_topic(index)
@@ -485,16 +507,20 @@ module Bplmodels
       }
     end
 
+
+
     define_template :geographic do |xml, topic|
         xml.geographic(topic)
     end
 
     def insert_subject_geographic(geographic=nil, authority=nil)
-      #if self.find_by_terms(:subject_topic).slice(0) != nil &&  elf.find_by_terms(:subject_topic).slice(0) != ""
-        #add_child_node(self.find_by_terms(:subject_topic).slice(0), :geographic, geographic, authority)
-      #else
-        add_child_node(ng_xml.root, :subject_geographic, geographic, authority)
-      #end
+      if geographic != ""
+        if self.find_by_terms(:subject) != nil
+          add_child_node(self.find_by_terms(:subject).slice(0), :geographic, geographic, authority)
+        else
+          add_child_node(ng_xml.root, :subject_geographic, geographic, authority)
+        end
+      end
 
     end
 

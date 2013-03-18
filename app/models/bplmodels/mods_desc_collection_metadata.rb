@@ -6,7 +6,7 @@ module Bplmodels
     MODS_NS = 'http://www.loc.gov/mods/v3'
     MODS_SCHEMA = 'http://www.loc.gov/standards/mods/v3/mods-3-4.xsd'
     MODS_PARAMS = {
-        "version"            => "3.3",
+        "version"            => "3.4",
         "xmlns:xlink"        => "http://www.w3.org/1999/xlink",
         "xmlns:xsi"          => "http://www.w3.org/2001/XMLSchema-instance",
         "xmlns"              => MODS_NS,
@@ -145,17 +145,14 @@ module Bplmodels
 
     define_template :access_links do |xml, preview, primary|
       xml.location {
-        xml.url(:access=>"preview") {
-          xml.text preview
-        }
         xml.url(:access=>"primary", :access=>"object in context") {
           xml.text primary
         }
       }
     end
 
-    def insert_access_links(preview=nil, primary=nil)
-      add_child_node(ng_xml.root, :access_links, preview, primary)
+    def insert_access_links(primary=nil)
+      add_child_node(ng_xml.root, :access_links, primary)
     end
 
     def remove_access_links(index)
