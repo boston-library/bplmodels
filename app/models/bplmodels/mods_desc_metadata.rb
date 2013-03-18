@@ -548,7 +548,7 @@ module Bplmodels
             xml.text value
           }
         }
-        xml.identifier(:type="uri") {
+        xml.identifier(:type=>"uri") {
             xml.text identifier
         }
 
