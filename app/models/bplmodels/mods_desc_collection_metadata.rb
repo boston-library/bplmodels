@@ -9,8 +9,9 @@ module Bplmodels
         "version"            => "3.4",
         "xmlns:xlink"        => "http://www.w3.org/1999/xlink",
         "xmlns:xsi"          => "http://www.w3.org/2001/XMLSchema-instance",
-        "xmlns"              => MODS_NS,
+        #"xmlns"              => MODS_NS,
         "xsi:schemaLocation" => "#{MODS_NS} #{MODS_SCHEMA}",
+        "xmlns:mods"         => "http://www.loc.gov/mods/v3"
     }
 
     # OM terminology.
@@ -123,6 +124,7 @@ module Bplmodels
     def self.xml_template
       builder = Nokogiri::XML::Builder.new do |xml|
         xml.mods(MODS_PARAMS) {
+          xml.parent.namespace = xml.parent.namespace_definitions.find{|ns|ns.prefix=="mods"}
 
           xml.language {
             xml.languageTerm(:type=>"text", :authority=>"iso639-2b", :authorityURI=>"http://id.loc.gov/vocabulary/iso639-2", :valueURI=>"http://id.loc.gov/vocabulary/iso639-2/eng", :lang=>"eng")
