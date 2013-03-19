@@ -127,7 +127,7 @@ module Bplmodels
           xml.parent.namespace = xml.parent.namespace_definitions.find{|ns|ns.prefix=="mods"}
 
           xml.language {
-            xml.languageTerm(:type=>"text", :authority=>"iso639-2b", :authorityURI=>"http://id.loc.gov/vocabulary/iso639-2", :valueURI=>"http://id.loc.gov/vocabulary/iso639-2/eng", :lang=>"eng")
+            xml.languageTerm(:authority=>"iso639-2b", :authorityURI=>"http://id.loc.gov/vocabulary/iso639-2", :valueURI=>"http://id.loc.gov/vocabulary/iso639-2/eng", :lang=>"eng")
           }
 
           xml.location {
