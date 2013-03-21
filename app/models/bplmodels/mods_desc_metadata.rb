@@ -290,8 +290,17 @@ module Bplmodels
     end
 
 
-    define_template :name do |xml, name, type, authority, role|
-      if type != nil && type != "" && type.length > 1 && authority !=nil && authority.length > 1
+    define_template :name do |xml, name, type, authority, role, uri|
+      if type != nil && type.length > 1 && authority !=nil && authority.length > 1 && uri !=nil && uri.length > 1
+        xml.name(:type=>type, :authority=>authority, :authorityURI=>uri) {
+          xml.role {
+            xml.roleTerm(:type=>"text", :authority=>"marcrelator")   {
+              xml.text role
+            }
+          }
+          xml.namePart(name)
+        }
+      elsif type != nil && type.length > 1 && authority !=nil && authority.length > 1
         xml.name(:type=>type, :authority=>authority) {
           xml.role {
             xml.roleTerm(:type=>"text", :authority=>"marcrelator")   {
@@ -300,7 +309,7 @@ module Bplmodels
           }
           xml.namePart(name)
         }
-      elsif type != nil && type != "" && type.length > 1
+      elsif type != nil && type.length > 1
         xml.name(:type=>type) {
           xml.role {
             xml.roleTerm(:type=>"text", :authority=>"marcrelator")   {
@@ -322,8 +331,8 @@ module Bplmodels
 
     end
 
-    def insert_name(name=nil, type=nil, authority=nil, role=nil)
-      add_child_node(ng_xml.root, :name, name, type, authority, role)
+    def insert_name(name=nil, type=nil, authority=nil, role=nil, uri=nil)
+      add_child_node(ng_xml.root, :name, name, type, authority, role, uri)
     end
 
     define_template :namePart do |xml, name|
@@ -490,12 +499,12 @@ module Bplmodels
     end
 
     define_template :note do |xml, note, noteQualifier|
-      if noteQualifier != nil && noteQualifier != ""
-        xml.note(:qualifier=>noteQualifier) {
+      if noteQualifier != nil && noteQualifier.length > 1
+        xml.note(:type=>noteQualifier) {
           xml.text note
         }
       else
-        xml.note(:qualifier=>"general") {
+        xml.note {
           xml.text note
         }
       end
@@ -512,8 +521,12 @@ module Bplmodels
       self.find_by_terms(:note).slice(index.to_i).remove
     end
 
-    define_template :subject_topic do |xml, topic, type, authority|
-      if(authority != nil && authority != "")
+    define_template :subject_topic do |xml, topic, uri, authority|
+      if(authority != nil && authority.length > 1 && uri != nil && uri.length > 1)
+      xml.subject(:authority=>authority, :authorityURI=>"http://id.loc.gov/vocabulary/graphicMaterials", :valueURI=>uri) {
+        xml.topic(topic)
+      }
+      elsif(authority != nil && authority.length > 1)
         xml.subject(:authority=>authority) {
           xml.topic(topic)
         }
@@ -530,15 +543,15 @@ module Bplmodels
       xml.topic(topic)
     end
 
-    def insert_subject_topic(topic=nil, type=nil, authority=nil)
+    def insert_subject_topic(topic=nil, uri=nil, authority=nil)
       if(topic != nil && topic.length > 1)
-        if self.find_by_terms(:subject) != nil && self.find_by_terms(:subject).slice(0) != nil && authority == nil && type == nil
-          add_child_node(self.find_by_terms(:subject).slice(0), :topic, topic, type, authority)
-        elsif self.find_by_terms(:subject).slice(1) != nil && authority != nil && type != nil
-          add_child_node(self.find_by_terms(:subject).slice(1), :topic, topic, type, authority)
-        else
-          add_child_node(ng_xml.root, :subject_topic, topic, type, authority)
-        end
+        #if self.find_by_terms(:subject) != nil && self.find_by_terms(:subject).slice(0) != nil && authority == nil && type == nil
+          #add_child_node(self.find_by_terms(:subject).slice(0), :topic, topic, type, authority)
+        #elsif self.find_by_terms(:subject).slice(1) != nil && authority != nil && type != nil
+          #add_child_node(self.find_by_terms(:subject).slice(1), :topic, topic, type, authority)
+        #else
+          add_child_node(ng_xml.root, :subject_topic, topic, uri, authority)
+        #end
       end
     end
 
@@ -547,28 +560,32 @@ module Bplmodels
     end
 
     #FIXME: doesn't support multiple!
-    define_template :subject_name_part do |xml, name, type, authority, date|
+    define_template :subject_name do |xml, name, type, authority, date|
       if(date != nil)
-        xml.name(:type=>type, :authority=>authority) {
-          xml.namePart {
-            xml.text name
+        xml.subject {
+          xml.name(:type=>type, :authority=>authority) {
+            xml.namePart {
+              xml.text name
+            }
           }
         }
       else
-        xml.name(:type=>type, :authority=>authority) {
-          xml.namePart {
-            xml.text name
-          }
-          xml.namePart(:type=>"date") {
-            xml.text name
+        xml.subject {
+          xml.name(:type=>type, :authority=>authority) {
+            xml.namePart {
+              xml.text name
+            }
+            xml.namePart(:type=>"date") {
+              xml.text name
+            }
           }
         }
       end
 
     end
 
-    def insert_subject_name_part(index, name=nil, type=nil, authority=nil, date=nil)
-      add_child_node(self.find_by_terms(:subject).slice(index.to_i), :subject_name_part, name, type, authority, date)
+    def insert_subject_name(name=nil, type=nil, authority=nil, date=nil)
+      add_child_node(ng_xml.root, :subject_name, name, type, authority, date)
     end
 
     define_template :subject_geographic do |xml, geographic, authority|
@@ -585,11 +602,11 @@ module Bplmodels
 
     def insert_subject_geographic(geographic=nil, authority=nil)
       if geographic != nil && geographic.length > 1
-        if self.find_by_terms(:subject) != nil && self.find_by_terms(:subject).slice(0) != nil
-          add_child_node(self.find_by_terms(:subject).slice(0), :geographic, geographic, authority)
-        else
+      #  if self.find_by_terms(:subject) != nil && self.find_by_terms(:subject).slice(0) != nil
+      #    add_child_node(self.find_by_terms(:subject).slice(0), :geographic, geographic, authority)
+      #  else
           add_child_node(ng_xml.root, :subject_geographic, geographic, authority)
-        end
+      #  end
       end
 
     end
@@ -688,6 +705,32 @@ module Bplmodels
     def remove_identifier(index)
       self.find_by_terms(:identifier).slice(index.to_i).remove
     end
+
+
+  define_template :mcgreevy do |xml|
+    xml.recordInfo {
+      xml.recordContentSource {
+        xml.text "Boston Public Library"
+      }
+      xml.recordOrigin {
+        xml.text "human prepared"
+      }
+      xml.languageOfCataloging(:usage=>"primary") {
+        xml.languageTerm(:authority=>"iso639-2b", :authorityURI=>"http://id.loc.gov/vocabulary/iso639-2", :valueURI=>"http://id.loc.gov/vocabulary/iso639-2/eng")
+      }
+      xml.descriptionStandard(:authority=>"marcdescription") {
+        xml.text "gihc"
+      }
+    }
+  end
+
+  def insert_mcgreevy
+    add_child_node(ng_xml.root, :mcgreevy)
+  end
+
+  def remove_mcgreevy(index)
+    self.find_by_terms(:mcgreevy).slice(index.to_i).remove
+  end
 
     def insert_new_node(term)
       add_child_node(ng_xml.root, term)

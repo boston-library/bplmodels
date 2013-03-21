@@ -332,15 +332,15 @@ module Bplmodels
       self.find_by_terms(:note).slice(index.to_i).remove
     end
 
-    define_template :subject_topic do |xml, topic, type, authority|
+    define_template :subject_topic do |xml, topic, uri, authority|
       xml.subject {
         xml.topic(topic)
       }
     end
 
 
-    def insert_subject_topic(topic=nil, type=nil, authority=nil)
-      add_child_node(ng_xml.root, :subject_topic, topic, type, authority)
+    def insert_subject_topic(topic=nil, uri=nil, authority=nil)
+      add_child_node(ng_xml.root, :subject_topic, topic, uri, authority)
     end
 
     def remove_subject_topic(index)
@@ -375,6 +375,7 @@ module Bplmodels
     def remove_identifier(index)
       self.find_by_terms(:identifier).slice(index.to_i).remove
     end
+
 
     def insert_new_node(term)
       add_child_node(ng_xml.root, term)
