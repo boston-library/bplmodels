@@ -80,6 +80,10 @@ module Bplmodels
 
       t.local_other :path => 'identifier', :attributes => { :type => "local-other" }
 
+      t.local_accession :path => 'identifier', :attributes => { :type => "local-accession" }
+
+      t.physical_description(:path=>"physicalDescription")
+
 
 
       t.subject  do
@@ -133,9 +137,6 @@ module Bplmodels
             xml.internetMediaType {
               xml.text "image/jpeg"
             }
-          }
-
-          xml.physicalDescription {
             xml.digitalOrigin {
               xml.text "reformatted digital"
             }
@@ -205,23 +206,23 @@ module Bplmodels
     end
 
 
-    define_template :genre do |xml, value, value_uri, is_general|
+    define_template :genre do |xml, value, authority, value_uri, is_general|
 
       if is_general
-        xml.genre(:authority=>"gmgpc", :authorityURI=>"http://id.loc.gov/vocabulary/graphicMaterials", :valueURI=>value_uri, :displayLabel=>"general") {
+        xml.genre(:authority=>authority, :authorityURI=>"http://id.loc.gov/vocabulary/graphicMaterials", :valueURI=>value_uri, :displayLabel=>"general") {
           xml.text value
         }
       else
-        xml.genre(:authority=>"gmgpc", :authorityURI=>"http://id.loc.gov/vocabulary/graphicMaterials", :valueURI=>value_uri, :displayLabel=>"specific") {
+        xml.genre(:authority=>authority, :authorityURI=>"http://id.loc.gov/vocabulary/graphicMaterials", :valueURI=>value_uri, :displayLabel=>"specific") {
           xml.text value
         }
       end
 
     end
 
-    def insert_genre(value=nil, value_uri=nil, is_general=false)
+    def insert_genre(value=nil, value_uri=nil, authority=nil, is_general=false)
       if value != nil && value.length > 1
-        add_child_node(ng_xml.root, :genre, value, value_uri, is_general)
+        add_child_node(ng_xml.root, :genre, value, value_uri, authority, is_general)
       end
     end
 
@@ -289,8 +290,17 @@ module Bplmodels
     end
 
 
-    define_template :name do |xml, name, type, role|
-      if type != nil && type != "" && type.length > 1
+    define_template :name do |xml, name, type, authority, role|
+      if type != nil && type != "" && type.length > 1 && authority !=nil && authority.length > 1
+        xml.name(:type=>type, :authority=>authority) {
+          xml.role {
+            xml.roleTerm(:type=>"text", :authority=>"marcrelator")   {
+              xml.text role
+            }
+          }
+          xml.namePart(name)
+        }
+      elsif type != nil && type != "" && type.length > 1
         xml.name(:type=>type) {
           xml.role {
             xml.roleTerm(:type=>"text", :authority=>"marcrelator")   {
@@ -312,8 +322,8 @@ module Bplmodels
 
     end
 
-    def insert_name(name=nil, type=nil, role=nil)
-      add_child_node(ng_xml.root, :name, name, type, role)
+    def insert_name(name=nil, type=nil, authority=nil, role=nil)
+      add_child_node(ng_xml.root, :name, name, type, authority, role)
     end
 
     define_template :namePart do |xml, name|
@@ -342,7 +352,7 @@ module Bplmodels
     end
 
     def insert_namePartDate(index, date=nil)
-      add_child_node(self.find_by_terms(:name).slice(index.to_i), :namePart, date)
+      add_child_node(self.find_by_terms(:name).slice(index.to_i), :namePartDate, date)
     end
 
 
@@ -448,16 +458,30 @@ module Bplmodels
       self.find_by_terms(:date).slice(index.to_i).remove
     end
 
+    define_template :internet_media do |xml, value|
+      xml.internetMediaType(value)
+    end
+
+
+    def insert_internet_media(value=nil)
+      if(value != nil && value.length > 1 && value != "image/jpeg")
+        add_child_node(self.find_by_terms(:physical_description).slice(0), :internet_media, value)
+      end
+    end
+
+    def remove_value(index)
+      self.find_by_terms(:internet_media).slice(index.to_i).remove
+    end
+
+
     define_template :extent do |xml, extent|
-      xml.physicalDescription {
-        xml.extent(extent)
-      }
+      xml.extent(extent)
     end
 
 
     def insert_extent(extent=nil)
       if(extent != nil && extent.length > 1)
-        add_child_node(ng_xml.root, :extent, extent)
+        add_child_node(self.find_by_terms(:physical_description).slice(0), :extent, extent)
       end
     end
 
@@ -466,9 +490,15 @@ module Bplmodels
     end
 
     define_template :note do |xml, note, noteQualifier|
-      xml.note(:qualifier=>noteQualifier) {
-        xml.text note
-      }
+      if noteQualifier != nil && noteQualifier != ""
+        xml.note(:qualifier=>noteQualifier) {
+          xml.text note
+        }
+      else
+        xml.note(:qualifier=>"general") {
+          xml.text note
+        }
+      end
     end
 
 
@@ -510,12 +540,35 @@ module Bplmodels
           add_child_node(ng_xml.root, :subject_topic, topic, type, authority)
         end
       end
-
-
     end
 
     def remove_subject_topic(index)
       self.find_by_terms(:subject_topic).slice(index.to_i).remove
+    end
+
+    #FIXME: doesn't support multiple!
+    define_template :subject_name_part do |xml, name, type, authority, date|
+      if(date != nil)
+        xml.name(:type=>type, :authority=>authority) {
+          xml.namePart {
+            xml.text name
+          }
+        }
+      else
+        xml.name(:type=>type, :authority=>authority) {
+          xml.namePart {
+            xml.text name
+          }
+          xml.namePart(:type=>"date") {
+            xml.text name
+          }
+        }
+      end
+
+    end
+
+    def insert_subject_name_part(index, name=nil, type=nil, authority=nil, date=nil)
+      add_child_node(self.find_by_terms(:subject).slice(index.to_i), :subject_name_part, name, type, authority, date)
     end
 
     define_template :subject_geographic do |xml, geographic, authority|
@@ -616,14 +669,20 @@ module Bplmodels
     end
 
 
-    define_template :identifier do |xml, identifier, type|
-      xml.identifier(:type=>type) {
-        xml.text identifier
-      }
+    define_template :identifier do |xml, identifier, type, display_label|
+      if display_label == nil
+        xml.identifier(:type=>type) {
+          xml.text identifier
+        }
+      else
+        xml.identifier(:type=>type, :displayLabel=>display_label) {
+          xml.text identifier
+        }
+      end
     end
 
-    def insert_identifier(identifier=nil, type=nil)
-      add_child_node(ng_xml.root, :identifier, identifier, type)
+    def insert_identifier(identifier=nil, type=nil, display_label=nil)
+      add_child_node(ng_xml.root, :identifier, identifier, type, display_label)
     end
 
     def remove_identifier(index)

@@ -66,6 +66,7 @@ module Bplmodels
       doc = super(doc)
       doc['label_s'] = self.label.to_s
       doc['localotherid_s'] = self.descMetadata.local_other[0].to_s
+      doc['localaccessionid_s'] = self.descMetadata.local_accession[0].to_s
       doc
     end
 
