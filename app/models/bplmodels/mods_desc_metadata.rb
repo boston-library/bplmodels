@@ -294,7 +294,7 @@ module Bplmodels
       if type != nil && type.length > 1 && authority !=nil && authority.length > 1 && uri !=nil && uri.length > 1
         xml.name(:type=>type, :authority=>authority) {
           xml.role {
-            xml.roleTerm(:type=>"text", :authority=>"marcrelator", :authorityURI=>"http://id.loc.gov/vocabulary/graphicMaterials", :authorityURI=>uri)   {
+            xml.roleTerm(:type=>"text", :authority=>"marcrelator", :authorityURI=>"http://id.loc.gov/vocabulary/relators.html", :valueURI=>uri)   {
               xml.text role
             }
           }

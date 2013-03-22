@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    bplmodels (0.0.27)
+    bplmodels (0.0.29)
       rails (~> 3.2.7)
 
 GEM
