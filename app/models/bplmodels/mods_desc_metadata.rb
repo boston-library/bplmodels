@@ -266,7 +266,7 @@ module Bplmodels
           xml.title(main_title)
           xml.subtitle(subtitle)
         }
-      elsif usage != nil && nonSort!=nil && main_title != nil && supplied != nil && supplied.length == "x"
+      elsif usage != nil && nonSort!=nil && main_title != nil && supplied != nil && supplied.strip.downcase == "x"
         xml.titleInfo(:usage=>usage, :supplied=>"yes") {
           xml.nonSort(nonSort)
           xml.title(main_title)
@@ -276,7 +276,7 @@ module Bplmodels
           xml.nonSort(nonSort)
           xml.title(main_title)
         }
-      elsif usage != nil && main_title != nil && supplied != nil && supplied.length == "x"
+      elsif usage != nil && main_title != nil && supplied != nil && supplied.strip.downcase == "x"
         xml.titleInfo(:usage=>usage, :supplied=>"yes") {
           xml.title(main_title)
         }
