@@ -276,6 +276,10 @@ module Bplmodels
           xml.nonSort(nonSort)
           xml.title(main_title)
         }
+      elsif usage != nil && main_title != nil && supplied != nil && supplied.length == "x"
+        xml.titleInfo(:usage=>usage, :supplied=>"yes") {
+          xml.title(main_title)
+        }
       elsif usage != nil && main_title != nil
         xml.titleInfo(:usage=>usage) {
           xml.title(main_title)
