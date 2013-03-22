@@ -129,10 +129,6 @@ module Bplmodels
         xml.mods(MODS_PARAMS) {
           xml.parent.namespace = xml.parent.namespace_definitions.find{|ns|ns.prefix=="mods"}
 
-          xml.language {
-            xml.languageTerm(:authority=>"iso639-2b", :authorityURI=>"http://id.loc.gov/vocabulary/iso639-2", :valueURI=>"http://id.loc.gov/vocabulary/iso639-2/eng", :lang=>"eng")
-          }
-
           xml.physicalDescription {
             xml.internetMediaType {
               xml.text "image/jpeg"
@@ -147,6 +143,20 @@ module Bplmodels
         }
       end
       return builder.doc
+    end
+
+    define_template :language do |xml, value|
+      xml.language {
+        xml.languageTerm(:authority=>"iso639-2b", :authorityURI=>"http://id.loc.gov/vocabulary/iso639-2", :valueURI=>"http://id.loc.gov/vocabulary/iso639-2/eng", :lang=>"eng")
+      }
+    end
+
+    def insert_language(value=nil)
+      add_child_node(ng_xml.root, :language, value)
+    end
+
+    def remove_language(index)
+      self.find_by_terms(:language).slice(index.to_i).remove
     end
 
     define_template :rights do |xml, value, type|
@@ -249,12 +259,17 @@ module Bplmodels
       self.find_by_terms(:access_links).slice(index.to_i).remove
     end
 
-    define_template :title_info do |xml, nonSort, main_title, usage, subtitle, language, supplied, type, authority, authorityURI, valueURI|
+    define_template :title_info do |xml, nonSort, main_title, usage, supplied, subtitle, language, type, authority, authorityURI, valueURI|
       if nonSort!=nil && main_title!=nil && subtitle!=nil && language!=nil && supplied!=nil && type!=nil && usage!=nil && authority!=nil && authorityURI!=nil && valueURI!=nil
         xml.titleInfo(:language=>language, :supplied=>supplied, :type=>type, :usage=>usage, :authority=>authority, :authorityURI=>authorityURI, :valueURI=>valueURI) {
           xml.nonSort(nonSort)
           xml.title(main_title)
           xml.subtitle(subtitle)
+        }
+      elsif usage != nil && nonSort!=nil && main_title != nil && supplied != nil && supplied.length == "x"
+        xml.titleInfo(:usage=>usage, :supplied=>"yes") {
+          xml.nonSort(nonSort)
+          xml.title(main_title)
         }
       elsif usage != nil && nonSort!=nil && main_title != nil
         xml.titleInfo(:usage=>usage) {
@@ -278,8 +293,8 @@ module Bplmodels
       end
     end
 
-    def insert_title(nonSort=nil, main_title=nil, usage=nil, subtitle=nil, language=nil, supplied=nil, type=nil, authority=nil, authorityURI=nil, valueURI=nil)
-      add_child_node(ng_xml.root, :title_info, nonSort, main_title, usage, subtitle, language, supplied, type, authority, authorityURI, valueURI)
+    def insert_title(nonSort=nil, main_title=nil, usage=nil,  supplied=nil, subtitle=nil, language=nil, type=nil, authority=nil, authorityURI=nil, valueURI=nil)
+      add_child_node(ng_xml.root, :title_info, nonSort, main_title, usage, supplied, subtitle, language, type, authority, authorityURI, valueURI)
     end
 
     #image.descMetadata.find_by_terms(:name).slice(0).set_attribute("new", "true")
@@ -294,7 +309,7 @@ module Bplmodels
       if type != nil && type.length > 1 && authority !=nil && authority.length > 1 && uri !=nil && uri.length > 1
         xml.name(:type=>type, :authority=>authority) {
           xml.role {
-            xml.roleTerm(:type=>"text", :authority=>"marcrelator", :authorityURI=>"http://id.loc.gov/vocabulary/relators.html", :valueURI=>uri)   {
+            xml.roleTerm(:type=>"text", :authority=>"marcrelator", :authorityURI=>"http://id.loc.gov/vocabulary/relators", :valueURI=>uri)   {
               xml.text role
             }
           }
