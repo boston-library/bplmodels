@@ -292,9 +292,9 @@ module Bplmodels
 
     define_template :name do |xml, name, type, authority, role, uri|
       if type != nil && type.length > 1 && authority !=nil && authority.length > 1 && uri !=nil && uri.length > 1
-        xml.name(:type=>type, :authority=>authority, :authorityURI=>uri) {
+        xml.name(:type=>type, :authority=>authority) {
           xml.role {
-            xml.roleTerm(:type=>"text", :authority=>"marcrelator")   {
+            xml.roleTerm(:type=>"text", :authority=>"marcrelator", :authorityURI=>"http://id.loc.gov/vocabulary/graphicMaterials", :authorityURI=>uri)   {
               xml.text role
             }
           }
@@ -561,21 +561,22 @@ module Bplmodels
 
     #FIXME: doesn't support multiple!
     define_template :subject_name do |xml, name, type, authority, date|
-      if(date != nil)
-        xml.subject {
-          xml.name(:type=>type, :authority=>authority) {
-            xml.namePart {
-              xml.text name
-            }
-          }
-        }
-      else
+      if date != nil && date.length > 1
         xml.subject {
           xml.name(:type=>type, :authority=>authority) {
             xml.namePart {
               xml.text name
             }
             xml.namePart(:type=>"date") {
+              xml.text date
+            }
+          }
+        }
+
+      else
+        xml.subject {
+          xml.name(:type=>type, :authority=>authority) {
+            xml.namePart {
               xml.text name
             }
           }
