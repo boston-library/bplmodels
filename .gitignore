@@ -56,3 +56,4 @@ ehthumbs.db
 /jetty/*
 /solr_conf/*
 /fedora_conf/*
+pkg/*
