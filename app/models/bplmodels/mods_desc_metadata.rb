@@ -719,7 +719,9 @@ module Bplmodels
     end
 
     def insert_identifier(identifier=nil, type=nil, display_label=nil)
-      add_child_node(ng_xml.root, :identifier, identifier, type, display_label)
+      if identifier.length > 0
+        add_child_node(ng_xml.root, :identifier, identifier, type, display_label)
+      end
     end
 
     def remove_identifier(index)
