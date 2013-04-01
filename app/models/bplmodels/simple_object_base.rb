@@ -4,7 +4,6 @@ module Bplmodels
 
     include Hydra::ModelMixins::CommonMetadata
     include Hydra::ModelMethods
-    include ActiveFedora::Relationships
 
     belongs_to :collection, :class_name => 'Bplmodels::Collection', :property => :is_member_of_collection
     belongs_to :organization, :class_name => 'Bplmodels::Collection', :property => :is_member_of_collection
@@ -64,12 +63,12 @@ module Bplmodels
 
     def to_solr(doc = {} )
       doc = super(doc)
-      doc['label_s'] = self.label.to_s
-      doc['titleInfo_primary_t'] = self.label.to_s
+      doc['label_ssim'] = self.label.to_s
+      doc['titleInfo_primary_tesim'] = self.label.to_s
 
 
-      doc['localotherid_s'] = self.descMetadata.local_other[0].to_s
-      doc['localaccessionid_s'] = self.descMetadata.local_accession[0].to_s
+      doc['localotherid_ssim'] = self.descMetadata.local_other[0].to_s
+      doc['localaccessionid_ssim'] = self.descMetadata.local_accession[0].to_s
       doc
     end
 

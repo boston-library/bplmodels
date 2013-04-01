@@ -3,7 +3,6 @@ module Bplmodels
     include Hydra::ModelMixins::CommonMetadata
     include Hydra::ModelMethods
     include Hydra::ModelMixins::RightsMetadata
-    include ActiveFedora::Relationships
 
     belongs_to :object, :class_name => "Bplmodels::ObjectBase", :property => :is_image_of
 

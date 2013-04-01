@@ -2,7 +2,6 @@ module Bplmodels
   class RelationBase < ActiveFedora::Base
     include Hydra::ModelMixins::CommonMetadata
     include Hydra::ModelMethods
-    include ActiveFedora::Relationships
 
     # Uses the Hydra Rights Metadata Schema for tracking access permissions & copyright
     has_metadata :name => "rightsMetadata", :type => Hydra::Datastream::RightsMetadata
