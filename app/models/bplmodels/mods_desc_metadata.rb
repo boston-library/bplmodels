@@ -390,7 +390,7 @@ module Bplmodels
 
     define_template :date do |xml, dateStarted, dateEnding, dateQualifier, dateOther|
 
-      if dateStarted != nil && dateEnding != nil && dateQualifier!= nil
+      if dateStarted != nil && dateStarted.length > 0 && dateEnding != nil && dateEnding.length > 0 && dateQualifier!= nil && dateQualifier.length > 0
         xml.originInfo {
           xml.dateCreated(:encoding=>"w3cdtf", :keyDate=>"yes", :point=>"start", :qualifier=>dateQualifier) {
             xml.text dateStarted
@@ -399,7 +399,7 @@ module Bplmodels
             xml.text dateEnding
           }
         }
-      elsif dateStarted != nil && dateEnding != nil
+      elsif dateStarted != nil && dateStarted.length > 0 && dateEnding != nil && dateEnding.length > 0
         xml.originInfo {
           xml.dateCreated(:encoding=>"w3cdtf", :keyDate=>"yes", :point=>"start") {
             xml.text dateStarted
@@ -408,19 +408,19 @@ module Bplmodels
             xml.text dateEnding
           }
         }
-      elsif dateStarted != nil && dateQualifier!= nil
+      elsif dateStarted != nil && dateStarted.length > 0 && dateQualifier!= nil && dateQualifier.length > 0
         xml.originInfo {
           xml.dateCreated(:encoding=>"w3cdtf", :keyDate=>"yes", :point=>"start", :qualifier=>dateQualifier) {
             xml.text dateStarted
           }
         }
-      elsif dateStarted != nil
+      elsif dateStarted != nil && dateStarted.length > 0
         xml.originInfo {
           xml.dateCreated(:encoding=>"w3cdtf", :keyDate=>"yes") {
             xml.text dateStarted
           }
         }
-      elsif dateOther != nil
+      elsif dateOther != nil && dateOther.length > 0
         xml.originInfo {
           xml.dateOther {
             xml.text dateOther
@@ -434,29 +434,29 @@ module Bplmodels
 
     define_template :date_partial do |xml, dateStarted, dateEnding, dateQualifier, dateOther|
 
-      if dateStarted != nil && dateEnding != nil && dateQualifier!= nil
+      if dateStarted != nil && dateStarted.length > 0 && dateEnding != nil && dateEnding.length > 0 && dateQualifier!= nil && dateQualifier.length > 0
           xml.dateCreated(:encoding=>"w3cdtf", :keyDate=>"yes", :point=>"start", :qualifier=>dateQualifier) {
             xml.text dateStarted
           }
           xml.dateCreated(:encoding=>"w3cdtf", :point=>"end", :qualifier=>dateQualifier) {
             xml.text dateEnding
           }
-      elsif dateStarted != nil && dateEnding != nil
+      elsif dateStarted != nil && dateStarted.length > 0 && dateEnding != nil && dateEnding.length > 0
           xml.dateCreated(:encoding=>"w3cdtf", :keyDate=>"yes", :point=>"start") {
             xml.text dateStarted
           }
           xml.dateCreated(:encoding=>"w3cdtf", :point=>"end") {
             xml.text dateEnding
           }
-      elsif dateStarted != nil && dateQualifier!= nil
+      elsif dateStarted != nil && dateStarted.length > 0 && dateQualifier!= nil && dateQualifier.length > 0
           xml.dateCreated(:encoding=>"w3cdtf", :keyDate=>"yes", :point=>"start", :qualifier=>dateQualifier) {
             xml.text dateStarted
           }
-      elsif dateStarted != nil
+      elsif dateStarted != nil && dateStarted.length > 0
           xml.dateCreated(:encoding=>"w3cdtf", :keyDate=>"yes") {
             xml.text dateStarted
           }
-      elsif dateOther != nil
+      elsif dateOther != nil && dateOther.length > 0
           xml.dateOther {
             xml.text dateOther
           }

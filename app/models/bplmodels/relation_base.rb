@@ -26,7 +26,7 @@ module Bplmodels
 
     def to_solr(doc = {} )
       doc = super(doc)
-      doc['label_s'] = self.label
+      doc['label_ssim'] = self.label
       doc
     end
 
