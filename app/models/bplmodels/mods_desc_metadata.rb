@@ -21,7 +21,7 @@ module Bplmodels
       t.originInfo  do
         t.dateOther
       end
-      t.abstract
+      t.abstract(:path=>"abstract", :index_as=>[:searchable, :displayable])
 
       t.title_info(:path=>"titleInfo") {
         t.usage(:path=>{:attribute=>"usage"})
@@ -52,7 +52,7 @@ module Bplmodels
 
       t.type_of_resource(:path=>"typeOfResource")
 
-      t.genre(:path=>"genre", :attributes=>{ :authority => "gmgpc"})
+      t.genre(:path=>"genre", :attributes=>{ :authority => "gmgpc", :displayLabel => "general"}, :index_as=>[:searchable, :displayable, :facetable])
 
       t.origin_info(:path=>"originInfo") {
         t.publisher(:type=>:string)

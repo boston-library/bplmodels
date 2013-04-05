@@ -67,8 +67,12 @@ module Bplmodels
       doc['titleInfo_primary_tesim'] = self.label.to_s
 
 
-      doc['localotherid_ssim'] = self.descMetadata.local_other[0].to_s
-      doc['localaccessionid_ssim'] = self.descMetadata.local_accession[0].to_s
+      doc['local_other_id_ssim'] = self.descMetadata.local_other[0].to_s
+      doc['local_accession_id_ssim'] = self.descMetadata.local_accession[0].to_s
+      if self.collection
+        doc['collection_name_ssim'] = self.collection.label.to_s
+      end
+
       doc
     end
 
