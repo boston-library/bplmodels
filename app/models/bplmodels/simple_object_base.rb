@@ -64,7 +64,7 @@ module Bplmodels
     def to_solr(doc = {} )
       doc = super(doc)
       doc['label_ssim'] = self.label.to_s
-      doc['titleInfo_primary_tesim'] = self.label.to_s
+
 
 
       doc['local_other_id_ssim'] = self.descMetadata.local_other[0].to_s

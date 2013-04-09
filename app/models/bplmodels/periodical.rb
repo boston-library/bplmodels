@@ -4,7 +4,7 @@ module Bplmodels
 
     belongs_to :institution, :class_name => 'Bplmodels::Institution', :property => :is_member_of
 
-    has_many :image_files, :class => "Bplmodels::ImageFile", :property=> :has_image
+    has_many :image_files, :class_name => "Bplmodels::ImageFile", :property=> :has_image
 
 
     #A collection can have another collection as a member, or an image

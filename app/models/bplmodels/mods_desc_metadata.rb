@@ -23,9 +23,9 @@ module Bplmodels
       end
       t.abstract(:path=>"abstract", :index_as=>[:searchable, :displayable])
 
-      t.title_info(:path=>"titleInfo") {
+      t.title_info(:path=>"titleInfo", :index_as=>[:searchable, :displayable]) {
         t.usage(:path=>{:attribute=>"usage"})
-        t.nonSort(:path=>"nonSort")
+        t.nonSort(:path=>"nonSort", :index_as=>[:searchable, :displayable])
         t.main_title(:path=>"title", :label=>"title")
         t.language(:index_as=>[:facetable],:path=>{:attribute=>"lang"})
         t.supplied(:path=>{:attribute=>"supplied"})
@@ -52,7 +52,9 @@ module Bplmodels
 
       t.type_of_resource(:path=>"typeOfResource")
 
-      t.genre(:path=>"genre", :attributes=>{ :authority => "gmgpc", :displayLabel => "general"}, :index_as=>[:searchable, :displayable, :facetable])
+      t.genre_basic(:path=>"genre", :attributes=>{ :authority => "gmgpc", :displayLabel => "general"}, :index_as=>[:facetable])
+
+      t.genre_specific(:path=>"genre", :attributes=>{:displayLabel => "specific"}, :index_as=>[:facetable])
 
       t.origin_info(:path=>"originInfo") {
         t.publisher(:type=>:string)
