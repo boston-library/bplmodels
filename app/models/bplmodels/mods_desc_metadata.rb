@@ -52,9 +52,10 @@ module Bplmodels
 
       t.type_of_resource(:path=>"typeOfResource")
 
-      t.genre_basic(:path=>"genre", :attributes=>{ :authority => "gmgpc", :displayLabel => "general"}, :index_as=>[:facetable])
+      indexer = Solrizer::Descriptor.new(:string, :indexed, :stored)
+      t.genre_basic(:path=>"genre", :attributes=>{ :authority => "gmgpc", :displayLabel => "general"}, :index_as=>[indexer])
 
-      t.genre_specific(:path=>"genre", :attributes=>{:displayLabel => "specific"}, :index_as=>[:facetable])
+      t.genre_specific(:path=>"genre", :attributes=>{:displayLabel => "specific"}, :index_as=>[indexer])
 
       t.origin_info(:path=>"originInfo") {
         t.publisher(:type=>:string)
