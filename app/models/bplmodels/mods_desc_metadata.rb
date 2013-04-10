@@ -52,7 +52,7 @@ module Bplmodels
 
       t.type_of_resource(:path=>"typeOfResource")
 
-      indexer = Solrizer::Descriptor.new(:string, :indexed, :stored)
+      indexer = Solrizer::Descriptor.new(:string, :indexed, :stored, :searchable)
       t.genre_basic(:path=>"genre", :attributes=>{ :authority => "gmgpc", :displayLabel => "general"}, :index_as=>[indexer])
 
       t.genre_specific(:path=>"genre", :attributes=>{:displayLabel => "specific"}, :index_as=>[indexer])
