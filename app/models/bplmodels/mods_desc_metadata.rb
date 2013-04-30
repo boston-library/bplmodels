@@ -23,7 +23,7 @@ module Bplmodels
       end
       t.abstract(:path=>"abstract", :index_as=>[:searchable, :displayable])
 
-      t.title_info(:path=>"titleInfo", :index_as=>[:searchable, :displayable]) {
+      t.title_info(:path=>"titleInfo") {
         t.usage(:path=>{:attribute=>"usage"})
         t.nonSort(:path=>"nonSort", :index_as=>[:searchable, :displayable])
         t.main_title(:path=>"title", :label=>"title")
