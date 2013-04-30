@@ -1,3 +1,3 @@
 module Bplmodels
-  VERSION = "0.0.42"
+  VERSION = "0.0.44"
 end

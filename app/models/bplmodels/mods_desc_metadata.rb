@@ -53,9 +53,10 @@ module Bplmodels
       t.type_of_resource(:path=>"typeOfResource")
 
       indexer = Solrizer::Descriptor.new(:string, :indexed, :stored, :searchable)
-      t.genre_basic(:path=>"genre", :attributes=>{ :authority => "gmgpc", :displayLabel => "general"}, :index_as=>[indexer])
+      indexer_multiple = Solrizer::Descriptor.new(:string, :indexed, :stored, :searchable, :multivalued)
+      t.genre_basic(:path=>"genre", :attributes=>{ :authority => "gmgpc", :displayLabel => "general"}, :index_as=>[indexer_multiple])
 
-      t.genre_specific(:path=>"genre", :attributes=>{:displayLabel => "specific"}, :index_as=>[indexer])
+      t.genre_specific(:path=>"genre", :attributes=>{:displayLabel => "specific"}, :index_as=>[indexer_multiple])
 
       t.origin_info(:path=>"originInfo") {
         t.publisher(:type=>:string)
@@ -84,14 +85,42 @@ module Bplmodels
       t.local_other :path => 'identifier', :attributes => { :type => "local-other" }
 
       t.local_accession :path => 'identifier', :attributes => { :type => "local-accession" }
+      t.identifier_uri :path => 'identifier', :attributes => { :type => "uri" }
 
-      t.physical_description(:path=>"physicalDescription")
+      t.physical_description(:path=>"physicalDescription") {
+        t.internet_media_type(:path=>"internetMediaType")
+        t.digital_origin(:path=>"digitalOrigin")
+        t.extent(:path=>"extent")
+      }
 
-
+      t.note(:path=>"note", :index_as=>[indexer])
 
       t.subject  do
         t.topic
+        t.geographic
+        t.personal_name(:path=>'name', :attributes=>{:type => "personal"}) {
+          t.name_part(:path=>"namePart")
+          t.date(:path=>"namePart", :attributes=>{:type=>"date"})
+        }
+        t.corporate_name(:path=>'name', :attributes=>{:type => "corporate"}) {
+          t.name_part(:path=>"namePart")
+          t.date(:path=>"namePart", :attributes=>{:type=>"date"})
+        }
+
       end
+
+
+      t.related_item(:path=>"relatedItem") {
+        t.type(:path=>{:attribute=>"type"})
+        t.title_info(:path=>"titleInfo") {
+          t.title
+        }
+        t.identifier
+
+      }
+
+      t.use_and_reproduction(:path=>"accessCondition", :attributes=>{:type=>"use and reproduction"}, :index_as=>[indexer_multiple])
+
 
       t.role {
         t.text(:path=>"roleTerm",:attributes=>{:type=>"text"})

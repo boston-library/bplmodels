@@ -73,6 +73,63 @@ module Bplmodels
         doc['collection_name_ssim'] = self.collection.label.to_s
       end
 
+      #doc['titleInfo_primary_ssim'] = self.descMetadata.title_info(0).main_title.to_s
+      #doc['name_personal_ssim'] = self.descMetadata.name(0).to_s
+      if self.descMetadata.name(0).type[0] == "personal"
+        doc['name_personal_ssim'] =  self.descMetadata.name(0).namePart[0]
+        doc['name_personal_role_ssim'] =  self.descMetadata.name(0).role[0]
+      elsif self.descMetadata.name(0).type[0] == "corporate"
+        doc['name_corporate_ssim'] =  self.descMetadata.name(0).namePart[0]
+        doc['name_corporate_role_ssim'] =  self.descMetadata.name(0).role[0]
+      end
+
+      doc['typeOfResource_ssim'] = self.descMetadata.type_of_resource[0]
+
+      doc['extent_ssim']  = self.descMetadata.physical_description(0).extent[0]
+      doc['digitalOrigin_ssim']  = self.descMetadata.physical_description(0).digital_origin[0]
+      doc['internetMediaType_ssim']  = self.descMetadata.physical_description(0).internet_media_type[0]
+
+      doc['physicalLocation_ssim']  = self.descMetadata.item_location(0).physical_location[0]
+      doc['subLocation_ssim']  = self.descMetadata.item_location(0).physical_location(0).holding_simple(0).copy_information(0).sub_location[0]
+
+      doc['identifier_uri_ssim']  =  self.descMetadata.identifier_uri[0]
+      doc['identifier_local-other_ssim']  = self.descMetadata.local_other[0]
+
+      counter = 0
+      0.upto self.descMetadata.subject.length-1 do |index|
+        if self.descMetadata.subject(index).topic[0] != nil
+          doc['subject_topic_' + counter.to_s + '_ssim'] = self.descMetadata.subject(index).topic[0]
+          counter = counter + 1
+        end
+      end
+
+      doc['subject_topic_ssim'] = self.descMetadata.subject.topic
+
+      counter = 0
+      0.upto self.descMetadata.subject.length-1 do |index|
+        if self.descMetadata.subject(index).geographic[0] != nil
+          doc['subject_geographic_' + counter.to_s + '_ssim'] = self.descMetadata.subject(index).geographic[0]
+          counter = counter + 1
+        end
+      end
+
+      counter = 0
+      0.upto self.descMetadata.subject.length-1 do |index|
+        if self.descMetadata.subject(index).personal_name[0] != nil
+          doc['subject_name_personal_' + counter.to_s + '_ssim'] = self.descMetadata.subject(index).personal_name(0).name_part[0]
+          counter = counter + 1
+        end
+      end
+
+      counter = 0
+      0.upto self.descMetadata.subject.length-1 do |index|
+        if self.descMetadata.subject(index).corporate_name[0] != nil
+          doc['subject_name_corporate_' + counter.to_s + '_ssim'] = self.descMetadata.subject(index).corporate_name(0).name_part[0]
+          counter = counter + 1
+        end
+      end
+
+
       doc
     end
 

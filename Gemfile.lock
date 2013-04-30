@@ -1,8 +1,9 @@
 PATH
   remote: .
   specs:
-    bplmodels (0.0.41)
-      rails (~> 3.2.7)
+    bplmodels (0.0.43)
+      mods
+      rails (~> 3.2.13)
 
 GEM
   remote: http://rubygems.org/
@@ -39,6 +40,7 @@ GEM
     erubis (2.7.0)
     hike (1.2.1)
     i18n (0.6.1)
+    iso-639 (0.1.0)
     journey (1.0.4)
     jquery-rails (2.2.1)
       railties (>= 3.0, < 5.0)
@@ -48,8 +50,17 @@ GEM
       i18n (>= 0.4.0)
       mime-types (~> 1.16)
       treetop (~> 1.4.8)
-    mime-types (1.22)
+    mime-types (1.23)
+    mods (0.0.22)
+      iso-639
+      nokogiri
+      nom-xml
     multi_json (1.7.1)
+    nokogiri (1.5.9)
+    nom-xml (0.5.1)
+      activesupport
+      i18n
+      nokogiri
     polyglot (0.3.3)
     rack (1.4.5)
     rack-cache (1.2)
