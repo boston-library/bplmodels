@@ -109,7 +109,7 @@ module Bplmodels
         doc['mods_title_info_ssm'] =  self.descMetadata.title_info(0).main_title[0]
       end
 
-      doc['all_text_timv'] = self.descMetadata.abstract
+      doc['all_text_timv'] = self.descMetadata.abstract + " " + self.label + " " + self.descMetadata.item_location(0).physical_location[0] + " " + self.rels_ext.model.class.to_s.gsub(/\A[\w]*::/,'') 
 
       doc
     end
