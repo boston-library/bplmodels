@@ -1,3 +1,3 @@
-module Bplmodels
-  VERSION = "0.0.48"
+module Bplmodel
+  VERSION = "0.0.49"
 end
