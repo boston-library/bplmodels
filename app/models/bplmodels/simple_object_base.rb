@@ -103,13 +103,17 @@ module Bplmodels
       doc['subject_name_corporate_ssim'] =   self.descMetadata.subject.corporate_name.name_part
 
       doc['active_fedora_model_suffix_ssi'] = self.rels_ext.model.class.to_s.gsub(/\A[\w]*::/,'')
+
+      main_title = ''
       if self.descMetadata.title_info(0).nonSort[0] != nil
         doc['mods_title_info_ssm'] =  self.descMetadata.title_info(0).nonSort[0] + ' ' + self.descMetadata.title_info(0).main_title[0]
+        main_title = self.descMetadata.title_info(0).nonSort[0] + ' ' + self.descMetadata.title_info(0).main_title[0]
       else
         doc['mods_title_info_ssm'] =  self.descMetadata.title_info(0).main_title[0]
+        main_title = self.descMetadata.title_info(0).main_title[0]
       end
 
-      doc['all_text_timv'] = self.descMetadata.abstract + " " + self.label + " " + self.descMetadata.item_location(0).physical_location[0] + " " + self.rels_ext.model.class.to_s.gsub(/\A[\w]*::/,'') 
+      doc['all_text_timv'] = self.descMetadata.abstract + " " + main_title + " " + self.descMetadata.item_location(0).physical_location[0] + " " + self.rels_ext.model.class.to_s.gsub(/\A[\w]*::/,'') 
 
       doc
     end
