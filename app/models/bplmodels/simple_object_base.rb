@@ -104,9 +104,9 @@ module Bplmodels
 
       doc['active_fedora_model_suffix_ssi'] = self.rels_ext.model.class.to_s.gsub(/\A[\w]*::/,'')
       if self.descMetadata.title_info(0).nonSort[0] != nil
-        doc['title_info_ssm'] =  self.descMetadata.title_info(0).nonSort[0] + ' ' + self.descMetadata.title_info(0).main_title[0]
+        doc['mods_title_info_ssm'] =  self.descMetadata.title_info(0).nonSort[0] + ' ' + self.descMetadata.title_info(0).main_title[0]
       else
-        doc['title_info_ssm'] =  self.descMetadata.title_info(0).main_title[0]
+        doc['mods_title_info_ssm'] =  self.descMetadata.title_info(0).main_title[0]
       end
 
       doc['all_text_timv'] = self.descMetadata.abstract
