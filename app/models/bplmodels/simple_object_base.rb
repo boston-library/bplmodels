@@ -113,7 +113,7 @@ module Bplmodels
         main_title = self.descMetadata.title_info(0).main_title[0]
       end
 
-      doc['all_text_timv'] = self.descMetadata.abstract + " " + main_title + " " + self.descMetadata.item_location(0).physical_location[0] + " " + self.rels_ext.model.class.to_s.gsub(/\A[\w]*::/,'') 
+      doc['all_text_timv'] = [self.descMetadata.abstract, main_title, self.rels_ext.model.class.to_s.gsub(/\A[\w]*::/,''),self.descMetadata.item_location(0).physical_location[0]]
 
       doc
     end
