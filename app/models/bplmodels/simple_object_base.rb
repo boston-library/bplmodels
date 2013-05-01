@@ -65,8 +65,6 @@ module Bplmodels
       doc = super(doc)
       doc['label_ssim'] = self.label.to_s
 
-
-
       doc['local_other_id_ssim'] = self.descMetadata.local_other[0].to_s
       doc['local_accession_id_ssim'] = self.descMetadata.local_accession[0].to_s
       if self.collection
@@ -111,7 +109,7 @@ module Bplmodels
         doc['title_info_ssm'] =  self.descMetadata.title_info(0).main_title[0]
       end
 
-
+      doc['all_text_timv'] = self.descMetadata.abstract
 
       doc
     end
