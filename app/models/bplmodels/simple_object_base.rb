@@ -115,6 +115,25 @@ module Bplmodels
 
       doc['all_text_timv'] = [self.descMetadata.abstract, main_title, self.rels_ext.model.class.to_s.gsub(/\A[\w]*::/,''),self.descMetadata.item_location(0).physical_location[0]]
 
+      doc['testing_tei'] = "test_tei"
+      doc['testing_teim'] = ["test_teim"]
+      doc['testing_tes'] = "test_tes"
+      doc['testing_tesm'] = ["testing_tesm"]
+      doc['testing_tesi'] = "testing_tesi"
+      doc['testing_tesim'] = ["testing_tesim"]
+      doc['testing_si'] = "testing_si"
+      doc['testing_sim'] = ["testing_sim"]
+      doc['testing_ss'] = "testing_ss"
+      doc['testing_ssm'] = ["testing_ssm"]
+      doc['testing_ssi'] = "testing_ssi"
+      doc['testing_ssim'] = ["testing_ssim"]
+      doc['testing_ssort'] = "testing_ssort"
+
+      doc['testing_teiv'] = "testing_teiv"
+      doc['testing_teimv'] = ["testing_teimv"]
+      doc['testing_tesiv'] = "testing_tesiv"
+      doc['testing_tesimv'] = ["testing_tesimv"]
+
       doc
     end
 
