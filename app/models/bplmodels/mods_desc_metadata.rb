@@ -442,7 +442,7 @@ module Bplmodels
         }
       elsif dateStarted != nil && dateStarted.length > 0 && dateQualifier!= nil && dateQualifier.length > 0
         xml.originInfo {
-          xml.dateCreated(:encoding=>"w3cdtf", :keyDate=>"yes", :point=>"start", :qualifier=>dateQualifier) {
+          xml.dateCreated(:encoding=>"w3cdtf", :keyDate=>"yes", :qualifier=>dateQualifier) {
             xml.text dateStarted
           }
         }
