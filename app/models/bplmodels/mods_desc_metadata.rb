@@ -702,7 +702,7 @@ module Bplmodels
     end
 
     def insert_related_item(value=nil, qualifier=nil)
-      add_child_node(ng_xml.root, :host, value, qualifier)
+      add_child_node(ng_xml.root, :related_item, value, qualifier)
     end
 
     def remove_related_item(index)
