@@ -5,9 +5,6 @@ module Bplmodels
     include Hydra::ModelMixins::CommonMetadata
     include Hydra::ModelMethods
 
-    belongs_to :collection, :class_name => 'Bplmodels::Collection', :property => :is_member_of_collection
-    has_and_belongs_to_many :images, :class => "Bplmodels::ImageFile", :property=> :has_image
-
     has_metadata :name => "descMetadata", :type => ModsDescMetadata
     has_metadata :name => "admin", :type => AdminDatastream
 

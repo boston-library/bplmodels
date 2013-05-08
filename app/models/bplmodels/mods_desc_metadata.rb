@@ -17,11 +17,15 @@ module Bplmodels
     # OM terminology.
 
     set_terminology do |t|
+      indexer = Solrizer::Descriptor.new(:string, :indexed, :stored, :searchable)
+      indexer_single = Solrizer::Descriptor.new(:text, :indexed, :stored, :searchable)
+      indexer_multiple = Solrizer::Descriptor.new(:text, :indexed, :stored, :searchable, :multivalued)
+
       t.root :path => 'mods', :xmlns => MODS_NS
       t.originInfo  do
         t.dateOther
       end
-      t.abstract(:path=>"abstract", :index_as=>[:searchable, :displayable])
+      t.abstract(:path=>"abstract", :index_as=>[indexer_single])
 
       t.title_info(:path=>"titleInfo") {
         t.usage(:path=>{:attribute=>"usage"})
@@ -52,8 +56,7 @@ module Bplmodels
 
       t.type_of_resource(:path=>"typeOfResource")
 
-      indexer = Solrizer::Descriptor.new(:string, :indexed, :stored, :searchable)
-      indexer_multiple = Solrizer::Descriptor.new(:string, :indexed, :stored, :searchable, :multivalued)
+
       t.genre_basic(:path=>"genre", :attributes=>{ :authority => "gmgpc", :displayLabel => "general"}, :index_as=>[indexer_multiple])
 
       t.genre_specific(:path=>"genre", :attributes=>{:displayLabel => "specific"}, :index_as=>[indexer_multiple])
@@ -93,7 +96,7 @@ module Bplmodels
         t.extent(:path=>"extent")
       }
 
-      t.note(:path=>"note", :index_as=>[indexer])
+      t.note(:path=>"note", :index_as=>[indexer_single])
 
       t.subject  do
         t.topic
@@ -119,7 +122,7 @@ module Bplmodels
 
       }
 
-      t.use_and_reproduction(:path=>"accessCondition", :attributes=>{:type=>"use and reproduction"}, :index_as=>[indexer_multiple])
+      t.use_and_reproduction(:path=>"accessCondition", :attributes=>{:type=>"use and reproduction"})
 
 
       t.role {

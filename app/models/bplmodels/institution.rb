@@ -1,7 +1,7 @@
 module Bplmodels
   class Institution < Bplmodels::RelationBase
 
-    has_many :collections, :class_name=> "Bplmodels::Collection", :property=> :has_member
+    has_many :collections, :class_name=> "Bplmodels::Collection", :property=> :is_member_of
 
 
     #A collection can have another collection as a member, or an image
