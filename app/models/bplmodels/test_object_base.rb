@@ -9,7 +9,7 @@ module Bplmodels
     belongs_to :organization, :class_name => 'Bplmodels::Collection', :property => :is_member_of_collection
     has_and_belongs_to_many :members, :class_name=> "Bplmodels::Collection", :property=> :hasSubset
 
-    #has_metadata :name => "descMetadata", :type => NomTerminology
+    has_metadata :name => "descMetadata", :type => ModsDescMetadataTest
     has_metadata :name => "admin", :type => AdminDatastream
 
     # Uses the Hydra Rights Metadata Schema for tracking access permissions & copyright
@@ -47,14 +47,6 @@ module Bplmodels
     def to_solr(doc = {} )
       doc = super(doc)
       doc['label_ssim'] = self.label.to_s
-
-
-
-      doc['local_other_id_ssim'] = self.descMetadata.local_other[0].to_s
-      doc['local_accession_id_ssim'] = self.descMetadata.local_accession[0].to_s
-      if self.collection
-        doc['collection_name_ssim'] = self.collection.label.to_s
-      end
 
       doc
     end

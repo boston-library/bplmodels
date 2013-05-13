@@ -1,3 +1,5 @@
+require 'mods'
+
 module Bplmodels
   class ModsDescMetadata < ActiveFedora::NokogiriDatastream
     #include Hydra::Datastream::CommonModsIndexMethods
@@ -25,7 +27,31 @@ module Bplmodels
       t.originInfo  do
         t.dateOther
       end
-      t.abstract(:path=>"abstract", :index_as=>[indexer_single])
+      #t.abstract(:path=>"abstract", :index_as=>[indexer_single])
+
+      # ABSTRACT -------------------------------------------------------------------------------
+      t.abstract(:path=>"mods/oxns:abstract") {
+        t.displayLabel :path => '@displayLabel', :accessor => lambda { |a| a.text }
+        t.type_at :path=>{:attribute=>"type"}
+        ::Mods::LANG_ATTRIBS.each { |attr_name|
+          t.send attr_name, :path =>{:attribute=>"#{attr_name}"}
+        }
+      }
+
+      # GENRE ----------------------------------------------------------------------------------
+      t.genre(:path => 'mods/oxns:genre') {
+        t.displayLabel :path => {:attribute=>'displayLabel'}
+        t.type_at :path=>{:attribute=>"type"}
+        t.usage :path=>{:attribute=>'@usage'}
+        ::Mods::AUTHORITY_ATTRIBS.each { |attr_name|
+          t.send attr_name, :path =>{:attribute=>"#{attr_name}"}
+        }
+        ::Mods::LANG_ATTRIBS.each { |attr_name|
+          t.send attr_name, :path =>{:attribute=>"#{attr_name}"}
+        }
+      }
+
+
 
       t.title_info(:path=>"titleInfo") {
         t.usage(:path=>{:attribute=>"usage"})
@@ -57,9 +83,9 @@ module Bplmodels
       t.type_of_resource(:path=>"typeOfResource")
 
 
-      t.genre_basic(:path=>"genre", :attributes=>{ :authority => "gmgpc", :displayLabel => "general"}, :index_as=>[indexer_multiple])
+      t.genre_basic(:path=>"genre", :attributes=>{ :authority => "gmgpc", :displayLabel => "general"})
 
-      t.genre_specific(:path=>"genre", :attributes=>{:displayLabel => "specific"}, :index_as=>[indexer_multiple])
+      t.genre_specific(:path=>"genre", :attributes=>{:displayLabel => "specific"})
 
       t.origin_info(:path=>"originInfo") {
         t.publisher(:type=>:string)
@@ -96,7 +122,7 @@ module Bplmodels
         t.extent(:path=>"extent")
       }
 
-      t.note(:path=>"note", :index_as=>[indexer_single])
+      t.note(:path=>"note")
 
       t.subject  do
         t.topic

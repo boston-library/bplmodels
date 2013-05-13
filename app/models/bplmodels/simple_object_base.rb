@@ -68,10 +68,22 @@ module Bplmodels
     def to_solr(doc = {} )
       doc = super(doc)
       #doc['has_model_ssim'] = [doc['has_model_ssim'][0], 'info:fedora/afmodel:Bplmodels_SimpleObjectBase']
+
+
       doc['label_ssim'] = self.label.to_s
 
-      doc['identifier_local-other_ssim'] = self.descMetadata.local_other
+      doc['abstract_tsi'] = self.descMetadata.abstract
+
+      doc['genre_basic_tsim'] = self.descMetadata.genre_basic
+      doc['genre_specific_tsim'] = self.descMetadata.genre_specific
+
+      doc['genre_basic_ssim'] = self.descMetadata.genre_basic
+      doc['genre_specific_ssim'] = self.descMetadata.genre_specific
+
+      doc['identifier_local_other_ssim'] = self.descMetadata.local_other
+
       doc['identifier_ark_ssi'] = ''
+
       doc['local_accession_id_ssim'] = self.descMetadata.local_accession[0].to_s
       if self.collection
         doc['collection_name_ssim'] = self.collection.label.to_s
@@ -93,28 +105,32 @@ module Bplmodels
 
       doc['extent_tsi']  = self.descMetadata.physical_description(0).extent[0]
       doc['digital_origin_ssi']  = self.descMetadata.physical_description(0).digital_origin[0]
-      doc['internet_media_type_ssim']  = self.descMetadata.physical_description(0).internet_media_type[0]
+      doc['internet_media_type_ssim']  = self.descMetadata.physical_description(0).internet_media_type
 
       doc['physical_location_ssim']  = self.descMetadata.item_location(0).physical_location
+      doc['physical_location_tsim']  = self.descMetadata.item_location(0).physical_location
+
       doc['sub_location_ssim']  = self.descMetadata.item_location(0).physical_location(0).holding_simple(0).copy_information(0).sub_location
-
-
-      doc['identifier_local-other_ssim']  = self.descMetadata.local_other[0]
+      doc['physical_location_tsim'] = self.descMetadata.item_location(0).physical_location(0).holding_simple(0).copy_information(0).sub_location
 
 
       doc['subject_topic_tsim'] = self.descMetadata.subject.topic
 
       doc['subject_geographic_tsim'] = self.descMetadata.subject.geographic
 
+      doc['subject_geographic_ssim'] = self.descMetadata.subject.geographic
+
       doc['subject_name_personal_tsim'] =   self.descMetadata.subject.personal_name.name_part
 
       doc['subject_name_corporate_tsim'] =   self.descMetadata.subject.corporate_name.name_part
 
-      doc['subject_facet_ssim'] = self.descMetadata.subject.topic.append(self.descMetadata.subject.geographic).append(self.descMetadata.subject.corporate_name.name_part)
+      doc['subject_facet_ssim'] = self.descMetadata.subject.topic  +  self.descMetadata.subject.corporate_name.name_part + self.descMetadata.subject.personal_name.name_part
 
       doc['active_fedora_model_suffix_ssi'] = self.rels_ext.model.class.to_s.gsub(/\A[\w]*::/,'')
 
       doc['use_and_reproduction_ssm'] = self.descMetadata.use_and_reproduction
+
+      doc['note_tsim'] = self.descMetadata.note
 
 
       main_title = ''
