@@ -31,7 +31,7 @@ module Bplmodels
 
       # ABSTRACT -------------------------------------------------------------------------------
       t.abstract(:path=>"mods/oxns:abstract") {
-        t.displayLabel :path => '@displayLabel', :accessor => lambda { |a| a.text }
+        t.displayLabel :path=>{:attribute=>'displayLabel'}
         t.type_at :path=>{:attribute=>"type"}
         ::Mods::LANG_ATTRIBS.each { |attr_name|
           t.send attr_name, :path =>{:attribute=>"#{attr_name}"}
