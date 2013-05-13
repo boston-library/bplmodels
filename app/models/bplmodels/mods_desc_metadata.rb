@@ -42,7 +42,7 @@ module Bplmodels
       t.genre(:path => 'mods/oxns:genre') {
         t.displayLabel :path => {:attribute=>'displayLabel'}
         t.type_at :path=>{:attribute=>"type"}
-        t.usage :path=>{:attribute=>'@usage'}
+        t.usage :path=>{:attribute=>'usage'}
         ::Mods::AUTHORITY_ATTRIBS.each { |attr_name|
           t.send attr_name, :path =>{:attribute=>"#{attr_name}"}
         }
