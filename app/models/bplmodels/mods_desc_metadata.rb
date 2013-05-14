@@ -134,6 +134,11 @@ module Bplmodels
         t.date(:path=>"namePart", :attributes=>{:type=>"date"})
       }
 
+      t.test3(:path=>'name') {
+        t.name_part(:path=>"namePart[not(@type)]")
+        t.date(:path=>"namePart", :attributes=>{:type=>"date"})
+      }
+
       t.personal_name(:path=>'mods/oxns:subject/oxns:name', :attributes=>{:type => "personal"}) {
         t.name_part(:path=>"namePart[not(@type)]")
         t.date(:path=>"namePart", :attributes=>{:type=>"date"})
