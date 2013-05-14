@@ -103,14 +103,14 @@ module Bplmodels
 
       0.upto self.descMetadata.name.length-1 do |index|
         if self.descMetadata.name(index).type[0] == "personal"
-          if self.descMetadata.name(index).date[0].length > 0
+          if self.descMetadata.name(index).date.length > 0
             doc['name_personal_tsim'].append(self.descMetadata.name(index).namePart[0] + ", " + self.descMetadata.name(index).date[0])
           else
             doc['name_personal_tsim'].append(self.descMetadata.name(index).namePart[0])
           end
           doc['name_personal_role_tsim'].append(self.descMetadata.name(index).role.text[0])
         elsif self.descMetadata.name(index).type[0] == "corporate"
-          if self.descMetadata.name(index).date[0].length > 0
+          if self.descMetadata.name(index).date.length > 0
             doc['name_corporate_tsim'].append(self.descMetadata.name(index).namePart[0] + ", " + self.descMetadata.name(index).date[0])
           else
             doc['name_corporate_tsim'].append(self.descMetadata.name(index).namePart[0])
@@ -153,14 +153,14 @@ module Bplmodels
       doc['subject_name_corporate_tsim'] = []
       0.upto self.descMetadata.subject.length-1 do |index|
         if self.descMetadata.subject(index).personal_name.length > 0
-          if self.descMetadata.subject(index).personal_name.date[0].length > 0
+          if self.descMetadata.subject(index).personal_name.date.length > 0
             doc['subject_name_personal_tsim'].append(self.descMetadata.subject(index).personal_name.name_part[0] + ", " + self.descMetadata.subject(index).personal_name.date[0])
           else
             doc['subject_name_personal_tsim'].append(self.descMetadata.subject(index).personal_name.name_part[0])
           end
         end
         if self.descMetadata.subject(index).corporate_name.length > 0
-          if self.descMetadata.subject(index).corporate_name.date[0].length > 0
+          if self.descMetadata.subject(index).corporate_name.date.length > 0
             doc['subject_name_corporate_tsim'].append(self.descMetadata.subject(index).corporate_name.name_part[0] + ", " + self.descMetadata.subject(index).corporate_name.date[0])
           else
             doc['subject_name_corporate_tsim'].append(self.descMetadata.subject(index).corporate_name.name_part[0])

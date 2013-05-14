@@ -1,7 +1,7 @@
 require 'mods'
 
 module Bplmodels
-  class ModsDescMetadata < ActiveFedora::NokogiriDatastream
+  class ModsDescMetadata < ActiveFedora::OmDatastream
     #include Hydra::Datastream::CommonModsIndexMethods
     # MODS XML constants.
 
