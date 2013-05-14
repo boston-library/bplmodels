@@ -93,6 +93,32 @@ module Bplmodels
 
       #doc['titleInfo_primary_ssim'] = self.descMetadata.title_info(0).main_title.to_s
       #doc['name_personal_ssim'] = self.descMetadata.name(0).to_s
+
+      doc['name_personal_tsim'] = []
+      doc['name_personal_role_tsim'] = []
+      doc['name_corporate_tsim'] = []
+      doc['name_corporate_role_tsim'] = []
+
+      0.upto self.descMetadata.name.length-1 do |index|
+        if self.descMetadata.name(index).type[0] == "personal"
+          if self.descMetadata.name(index).date[0].length > 0
+            doc['name_personal_tsim'].append(self.descMetadata.name(index).namePart[0] + ", " + self.descMetadata.name(index).date[0])
+          else
+            doc['name_personal_tsim'].append(self.descMetadata.name(index).namePart[0])
+          end
+          doc['name_personal_role_tsim'].append(self.descMetadata.name(index).role.text[0])
+        elsif self.descMetadata.name(index).type[0] == "corporate"
+          if self.descMetadata.name(index).date[0].length > 0
+            doc['name_corporate_tsim'].append(self.descMetadata.name(index).namePart[0] + ", " + self.descMetadata.name(index).date[0])
+          else
+            doc['name_corporate_tsim'].append(self.descMetadata.name(index).namePart[0])
+          end
+          doc['name_corporate_role_tsim'].append(self.descMetadata.name(index).role.text[0])
+        end
+      end
+
+
+
       if self.descMetadata.name(0).type[0] == "personal"
         doc['name_personal_tsim'] =  [self.descMetadata.name(0).namePart[0]]
         doc['name_personal_role_tsim'] =  [self.descMetadata.name(0).role[0]]
@@ -120,7 +146,40 @@ module Bplmodels
 
       doc['subject_geographic_ssim'] = self.descMetadata.subject.geographic
 
-      doc['subject_name_personal_tsim'] =   self.descMetadata.subject.personal_name.name_part
+=begin
+      doc['subject_name_personal_tsim'] = []
+      0.upto self.descMetadata.subject.personal_name.length-1 do |index|
+        if self.descMetadata.subject.personal_name(index).date[0].length > 0
+          doc['subject_name_personal_tsim'].append(self.descMetadata.subject.personal_name(index).name_part[0] + ", " + self.descMetadata.subject.personal_name(index).date[0])
+        else
+          doc['subject_name_personal_tsim'].append(self.descMetadata.subject.personal_name(index).name_part[0])
+        end
+
+      end
+
+      doc['subject_name_corporate_tsim'] = []
+      0.upto self.descMetadata.subject.corporate_name.length-1 do |index|
+        if self.descMetadata.subject.corporate_name(index).date[0].length > 0
+          doc['subject_name_corporate_tsim'].append(self.descMetadata.subject.corporate_name(index).name_part[0] + ", " + self.descMetadata.subject.corporate_name(index).date[0])
+        else
+          doc['subject_name_corporate_tsim'].append(self.descMetadata.subject.corporate_name(index).name_part[0])
+        end
+
+      end
+=end
+      doc['subject_name_personal_tsim'] = []
+      if self.descMetadata.subject.personal_name(0).name_part[0] != nil && self.descMetadata.subject.personal_name(0).date[0].length > 0
+        doc['subject_name_personal_tsim'].append(self.descMetadata.subject.personal_name(0).name_part[0] + ", " + self.descMetadata.subject.personal_name(0).date[0])
+      else
+        doc['subject_name_personal_tsim'].append(self.descMetadata.subject.personal_name(0).name_part[0])
+      end
+
+      doc['subject_name_corporate_tsim'] = []
+      if self.descMetadata.subject.corporate_name(0).name_part[0] != nil && self.descMetadata.subject.corporate_name(0).date[0].length > 0
+        doc['subject_name_corporate_tsim'].append(self.descMetadata.subject.corporate_name(0).name_part[0] + ", " + self.descMetadata.subject.corporate_name(0).date[0])
+      else
+        doc['subject_name_corporate_tsim'].append(self.descMetadata.subject.corporate_name(0).name_part[0])
+      end
 
       doc['subject_name_corporate_tsim'] =   self.descMetadata.subject.corporate_name.name_part
 

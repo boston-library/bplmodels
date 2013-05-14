@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    bplmodels (0.0.57)
+    bplmodels (0.0.60)
       mods
       rails (~> 3.2.13)
 

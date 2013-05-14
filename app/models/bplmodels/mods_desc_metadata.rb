@@ -67,7 +67,7 @@ module Bplmodels
       }
       t.title(:proxy=>[:title_info, :main_title])
 
-      t.name {
+      t.name(:path=>"mods/oxns:name") {
         # this is a namepart
         t.usage(:path=>{:attribute=>"usage"})
         t.namePart(:type=>:string, :label=>"generic name")
@@ -124,15 +124,35 @@ module Bplmodels
 
       t.note(:path=>"note")
 
+      t.test1(:path=>'mods/oxns:subject/oxns:name') {
+        t.name_part(:path=>"namePart[not(@type)]")
+        t.date(:path=>"namePart", :attributes=>{:type=>"date"})
+      }
+
+      t.test2(:path=>'subject/oxns:name') {
+        t.name_part(:path=>"namePart[not(@type)]")
+        t.date(:path=>"namePart", :attributes=>{:type=>"date"})
+      }
+
+      t.personal_name(:path=>'mods/oxns:subject/oxns:name', :attributes=>{:type => "personal"}) {
+        t.name_part(:path=>"namePart[not(@type)]")
+        t.date(:path=>"namePart", :attributes=>{:type=>"date"})
+      }
+
+      t.corporate_name(:path=>'mods/oxns:subject/oxns:name', :attributes=>{:type => "corporate"}) {
+        t.name_part(:path=>"namePart[not(@type)]")
+        t.date(:path=>"namePart", :attributes=>{:type=>"date"})
+      }
+
       t.subject  do
         t.topic
         t.geographic
         t.personal_name(:path=>'name', :attributes=>{:type => "personal"}) {
-          t.name_part(:path=>"namePart")
+          t.name_part(:path=>"namePart[not(@type)]")
           t.date(:path=>"namePart", :attributes=>{:type=>"date"})
         }
         t.corporate_name(:path=>'name', :attributes=>{:type => "corporate"}) {
-          t.name_part(:path=>"namePart")
+          t.name_part(:path=>"namePart[not(@type)]")
           t.date(:path=>"namePart", :attributes=>{:type=>"date"})
         }
 
