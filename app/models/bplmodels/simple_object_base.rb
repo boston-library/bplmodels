@@ -69,10 +69,37 @@ module Bplmodels
       doc = super(doc)
       #doc['has_model_ssim'] = [doc['has_model_ssim'][0], 'info:fedora/afmodel:Bplmodels_SimpleObjectBase']
 
-      puts self.pid
-
 
       doc['label_ssim'] = self.label.to_s
+      #1995-12-31T23:59:59.999Z
+      doc['dates_created_dtsim'] = []
+      doc['dates_created_facet_ssim'] = []
+      date_start = -1
+      date_end = -1
+
+      if self.descMetadata.date(0).date_other.length > 0
+
+      else
+        if self.descMetadata.date(0).dates_created[0].length == 4
+          doc['date_created_start_dtsi'] = self.descMetadata.date(0).dates_created[0] + '-01-01T01:00:00.000Z'
+          doc['dates_created_dtsim'].append(self.descMetadata.date(0).dates_created[0] + '-01-01T01:00:00.000Z')
+          date_start = self.descMetadata.date(0).dates_created[0]
+        end
+        if self.descMetadata.date(0).dates_created[1] != nil && self.descMetadata.date(0).dates_created[1].length == 4
+          doc['date_created_end_dtsi'] = self.descMetadata.date(0).dates_created[1] + '-01-01T01:00:00.000Z'
+          doc['dates_created_dtsim'].append(self.descMetadata.date(0).dates_created[1] + '-01-01T01:00:00.000Z')
+          date_end = self.descMetadata.date(0).dates_created[1]
+        end
+
+      end
+
+      (1850..2000).step(10) do |index|
+        if((date_start.to_i >= index && date_start.to_i < index+10) || (date_end.to_i != -1 && date_start.to_i >= index && date_end.to_i < index+10))
+          doc['dates_created_facet_ssim'].append(index.to_s + "s")
+        end
+
+      end
+
 
       doc['abstract_tsi'] = self.descMetadata.abstract
 

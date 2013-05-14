@@ -176,6 +176,18 @@ module Bplmodels
       t.use_and_reproduction(:path=>"accessCondition", :attributes=>{:type=>"use and reproduction"})
 
 
+
+      t.date(:path=>"originInfo") {
+        t.date_other(:path=>"dateOther")
+        t.dates_created(:path=>"dateCreated") {
+          t.encoding(:path=>{:attribute=>"encoding"})
+          t.key_date(:path=>{:attribute=>"keyDate"})
+          t.point(:path=>{:attribute=>"point"})
+          t.qualifier(:path=>{:attribute=>"dateQualifier"})
+        }
+
+      }
+
       t.role {
         t.text(:path=>"roleTerm",:attributes=>{:type=>"text"})
         t.code(:path=>"roleTerm",:attributes=>{:type=>"code"})
