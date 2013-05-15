@@ -77,15 +77,15 @@ module Bplmodels
       date_start = -1
       date_end = -1
 
-      if self.descMetadata.date(0).date_other.length > 0
+      if self.descMetadata.date(0).date_other!= nil && self.descMetadata.date(0).date_other.length > 0
 
       else
-        if self.descMetadata.date(0).dates_created[0].length == 4
+        if self.descMetadata.date(0).dates_created != nil && self.descMetadata.date(0).dates_created[0] != nil && self.descMetadata.date(0).dates_created[0].length == 4
           doc['date_created_start_dtsi'] = self.descMetadata.date(0).dates_created[0] + '-01-01T01:00:00.000Z'
           doc['dates_created_dtsim'].append(self.descMetadata.date(0).dates_created[0] + '-01-01T01:00:00.000Z')
           date_start = self.descMetadata.date(0).dates_created[0]
         end
-        if self.descMetadata.date(0).dates_created[1] != nil && self.descMetadata.date(0).dates_created[1].length == 4
+        if self.descMetadata.date(0).dates_created != nil && self.descMetadata.date(0).dates_created[1] != nil && self.descMetadata.date(0).dates_created[1].length == 4
           doc['date_created_end_dtsi'] = self.descMetadata.date(0).dates_created[1] + '-01-01T01:00:00.000Z'
           doc['dates_created_dtsim'].append(self.descMetadata.date(0).dates_created[1] + '-01-01T01:00:00.000Z')
           date_end = self.descMetadata.date(0).dates_created[1]
