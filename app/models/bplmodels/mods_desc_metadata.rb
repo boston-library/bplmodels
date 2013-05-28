@@ -194,6 +194,8 @@ module Bplmodels
 
       t.use_and_reproduction(:path=>"accessCondition", :attributes=>{:type=>"use and reproduction"})
 
+      t.restriction_on_access(:path=>"accessCondition", :attributes=>{:type=>"restriction on access"})
+
 
 
       t.date(:path=>"originInfo") {
