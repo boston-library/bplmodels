@@ -6,7 +6,7 @@ module Bplmodels
     # Uses the Hydra Rights Metadata Schema for tracking access permissions & copyright
     has_metadata :name => "rightsMetadata", :type => Hydra::Datastream::RightsMetadata
 
-    has_metadata :name => "descMetadata", :type => ModsDescCollectionMetadata
+    has_metadata :name => "descMetadata", :type => ModsDescMetadata
 
     #delegate :title, :to=>'descMetadata', :at => [:mods, :titleInfo, :title], :unique=>true
     #delegate :abstract, :to => "descMetadata"

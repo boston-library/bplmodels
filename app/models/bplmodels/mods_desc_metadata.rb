@@ -160,6 +160,25 @@ module Bplmodels
           t.name_part(:path=>"namePart[not(@type)]")
           t.date(:path=>"namePart", :attributes=>{:type=>"date"})
         }
+        t.hierarchical_geographic(:path=>"hierarchicalGeographic") {
+          t.continent
+          t.country
+          t.province
+          t.region
+          t.state
+          t.territory
+          t.county
+          t.city
+          t.city_section(:path=>"citySection")
+          t.island
+          t.area
+          t.extarea(:path=>"extraterrestrialArea")
+        }
+        t.cartographics {
+          t.coordinates
+          t.scale
+          t.projection
+        }
 
       end
 
@@ -343,7 +362,7 @@ module Bplmodels
         xml.url(:access=>"preview") {
           xml.text preview
         }
-        xml.url(:access=>"primary", :access=>"object in context") {
+        xml.url(:usage=>"primary", :access=>"object in context") {
           xml.text primary
         }
       }
