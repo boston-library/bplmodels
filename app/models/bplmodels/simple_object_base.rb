@@ -72,8 +72,11 @@ module Bplmodels
 
       doc['label_ssim'] = self.label.to_s
       #1995-12-31T23:59:59.999Z
-      doc['dates_created_dtsim'] = []
-      doc['dates_created_facet_ssim'] = []
+      doc['date_start_dtsim'] = []
+      doc['date_start_tsim'] = []
+      doc['date_end_dtsim'] = []
+      doc['date_end_tsim'] = []
+      doc['date_facet_ssim'] = []
       date_start = -1
       date_end = -1
 
@@ -81,13 +84,13 @@ module Bplmodels
 
       else
         if self.descMetadata.date(0).dates_created[0] != nil && self.descMetadata.date(0).dates_created[0].length == 4
-          doc['date_created_start_dtsi'] = self.descMetadata.date(0).dates_created[0] + '-01-01T01:00:00.000Z'
-          doc['dates_created_dtsim'].append(self.descMetadata.date(0).dates_created[0] + '-01-01T01:00:00.000Z')
+          doc['date_start_dtsim'].append(self.descMetadata.date(0).dates_created[0] + '-01-01T01:00:00.000Z')
+          doc['date_start_tsim'].append(self.descMetadata.date(0).dates_created[0])
           date_start = self.descMetadata.date(0).dates_created[0]
         end
         if self.descMetadata.date(0).dates_created[1] != nil && self.descMetadata.date(0).dates_created[1].length == 4
-          doc['date_created_end_dtsi'] = self.descMetadata.date(0).dates_created[1] + '-01-01T01:00:00.000Z'
-          doc['dates_created_dtsim'].append(self.descMetadata.date(0).dates_created[1] + '-01-01T01:00:00.000Z')
+          doc['date_end_dtsim'].append(self.descMetadata.date(0).dates_created[1] + '-01-01T01:00:00.000Z')
+          doc['date_end_tsim'].append(self.descMetadata.date(0).dates_created[1])
           date_end = self.descMetadata.date(0).dates_created[1]
         end
 
@@ -95,7 +98,7 @@ module Bplmodels
 
       (1850..2000).step(10) do |index|
         if((date_start.to_i >= index && date_start.to_i < index+10) || (date_end.to_i != -1 && date_start.to_i >= index && date_end.to_i < index+10))
-          doc['dates_created_facet_ssim'].append(index.to_s + "s")
+          doc['date_facet_ssim'].append(index.to_s + "s")
         end
 
       end
@@ -108,16 +111,18 @@ module Bplmodels
       doc['genre_basic_ssim'] = self.descMetadata.genre_basic
       doc['genre_specific_ssim'] = self.descMetadata.genre_specific
 
-      doc['identifier_local_other_ssim'] = self.descMetadata.local_other
+      doc['identifier_local_other_tsim'] = self.descMetadata.local_other
 
       doc['identifier_ark_ssi'] = ''
 
-      doc['local_accession_id_ssim'] = self.descMetadata.local_accession[0].to_s
+      doc['local_accession_id_tsim'] = self.descMetadata.local_accession[0].to_s
       if self.collection
         doc['collection_name_ssim'] = self.collection.label.to_s
+        doc['collection_name_tsim'] = self.collection.label.to_s
+        doc['collection_pid_ssm'] = self.collection.pid
       end
 
-      doc['identifier_uri_ssi']  =  self.descMetadata.identifier_uri[1]
+      doc['identifier_uri_ss']  =  self.descMetadata.identifier_uri[1]
 
       #doc['titleInfo_primary_ssim'] = self.descMetadata.title_info(0).main_title.to_s
       #doc['name_personal_ssim'] = self.descMetadata.name(0).to_s
@@ -208,13 +213,13 @@ module Bplmodels
       main_title = ''
       if self.descMetadata.title_info(0).nonSort[0] != nil
         doc['title_info_primary_tsi'] =  self.descMetadata.title_info(0).nonSort[0] + ' ' + self.descMetadata.title_info(0).main_title[0]
+        doc['title_info_primary_ssort'] = self.descMetadata.title_info(0).main_title[0]
         main_title = self.descMetadata.title_info(0).nonSort[0] + ' ' + self.descMetadata.title_info(0).main_title[0]
       else
         doc['title_info_primary_tsi'] =  self.descMetadata.title_info(0).main_title[0]
+        doc['title_info_primary_ssort'] = self.descMetadata.title_info(0).main_title[0]
         main_title = self.descMetadata.title_info(0).main_title[0]
       end
-
-      doc['title_info_primary_sort_ssort'] = self.descMetadata.title_info(0).main_title[0]
 
 
       #doc['all_text_timv'] = [self.descMetadata.abstract, main_title, self.rels_ext.model.class.to_s.gsub(/\A[\w]*::/,''),self.descMetadata.item_location(0).physical_location[0]]

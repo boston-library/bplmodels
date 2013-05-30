@@ -53,7 +53,7 @@ module Bplmodels
       # title fields
       main_title = self.descMetadata.title_info(0).main_title[0]
       doc['title_info_primary_tsi'] = main_title
-      doc['title_info_primary_sort_ssort'] = main_title
+      doc['title_info_primary_ssort'] = main_title
 
       # description
       doc['abstract_tsim'] = self.descMetadata.abstract
@@ -105,6 +105,39 @@ module Bplmodels
 
       # access
       doc['restriction_on_access_ssm'] = self.descMetadata.restriction_on_access
+
+      # date
+      doc['date_start_dtsim'] = []
+      doc['date_start_tsim'] = []
+      doc['date_end_dtsim'] = []
+      doc['date_end_tsim'] = []
+      doc['date_facet_ssim'] = []
+      date_start = -1
+      date_end = -1
+
+      if self.descMetadata.date(0).date_other[0] != nil && self.descMetadata.date(0).date_other.length > 0
+
+      else
+        if self.descMetadata.date(0).dates_created[0] != nil && self.descMetadata.date(0).dates_created[0].length == 4
+          doc['date_start_dtsim'].append(self.descMetadata.date(0).dates_created[0] + '-01-01T01:00:00.000Z')
+          doc['date_start_tsim'].append(self.descMetadata.date(0).dates_created[0])
+          date_start = self.descMetadata.date(0).dates_created[0]
+        end
+        if self.descMetadata.date(0).dates_created[1] != nil && self.descMetadata.date(0).dates_created[1].length == 4
+          doc['date_end_dtsim'].append(self.descMetadata.date(0).dates_created[1] + '-01-01T01:00:00.000Z')
+          doc['date_end_tsim'].append(self.descMetadata.date(0).dates_created[1])
+          date_end = self.descMetadata.date(0).dates_created[1]
+        end
+
+      end
+
+      (1850..2000).step(10) do |index|
+        if((date_start.to_i >= index && date_start.to_i < index+10) || (date_end.to_i != -1 && date_start.to_i >= index && date_end.to_i < index+10))
+          doc['date_facet_ssim'].append(index.to_s + "s")
+        end
+
+      end
+
 
       doc
 
