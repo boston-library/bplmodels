@@ -65,6 +65,11 @@ module Bplmodels
       tmpname
     end
 
+    def save
+      self.add_relationship(:has_model, "info:fedora/afmodel:Bplmodels_SimpleObjectBase")
+      super()
+    end
+
     def to_solr(doc = {} )
       doc = super(doc)
       #doc['has_model_ssim'] = [doc['has_model_ssim'][0], 'info:fedora/afmodel:Bplmodels_SimpleObjectBase']
