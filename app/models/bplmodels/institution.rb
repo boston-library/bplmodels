@@ -40,7 +40,7 @@ module Bplmodels
       doc['institution_url_ss'] = self.descMetadata.local_other
 
       # sublocations
-      doc['sub_location_ssim']  = self.descMetadata.item_location.physical_location.holding_simple.copy_information.sub_location
+      doc['sub_location_ssim']  = self.descMetadata.item_location.holding_simple.copy_information.sub_location
 
       # hierarchical geo
       country = self.descMetadata.subject.hierarchical_geographic.country
