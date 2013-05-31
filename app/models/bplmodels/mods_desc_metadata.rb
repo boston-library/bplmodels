@@ -789,7 +789,7 @@ module Bplmodels
     end
 
     def insert_related_item(value=nil, qualifier=nil)
-      if(value != nil and value.length > 0)
+      if value != nil && value.length > 0
         add_child_node(ng_xml.root, :related_item, value, qualifier)
       end
     end
