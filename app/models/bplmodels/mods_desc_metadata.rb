@@ -307,7 +307,7 @@ module Bplmodels
     end
 
     def insert_type_of_resource(value=nil, manuscript=nil)
-      if value != nil && value.length > 1
+      if value != nil && value.length > 0
         add_child_node(ng_xml.root, :type_of_resource, value, manuscript)
       end
     end
@@ -789,7 +789,9 @@ module Bplmodels
     end
 
     def insert_related_item(value=nil, qualifier=nil)
-      add_child_node(ng_xml.root, :related_item, value, qualifier)
+      if(value != nil and value.length > 0)
+        add_child_node(ng_xml.root, :related_item, value, qualifier)
+      end
     end
 
     def remove_related_item(index)
