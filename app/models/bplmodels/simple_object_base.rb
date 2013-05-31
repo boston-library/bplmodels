@@ -129,7 +129,7 @@ module Bplmodels
 
       doc['identifier_uri_ss']  =  self.descMetadata.identifier_uri[1]
 
-      doc['publisher_tsim'] = self.origin_info.publisher
+      #doc['publisher_tsim'] = self.origin_info.publisher
 
       #doc['titleInfo_primary_ssim'] = self.descMetadata.title_info(0).main_title.to_s
       #doc['name_personal_ssim'] = self.descMetadata.name(0).to_s
