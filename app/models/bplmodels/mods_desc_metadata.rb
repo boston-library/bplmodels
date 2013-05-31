@@ -88,7 +88,7 @@ module Bplmodels
       t.genre_specific(:path=>"genre", :attributes=>{:displayLabel => "specific"})
 
       t.origin_info(:path=>"originInfo") {
-        t.publisher(:type=>:string)
+        t.publisher(:path=>"publisher")
       }
 
       t.related_item(:path=>"relatedItem", :attributes=>{ :type => "host"}) {
