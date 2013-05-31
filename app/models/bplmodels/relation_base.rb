@@ -31,6 +31,12 @@ module Bplmodels
       doc
     end
 
+    def save
+      self.add_relationship(:has_model, "info:fedora/afmodel:Bplmodels_RelationBase")
+      super()
+    end
 
   end
+
+
 end

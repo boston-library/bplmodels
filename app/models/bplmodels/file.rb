@@ -15,5 +15,10 @@ module Bplmodels
       self.datastreams["rightsMetadata"].update_permissions( "group"=>{"Repository Administrators"=>"edit"} )
       self.save
     end
+
+    def save
+      self.add_relationship(:has_model, "info:fedora/afmodel:Bplmodels_File")
+      super()
+    end
   end
 end
