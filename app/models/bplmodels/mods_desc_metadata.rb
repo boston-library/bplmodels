@@ -96,10 +96,10 @@ module Bplmodels
 
       t.item_location(:path=>"location") {
         t.physical_location(:path=>"physicalLocation") {
-          t.holding_simple(:path=>"holdingSimple") {
-            t.copy_information(:path=>"copyInformation") {
-              t.sub_location(:path=>"subLocation")
-            }
+        }
+        t.holding_simple(:path=>"holdingSimple") {
+          t.copy_information(:path=>"copyInformation") {
+            t.sub_location(:path=>"subLocation")
           }
         }
       }
