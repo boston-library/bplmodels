@@ -2,7 +2,7 @@ module Bplmodels
   class Collection < Bplmodels::RelationBase
 
     #has_relationship "similar_audio", :has_part, :type=>AudioRecord
-    has_many :objects, :class_name=> "Bplmodels::ObjectBase", :property=> :is_collection_member
+    has_many :objects, :class_name=> "Bplmodels::ObjectBase", :property=> :is_member_of_collection
 
     belongs_to :institutions, :class_name => 'Bplmodels::Institution', :property => :is_member_of
 
