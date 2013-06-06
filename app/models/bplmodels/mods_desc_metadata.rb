@@ -247,21 +247,34 @@ module Bplmodels
         xml.mods(MODS_PARAMS) {
           xml.parent.namespace = xml.parent.namespace_definitions.find{|ns|ns.prefix=="mods"}
 
-          xml.physicalDescription {
-            xml.internetMediaType {
-              xml.text "image/jpeg"
-            }
-            xml.digitalOrigin {
-              xml.text "reformatted digital"
-            }
-          }
-
           xml.abstract
 
         }
       end
       return builder.doc
     end
+
+    define_template :physical_description do |xml, media_type, digital_origin|
+      xml.physicalDescription {
+        xml.internetMediaType {
+          xml.text media_type
+        }
+        xml.digitalOrigin {
+          xml.text digital_origin
+        }
+
+      }
+    end
+
+    def insert_physical_description(value=nil, type=nil)
+      add_child_node(ng_xml.root, :physical_description, value, type)
+    end
+
+    def remove_physical_description(index)
+      self.find_by_terms(:physical_description).slice(index.to_i).remove
+    end
+
+
 
     define_template :language do |xml, value|
       xml.language {
