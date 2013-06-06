@@ -266,8 +266,8 @@ module Bplmodels
       }
     end
 
-    def insert_physical_description(value=nil, type=nil)
-      add_child_node(ng_xml.root, :physical_description, value, type)
+    def insert_physical_description(media_type=nil, digital_origin=nil)
+      add_child_node(ng_xml.root, :physical_description, media_type, digital_origin)
     end
 
     def remove_physical_description(index)
