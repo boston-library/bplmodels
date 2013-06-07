@@ -9,6 +9,7 @@ module Bplmodels
 
     def to_solr(doc = {} )
       doc = super(doc)
+      puts doc['has_model_ssim']
       if doc['has_model_ssim'] != "String"
         doc['has_model_ssim'].each do |model|
           case model
