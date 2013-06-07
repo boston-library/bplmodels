@@ -24,5 +24,12 @@ module Bplmodels
     def fedora_name
       'card'
     end
+
+    def to_solr(doc = {} )
+      doc = super(doc)
+      doc['active_fedora_model_ssi'] = self.class.name
+      doc
+    end
+
   end
 end

@@ -1,5 +1,5 @@
 module Bplmodels
-  class AdminDatastream < ActiveFedora::NokogiriDatastream
+  class AdminDatastream < ActiveFedora::OmDatastream
     include OM::XML::Document
 
     ADMIN_NS = 'http://www.bpl.org/repository/xml/ns/admin'

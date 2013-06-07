@@ -25,6 +25,12 @@ module Bplmodels
 
     end
 
+    def to_solr(doc = {} )
+      doc = super(doc)
+      doc['active_fedora_model_ssi'] = self.class.name
+      doc
+    end
+
     def fedora_name
       'non_photographic_print'
     end
