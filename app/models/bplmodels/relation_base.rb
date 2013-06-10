@@ -31,6 +31,7 @@ module Bplmodels
       doc = super(doc)
       doc['label_ssim'] = self.label
       doc['active_fedora_model_suffix_ssi'] = self.rels_ext.model.class.to_s.gsub(/\A[\w]*::/,'')
+      puts self.pid
       doc
     end
 
