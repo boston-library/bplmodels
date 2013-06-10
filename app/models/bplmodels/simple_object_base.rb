@@ -86,22 +86,40 @@ module Bplmodels
       date_end = -1
 
       if self.descMetadata.date(0).date_other[0] != nil && self.descMetadata.date(0).date_other.length > 0
-
+        # ins[]ert code for date_other value here
       else
-        if self.descMetadata.date(0).dates_created[0] != nil && self.descMetadata.date(0).dates_created[0].length == 4
-          doc['date_start_dtsim'].append(self.descMetadata.date(0).dates_created[0] + '-01-01T01:00:00.000Z')
-          doc['date_start_tsim'].append(self.descMetadata.date(0).dates_created[0])
+        if self.descMetadata.date(0).dates_created[0] != nil
           date_start = self.descMetadata.date(0).dates_created[0]
+          doc['date_start_tsim'].append(date_start)
+          doc['date_start_qualifier_ssm'] = self.descMetadata.date(0).dates_created.qualifier[0]
+          if date_start.length == 4
+            doc['date_start_dtsim'].append(date_start + '-01-01T01:00:00.000Z')
+          elsif date_start.length == 7
+            doc['date_start_dtsim'].append(date_start + '-01T01:00:00.000Z')
+          elsif date_start.length > 11
+            doc['date_start_dtsim'].append(date_start)
+          else
+            doc['date_start_dtsim'].append(date_start + 'T01:00:00.000Z')
+          end
         end
-        if self.descMetadata.date(0).dates_created[1] != nil && self.descMetadata.date(0).dates_created[1].length == 4
-          doc['date_end_dtsim'].append(self.descMetadata.date(0).dates_created[1] + '-01-01T01:00:00.000Z')
-          doc['date_end_tsim'].append(self.descMetadata.date(0).dates_created[1])
+        if self.descMetadata.date(0).dates_created[1] != nil
           date_end = self.descMetadata.date(0).dates_created[1]
+          doc['date_end_tsim'].append(date_end)
+          doc['date_end_qualifier_ssm'] = self.descMetadata.date(0).dates_created.qualifier[1]
+          if date_start.length == 4
+            doc['date_end_dtsim'].append(date_end + '-01-01T01:00:00.000Z')
+          elsif date_start.length == 7
+            doc['date_end_dtsim'].append(date_end + '-01T01:00:00.000Z')
+          elsif date_start.length > 11
+            doc['date_end_dtsim'].append(date_end)
+          else
+            doc['date_end_dtsim'].append(date_end + 'T01:00:00.000Z')
+          end
         end
 
       end
 
-      (1850..2000).step(10) do |index|
+      (1800..2000).step(10) do |index|
         if((date_start.to_i >= index && date_start.to_i < index+10) || (date_end.to_i != -1 && date_start.to_i >= index && date_end.to_i < index+10))
           doc['date_facet_ssim'].append(index.to_s + "s")
         end
@@ -129,7 +147,23 @@ module Bplmodels
 
       doc['identifier_uri_ss']  =  self.descMetadata.identifier_uri[1]
 
-      #doc['publisher_tsim'] = self.origin_info.publisher
+      doc['publisher_tsim'] = self.descMetadata.origin_info.publisher
+
+      doc['lang_val_uri_ssim'] = self.descMetadata.language.language_term.lang_val_uri
+
+      if self.descMetadata.related_item.length > 1
+        (1..self.descMetadata.related_item.length-1).each do |index|
+          related_item_type = self.descMetadata.related_item.type[index]
+          if related_item_type == 'isReferencedBy'
+            doc['related_item_' + related_item_type.downcase + '_ssm'] = []
+            doc['related_item_' + related_item_type.downcase + '_ssm'].append(self.descMetadata.related_item.href[index])
+          else
+            doc['related_item_' + related_item_type + '_tsim'] = []
+            doc['related_item_' + related_item_type + '_tsim'].append(self.descMetadata.related_item.title_info.title[index])
+          end
+        end
+      end
+
 
       #doc['titleInfo_primary_ssim'] = self.descMetadata.title_info(0).main_title.to_s
       #doc['name_personal_ssim'] = self.descMetadata.name(0).to_s

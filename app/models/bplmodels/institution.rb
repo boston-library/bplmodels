@@ -57,7 +57,7 @@ module Bplmodels
 
 
       # coordinates
-      doc['subject_coordinates_ssim'] = self.descMetadata.subject.cartographics.coordinates
+      doc['subject_coordinates_coordinate'] = self.descMetadata.subject.cartographics.coordinates
 
 
       doc

@@ -184,6 +184,7 @@ module Bplmodels
 
       t.related_item(:path=>"relatedItem") {
         t.type(:path=>{:attribute=>"type"})
+        t.href(:path=>{:attribute=>"xlink:href"})
         t.title_info(:path=>"titleInfo") {
           t.title
         }
@@ -203,7 +204,7 @@ module Bplmodels
           t.encoding(:path=>{:attribute=>"encoding"})
           t.key_date(:path=>{:attribute=>"keyDate"})
           t.point(:path=>{:attribute=>"point"})
-          t.qualifier(:path=>{:attribute=>"dateQualifier"})
+          t.qualifier(:path=>{:attribute=>"qualifier"})
         }
 
       }
@@ -211,6 +212,12 @@ module Bplmodels
       t.role {
         t.text(:path=>"roleTerm",:attributes=>{:type=>"text"})
         t.code(:path=>"roleTerm",:attributes=>{:type=>"code"})
+      }
+
+      t.language(:path=>"language") {
+        t.language_term(:path=>"languageTerm") {
+          t.lang_val_uri(:path=>{:attribute=>"valueURI"})
+        }
       }
 
     end

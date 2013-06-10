@@ -55,7 +55,7 @@ module Bplmodels
       t.genre(:path=>"genre", :attributes=>{ :type => "gmgpc"})
 
       t.origin_info(:path=>"originInfo") {
-        t.publisher(:type=>:string)
+        t.publisher(:path=>"publisher")
       }
 
       t.related_item(:path=>"relatedItem", :attributes=>{ :type => "host"}) {
