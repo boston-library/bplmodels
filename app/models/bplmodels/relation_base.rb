@@ -8,6 +8,9 @@ module Bplmodels
 
     has_metadata :name => "descMetadata", :type => ModsDescMetadata
 
+    # collections and institutions can have an associated image file
+    has_many :image_files, :class_name => "Bplmodels::ImageFile", :property=> :is_image_of
+
     #delegate :title, :to=>'descMetadata', :at => [:mods, :titleInfo, :title], :unique=>true
     #delegate :abstract, :to => "descMetadata"
     #delegate :url, :to=>'descMetadata', :at => [:relatedItem, :location, :url], :unique=>true
