@@ -199,8 +199,25 @@ module Bplmodels
 
 
       t.date(:path=>"originInfo") {
-        t.date_other(:path=>"dateOther")
+        t.date_other(:path=>"dateOther") {
+          t.encoding(:path=>{:attribute=>"encoding"})
+          t.key_date(:path=>{:attribute=>"keyDate"})
+          t.type(:path=>{:attribute=>"type"})
+          t.qualifier(:path=>{:attribute=>"qualifier"})
+        }
         t.dates_created(:path=>"dateCreated") {
+          t.encoding(:path=>{:attribute=>"encoding"})
+          t.key_date(:path=>{:attribute=>"keyDate"})
+          t.point(:path=>{:attribute=>"point"})
+          t.qualifier(:path=>{:attribute=>"qualifier"})
+        }
+        t.dates_issued(:path=>"dateIssued") {
+          t.encoding(:path=>{:attribute=>"encoding"})
+          t.key_date(:path=>{:attribute=>"keyDate"})
+          t.point(:path=>{:attribute=>"point"})
+          t.qualifier(:path=>{:attribute=>"qualifier"})
+        }
+        t.dates_copyright(:path=>"copyrightDate") {
           t.encoding(:path=>{:attribute=>"encoding"})
           t.key_date(:path=>{:attribute=>"keyDate"})
           t.point(:path=>{:attribute=>"point"})

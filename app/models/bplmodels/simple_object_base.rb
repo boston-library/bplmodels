@@ -86,8 +86,13 @@ module Bplmodels
       date_end = -1
 
       if self.descMetadata.date(0).date_other[0] != nil && self.descMetadata.date(0).date_other.length > 0
-        # ins[]ert code for date_other value here
+        if self.descMetadata.date(0).date_other[0] == 'undated'
+          # do nothing -- don't want to index this
+        else
+          # TODO insert code for date_other values here
+        end
       else
+        # TODO refactor this date stuff for other date types
         if self.descMetadata.date(0).dates_created[0] != nil
           date_start = self.descMetadata.date(0).dates_created[0]
           doc['date_start_tsim'].append(date_start)
