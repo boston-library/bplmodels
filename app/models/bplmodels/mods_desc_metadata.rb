@@ -747,9 +747,16 @@ module Bplmodels
     end
 
     define_template :subject_geographic do |xml, geographic, authority|
-      xml.subject {
-        xml.geographic(geographic)
-      }
+      if authority != nil and authority.length > 0
+        xml.subject(:authority=>authority) {
+          xml.geographic(geographic)
+        }
+      else
+        xml.subject {
+          xml.geographic(geographic)
+        }
+      end
+
     end
 
 
@@ -815,6 +822,22 @@ module Bplmodels
 
     def remove_related_item(index)
       self.find_by_terms(:related_item).slice(index.to_i).remove
+    end
+
+
+    define_template :related_item_xref do |xml, value|
+      xml.relatedItem(:type=>"isReferencedBy", 'xlink:href'=>value)
+    end
+
+    def insert_related_item_xref(value=nil)
+      puts 'told to insert related item xref'
+      if value != nil && value.length > 0
+        add_child_node(ng_xml.root, :related_item_xref, value)
+      end
+    end
+
+    def related_item_xref(index)
+      self.find_by_terms(:related_item_xref).slice(index.to_i).remove
     end
 
 
