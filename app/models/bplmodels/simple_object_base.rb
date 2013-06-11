@@ -93,13 +93,13 @@ module Bplmodels
           doc['date_start_tsim'].append(date_start)
           doc['date_start_qualifier_ssm'] = self.descMetadata.date(0).dates_created.qualifier[0]
           if date_start.length == 4
-            doc['date_start_dtsim'].append(date_start + '-01-01T01:00:00.000Z')
+            doc['date_start_dtsim'].append(date_start + '-01-01T00:00:00.000Z')
           elsif date_start.length == 7
             doc['date_start_dtsim'].append(date_start + '-01T01:00:00.000Z')
           elsif date_start.length > 11
             doc['date_start_dtsim'].append(date_start)
           else
-            doc['date_start_dtsim'].append(date_start + 'T01:00:00.000Z')
+            doc['date_start_dtsim'].append(date_start + 'T00:00:00.000Z')
           end
         end
         if self.descMetadata.date(0).dates_created[1] != nil
@@ -107,13 +107,13 @@ module Bplmodels
           doc['date_end_tsim'].append(date_end)
           doc['date_end_qualifier_ssm'] = self.descMetadata.date(0).dates_created.qualifier[1]
           if date_start.length == 4
-            doc['date_end_dtsim'].append(date_end + '-01-01T01:00:00.000Z')
+            doc['date_end_dtsim'].append(date_end + '-01-01T00:00:00.000Z')
           elsif date_start.length == 7
-            doc['date_end_dtsim'].append(date_end + '-01T01:00:00.000Z')
+            doc['date_end_dtsim'].append(date_end + '-01T00:00:00.000Z')
           elsif date_start.length > 11
             doc['date_end_dtsim'].append(date_end)
           else
-            doc['date_end_dtsim'].append(date_end + 'T01:00:00.000Z')
+            doc['date_end_dtsim'].append(date_end + 'T00:00:00.000Z')
           end
         end
 
@@ -180,14 +180,14 @@ module Bplmodels
           else
             doc['name_personal_tsim'].append(self.descMetadata.name(index).namePart[0])
           end
-          doc['name_personal_role_tsim'].append(self.descMetadata.name(index).role.text[0])
+          doc['name_personal_role_tsim'].append(self.descMetadata.name(index).role.text[0].strip)
         elsif self.descMetadata.name(index).type[0] == "corporate"
           if self.descMetadata.name(index).date.length > 0
             doc['name_corporate_tsim'].append(self.descMetadata.name(index).namePart[0] + ", " + self.descMetadata.name(index).date[0])
           else
             doc['name_corporate_tsim'].append(self.descMetadata.name(index).namePart[0])
           end
-          doc['name_corporate_role_tsim'].append(self.descMetadata.name(index).role.text[0])
+          doc['name_corporate_role_tsim'].append(self.descMetadata.name(index).role.text[0].strip)
         end
       end
 
@@ -210,7 +210,7 @@ module Bplmodels
       doc['physical_location_ssim']  = self.descMetadata.item_location(0).physical_location
       doc['physical_location_tsim']  = self.descMetadata.item_location(0).physical_location
 
-      doc['sub_location_ssim']  = self.descMetadata.item_location(0).holding_simple(0).copy_information(0).sub_location
+      doc['sub_location_tsim']  = self.descMetadata.item_location(0).holding_simple(0).copy_information(0).sub_location
 
       doc['subject_topic_tsim'] = self.descMetadata.subject.topic
 
