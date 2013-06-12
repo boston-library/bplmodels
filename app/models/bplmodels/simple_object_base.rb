@@ -123,14 +123,12 @@ module Bplmodels
             doc['date_end_dtsi'].append(date_end + 'T00:00:00.000Z')
           end
         end
-
       end
 
       (1800..2000).step(10) do |index|
         if ((date_range_start.to_i >= index && date_range_start.to_i < index+10) || (date_range_end.to_i != -1 && index > date_range_start.to_i && date_range_end.to_i >= index))
           doc['date_facet_ssim'].append(index.to_s + "s")
         end
-
       end
 
       doc['abstract_tsim'] = self.descMetadata.abstract
