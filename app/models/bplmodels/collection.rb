@@ -70,6 +70,7 @@ module Bplmodels
       collex_location = self.descMetadata.item_location(0).physical_location
       doc['physical_location_ssim']  = collex_location
       doc['physical_location_tsim']  = collex_location
+      doc['sub_location_tsim']  = self.descMetadata.item_location(0).holding_simple(0).copy_information(0).sub_location
 
       # name
       doc['name_personal_tsim'] = []
@@ -137,6 +138,9 @@ module Bplmodels
         end
 
       end
+
+      doc['extent_tsi']  = self.descMetadata.physical_description(0).extent[0]
+      doc['note_tsim'] = self.descMetadata.note
 
 
       doc

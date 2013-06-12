@@ -77,9 +77,9 @@ module Bplmodels
 
       doc['label_ssim'] = self.label.to_s
       #1995-12-31T23:59:59.999Z
-      doc['date_start_dtsim'] = []
+      doc['date_start_dtsi'] = []
       doc['date_start_tsim'] = []
-      doc['date_end_dtsim'] = []
+      doc['date_end_dtsi'] = []
       doc['date_end_tsim'] = []
       doc['date_facet_ssim'] = []
       date_start = -1
@@ -95,37 +95,39 @@ module Bplmodels
         # TODO refactor this date stuff for other date types
         if self.descMetadata.date(0).dates_created[0] != nil
           date_start = self.descMetadata.date(0).dates_created[0]
+          date_start.length > 4 ? date_range_start = date_start[0..3] : date_range_start = date_start
           doc['date_start_tsim'].append(date_start)
           doc['date_start_qualifier_ssm'] = self.descMetadata.date(0).dates_created.qualifier[0]
           if date_start.length == 4
-            doc['date_start_dtsim'].append(date_start + '-01-01T00:00:00.000Z')
+            doc['date_start_dtsi'].append(date_start + '-01-01T00:00:00.000Z')
           elsif date_start.length == 7
-            doc['date_start_dtsim'].append(date_start + '-01T01:00:00.000Z')
+            doc['date_start_dtsi'].append(date_start + '-01T01:00:00.000Z')
           elsif date_start.length > 11
-            doc['date_start_dtsim'].append(date_start)
+            doc['date_start_dtsi'].append(date_start)
           else
-            doc['date_start_dtsim'].append(date_start + 'T00:00:00.000Z')
+            doc['date_start_dtsi'].append(date_start + 'T00:00:00.000Z')
           end
         end
         if self.descMetadata.date(0).dates_created[1] != nil
           date_end = self.descMetadata.date(0).dates_created[1]
+          date_end.length > 4 ? date_range_end = date_end[0..3] : date_range_end = date_end
           doc['date_end_tsim'].append(date_end)
           doc['date_end_qualifier_ssm'] = self.descMetadata.date(0).dates_created.qualifier[1]
           if date_start.length == 4
-            doc['date_end_dtsim'].append(date_end + '-01-01T00:00:00.000Z')
+            doc['date_end_dtsi'].append(date_end + '-01-01T00:00:00.000Z')
           elsif date_start.length == 7
-            doc['date_end_dtsim'].append(date_end + '-01T00:00:00.000Z')
+            doc['date_end_dtsi'].append(date_end + '-01T00:00:00.000Z')
           elsif date_start.length > 11
-            doc['date_end_dtsim'].append(date_end)
+            doc['date_end_dtsi'].append(date_end)
           else
-            doc['date_end_dtsim'].append(date_end + 'T00:00:00.000Z')
+            doc['date_end_dtsi'].append(date_end + 'T00:00:00.000Z')
           end
         end
 
       end
 
       (1800..2000).step(10) do |index|
-        if((date_start.to_i >= index && date_start.to_i < index+10) || (date_end.to_i != -1 && date_start.to_i >= index && date_end.to_i < index+10))
+        if ((date_range_start.to_i >= index && date_range_start.to_i < index+10) || (date_range_end.to_i != -1 && index > date_range_start.to_i && date_range_end.to_i >= index))
           doc['date_facet_ssim'].append(index.to_s + "s")
         end
 
