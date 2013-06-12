@@ -261,20 +261,36 @@ module Bplmodels
       return builder.doc
     end
 
-    define_template :physical_description do |xml, media_type, digital_origin|
-      xml.physicalDescription {
-        xml.internetMediaType {
-          xml.text media_type
-        }
-        xml.digitalOrigin {
-          xml.text digital_origin
-        }
+    define_template :physical_description do |xml, media_type, digital_origin, media_type2|
+      if media_type2 != nil
+        xml.physicalDescription {
+          xml.internetMediaType {
+            xml.text media_type
+          }
+          xml.internetMediaType {
+            xml.text media_type2
+          }
+          xml.digitalOrigin {
+            xml.text digital_origin
+          }
 
-      }
+        }
+      else
+        xml.physicalDescription {
+          xml.internetMediaType {
+            xml.text media_type
+          }
+          xml.digitalOrigin {
+            xml.text digital_origin
+          }
+
+        }
+      end
+
     end
 
-    def insert_physical_description(media_type=nil, digital_origin=nil)
-      add_child_node(ng_xml.root, :physical_description, media_type, digital_origin)
+    def insert_physical_description(media_type=nil, digital_origin=nil, media_type2=nil)
+      add_child_node(ng_xml.root, :physical_description, media_type, digital_origin, media_type2)
     end
 
     def remove_physical_description(index)
