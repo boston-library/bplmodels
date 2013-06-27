@@ -38,7 +38,7 @@ module Bplmodels
     end
 
     def add_oai_relationships
-      self.add_relationship(:oai_item_id, "oai:digitalcommonwealth.org:" + self.pid, true)
+      #self.add_relationship(:oai_item_id, "oai:digitalcommonwealth.org:" + self.pid, true)
       self.add_relationship(:oai_set_spec, self.pid, true)
       self.add_relationship(:oai_set_name, self.label, true)
     end
