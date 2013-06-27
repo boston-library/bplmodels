@@ -58,6 +58,12 @@ module Bplmodels
       # description
       doc['abstract_tsim'] = self.descMetadata.abstract
 
+      # institution
+      collex_location = self.institutions.label.to_s
+      doc['physical_location_ssim']  = collex_location
+      doc['physical_location_tsim']  = collex_location
+
+=begin
       # genre
       genre_basic = self.descMetadata.genre_basic
       doc['genre_basic_tsim'] = genre_basic
@@ -164,7 +170,7 @@ module Bplmodels
 
       doc['extent_tsi']  = self.descMetadata.physical_description(0).extent[0]
       doc['note_tsim'] = self.descMetadata.note
-
+=end
 
       doc
 
