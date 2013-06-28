@@ -66,7 +66,7 @@ module Bplmodels
     end
 
     def save
-      self.add_relationship(:has_model, "info:fedora/afmodel:Bplmodels_SimpleObjectBase")
+      #self.add_relationship(:has_model, "info:fedora/afmodel:Bplmodels_SimpleObjectBase")
       super()
     end
 
@@ -148,7 +148,16 @@ module Bplmodels
         doc['collection_name_ssim'] = self.collection.label.to_s
         doc['collection_name_tsim'] = self.collection.label.to_s
         doc['collection_pid_ssm'] = self.collection.pid
+
+        if self.collection.institutions
+          doc['institution_name_ssim'] = self.collection.institutions.label.to_s
+          doc['institution_name_tsim'] = self.collection.institutions.label.to_s
+          doc['institution_pid_ssm'] = self.collection.institutions.pid
+        end
+
       end
+
+
 
       doc['identifier_uri_ss']  =  self.descMetadata.identifier_uri[1]
 
