@@ -163,7 +163,12 @@ module Bplmodels
         #doc['identifier_uri_ss']  =  self.descMetadata.identifier_uri
       #end
     #end
-      doc['identifier_uri_ss']  =  self.descMetadata.identifier_uri[1]
+      if  self.descMetadata.identifier_uri.length > 1
+        doc['identifier_uri_ss']  =  self.descMetadata.identifier_uri[1]
+      else
+        doc['identifier_uri_ss']  =  self.descMetadata.identifier_uri[0]
+      end
+
 
       doc['publisher_tsim'] = self.descMetadata.origin_info.publisher
 
