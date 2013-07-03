@@ -158,8 +158,11 @@ module Bplmodels
       end
 
 
-
-      doc['identifier_uri_ss']  =  self.descMetadata.identifier_uri[1]
+      self.descMetadata.identifier_uri.each do |identifier|
+        if idenfifier.include?("ark")
+          doc['identifier_uri_ss']  =  self.descMetadata.identifier_uri
+        end
+      end
 
       doc['publisher_tsim'] = self.descMetadata.origin_info.publisher
 
