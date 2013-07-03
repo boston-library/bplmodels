@@ -11,6 +11,7 @@ module Bplmodels
       doc = super(doc)
       puts doc['has_model_ssim']
       if doc['has_model_ssim'] != "String"
+        begin
         doc['has_model_ssim'].each do |model_string|
           case model_string
             when 'info:fedora/afmodel:Bplmodels_PhotographicPrint'
@@ -33,8 +34,10 @@ module Bplmodels
               doc['active_fedora_model_ssi'] = Bplmodels::Object.name
           end
         end
+        rescue
+          puts "I should not be here"
+        end
       end
-      puts self.pid
       doc
 
     end
