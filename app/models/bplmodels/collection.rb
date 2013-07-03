@@ -59,9 +59,13 @@ module Bplmodels
       doc['abstract_tsim'] = self.descMetadata.abstract
 
       # institution
-      collex_location = self.institutions.label.to_s
-      doc['physical_location_ssim'] = collex_location
-      doc['physical_location_tsim'] = collex_location
+      if self.institutions
+        collex_location = self.institutions.label.to_s
+        doc['physical_location_ssim'] = collex_location
+        doc['physical_location_tsim'] = collex_location
+      end
+
+
 
 =begin
       # genre
