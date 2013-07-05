@@ -63,6 +63,8 @@ module Bplmodels
         collex_location = self.institutions.label.to_s
         doc['physical_location_ssim'] = collex_location
         doc['physical_location_tsim'] = collex_location
+
+        doc['institution_pid_si'] = self.institutions.pid
       end
 
 

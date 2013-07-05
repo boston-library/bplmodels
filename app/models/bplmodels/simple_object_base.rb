@@ -149,10 +149,12 @@ module Bplmodels
         doc['collection_name_tsim'] = self.collection.label.to_s
         doc['collection_pid_ssm'] = self.collection.pid
 
-        if self.collection.institutions
-          doc['institution_name_ssim'] = self.collection.institutions.label.to_s
-          doc['institution_name_tsim'] = self.collection.institutions.label.to_s
-          doc['institution_pid_ssm'] = self.collection.institutions.pid
+        if self.collection
+          if self.collection.institutions
+            doc['institution_name_ssim'] = self.collection.institutions.label.to_s
+            doc['institution_name_tsim'] = self.collection.institutions.label.to_s
+            doc['institution_pid_ssi'] = self.collection.institutions.pid
+          end
         end
 
       end
@@ -281,6 +283,12 @@ module Bplmodels
         doc['title_info_primary_tsi'] =  self.descMetadata.title_info(0).main_title[0]
         doc['title_info_primary_ssort'] = self.descMetadata.title_info(0).main_title[0]
         main_title = self.descMetadata.title_info(0).main_title[0]
+      end
+
+      if self.collection
+        if self.collection.institutions
+           doc['institution_pid_si'] = self.collection.institutions.pid
+        end
       end
 
 
