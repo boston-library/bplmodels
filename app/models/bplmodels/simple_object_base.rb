@@ -153,7 +153,7 @@ module Bplmodels
           if self.collection.institutions
             doc['institution_name_ssim'] = self.collection.institutions.label.to_s
             doc['institution_name_tsim'] = self.collection.institutions.label.to_s
-            doc['institution_pid_ssi'] = self.collection.institutions.pid
+            doc['institution_pid_si'] = self.collection.institutions.pid
           end
         end
 

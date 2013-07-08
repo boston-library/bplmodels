@@ -59,6 +59,8 @@ module Bplmodels
       # coordinates
       doc['subject_coordinates_ssm'] = self.descMetadata.subject.cartographics.coordinates
 
+      doc['institution_pid_si'] = self.pid
+
 
       doc
 
