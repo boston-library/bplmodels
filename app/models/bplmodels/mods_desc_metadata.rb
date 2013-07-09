@@ -38,6 +38,30 @@ module Bplmodels
         }
       }
 
+      # ACCESS_CONDITION -----------------------------------------------------------------------
+      t.accessCondition(:path => 'mods/oxns:accessCondition')
+      {
+        t.displayLabel :path=>{:attribute=>'displayLabel'}
+        t.type_at :path=>{:attribute=>"type"}
+        Mods::LANG_ATTRIBS.each { |attr_name|
+          t.send attr_name, :path =>{:attribute=>"#{attr_name}"}
+        }
+      }
+
+      # CLASSIFICATION -------------------------------------------------------------------------
+      t.classification(:path => 'mods/oxns:classification') {
+        t.displayLabel :path=>{:attribute=>'displayLabel'}
+        t.edition :path =>{:attribute=>"edition"}
+        Mods::AUTHORITY_ATTRIBS.each { |attr_name|
+          t.send attr_name, :path => {:attribute=>"#{attr_name}"}
+        }
+        Mods::LANG_ATTRIBS.each { |attr_name|
+          t.send attr_name, :path =>{:attribute=>"#{attr_name}"}
+        }
+      }
+
+
+
       # GENRE ----------------------------------------------------------------------------------
       t.genre(:path => 'mods/oxns:genre') {
         t.displayLabel :path => {:attribute=>'displayLabel'}
