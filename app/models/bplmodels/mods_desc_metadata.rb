@@ -39,11 +39,10 @@ module Bplmodels
       }
 
       # ACCESS_CONDITION -----------------------------------------------------------------------
-      t.accessCondition(:path => 'mods/oxns:accessCondition')
-      {
+      t.accessCondition(:path => 'mods/oxns:accessCondition') {
         t.displayLabel :path=>{:attribute=>'displayLabel'}
         t.type_at :path=>{:attribute=>"type"}
-        Mods::LANG_ATTRIBS.each { |attr_name|
+        ::Mods::LANG_ATTRIBS.each { |attr_name|
           t.send attr_name, :path =>{:attribute=>"#{attr_name}"}
         }
       }
@@ -52,15 +51,19 @@ module Bplmodels
       t.classification(:path => 'mods/oxns:classification') {
         t.displayLabel :path=>{:attribute=>'displayLabel'}
         t.edition :path =>{:attribute=>"edition"}
-        Mods::AUTHORITY_ATTRIBS.each { |attr_name|
+        ::Mods::AUTHORITY_ATTRIBS.each { |attr_name|
           t.send attr_name, :path => {:attribute=>"#{attr_name}"}
         }
-        Mods::LANG_ATTRIBS.each { |attr_name|
+        ::Mods::LANG_ATTRIBS.each { |attr_name|
           t.send attr_name, :path =>{:attribute=>"#{attr_name}"}
         }
       }
 
 
+      # EXTENSION ------------------------------------------------------------------------------
+      t.extension(:path => 'mods/oxns:extension') {
+        t.displayLabel :path=>{:attribute=>'displayLabel'}
+      }
 
       # GENRE ----------------------------------------------------------------------------------
       t.genre(:path => 'mods/oxns:genre') {
@@ -74,6 +77,191 @@ module Bplmodels
           t.send attr_name, :path =>{:attribute=>"#{attr_name}"}
         }
       }
+
+      # IDENTIIER ------------------------------------------------------------------------------
+      t.identifier(:path => 'mods/oxns:identifier') {
+        t.displayLabel :path=>{:attribute=>'displayLabel'}
+        t.invalid :path=>{:attribute=>'invalid'}
+        t.type_at :path=>{:attribute=>'type'}
+        ::Mods::LANG_ATTRIBS.each { |attr_name|
+          t.send attr_name, :path =>{:attribute=>"#{attr_name}"}
+        }
+      }
+
+      # LANGUAGE -------------------------------------------------------------------------------
+      t.language(:path => 'mods/oxns:language') {
+        # attributes
+        t.displayLabel :path=>{:attribute=>'displayLabel'}
+        ::Mods::LANG_ATTRIBS.each { |attr_name|
+          t.send attr_name, :path =>{:attribute=>"#{attr_name}"}
+        }
+        # child elements
+        t.languageTerm :path => 'languageTerm'
+        t.code_term :path => 'languageTerm', :attributes => { :type => "code" }
+        t.text_term :path => 'languageTerm', :attributes => { :type => "text" }
+        t.scriptTerm :path => 'scriptTerm'
+      }
+      t.languageTerm(:path => 'languageTerm') {
+        t.type_at :path=>{:attribute=>'type'}
+        ::Mods::AUTHORITY_ATTRIBS.each { |attr_name|
+          t.send attr_name, :path =>{:attribute=>"#{attr_name}"}
+        }
+      } # t.language
+
+      # LOCATION -------------------------------------------------------------------------------
+      t.location(:path => 'mods/oxns:location') {
+        # attributes
+        t.displayLabel :path=>{:attribute=>'displayLabel'}
+        ::Mods::LANG_ATTRIBS.each { |attr_name|
+          t.send attr_name, :path =>{:attribute=>"#{attr_name}"}
+        }
+        # child elements
+        t.physicalLocation(:path => 'physicalLocation') {
+          t.displayLabel :path=>{:attribute=>'displayLabel'}
+          ::Mods::AUTHORITY_ATTRIBS.each { |attr_name|
+            t.send attr_name, :path =>{:attribute=>"#{attr_name}"}
+          }
+        }
+        t.shelfLocator :path => 'shelfLocator'
+        t.url(:path => 'url') {
+          t.dateLastAccessed :path=>{:attribute=>'dateLastAccessed'}
+          t.displayLabel :path=>{:attribute=>'displayLabel'}
+          t.note :path=>{:attribute=>'note'}
+          t.access :path=>{:attribute=>'access'}
+          t.usage :path=>{:attribute=>'usage'}
+        }
+        t.holdingSimple :path => 'holdingSimple'
+        t.holdingExternal :path => 'holdingExternal'
+      } # t.location
+
+
+      # NAME ------------------------------------------------------------------------------------
+      t.plain_name :path => 'mods/oxns:name' {
+        Mods::Name::ATTRIBUTES.each { |attr_name|
+          if attr_name != 'type'
+            n.send attr_name, :path => "@#{attr_name}", :accessor => lambda { |a| a.text }
+          else
+            n.type_at :path => "@#{attr_name}", :accessor => lambda { |a| a.text }
+          end
+        }
+        # elements
+        n.namePart :path => 'm:namePart' do |np|
+          np.type_at :path => '@type', :accessor => lambda { |a| a.text }
+        end
+        n.family_name :path => 'm:namePart[@type="family"]'
+        n.given_name :path => 'm:namePart[@type="given"]'
+        n.termsOfAddress :path => 'm:namePart[@type="termsOfAddress"]'
+        n.date :path => 'm:namePart[@type="date"]'
+
+        n.displayForm :path => 'm:displayForm'
+        n.affiliation :path => 'm:affiliation'
+        n.description_el :path => 'm:description' # description is used by Nokogiri
+        n.role :path => 'm:role' do |r|
+          r.roleTerm :path => 'm:roleTerm' do |rt|
+            rt.type_at :path => "@type", :accessor => lambda { |a| a.text }
+            Mods::AUTHORITY_ATTRIBS.each { |attr_name|
+              rt.send attr_name, :path => "@#{attr_name}", :accessor => lambda { |a| a.text }
+            }
+          end
+          # role convenience method
+          r.authority :path => '.', :accessor => lambda { |role_node|
+            a = nil
+            role_node.roleTerm.each { |role_t|
+              # role_t.authority will be [] if it is missing from an earlier roleTerm
+              if role_t.authority && (!a || a.size == 0)
+                a = role_t.authority
+              end
+            }
+            a
+          }
+          # role convenience method
+          r.code :path => '.', :accessor => lambda { |role_node|
+            c = nil
+            role_node.roleTerm.each { |role_t|
+              if role_t.type_at == 'code'
+                c ||= role_t.text
+              end
+            }
+            c
+          }
+          # role convenience method
+          r.value :path => '.', :accessor => lambda { |role_node|
+            val = nil
+            role_node.roleTerm.each { |role_t|
+              if role_t.type_at == 'text'
+                val ||= role_t.text
+              end
+            }
+            # FIXME: this is broken if there are multiple role codes and some of them are not marcrelator
+            if !val && role_node.code && role_node.authority.first =~ /marcrelator/
+              val = MARC_RELATOR[role_node.code.first]
+            end
+            val
+          }
+        end # role node
+
+        # name convenience method
+        # uses the displayForm of a name if present
+        # if no displayForm, try to make a string from family, given and terms of address
+        # otherwise, return all non-date nameParts concatenated together
+        n.display_value :path => '.', :single => true, :accessor => lambda {|name_node|
+          dv = ''
+          if name_node.displayForm && name_node.displayForm.text.size > 0
+            dv = name_node.displayForm.text
+          end
+          if dv.empty?
+            if name_node.type_at == 'personal'
+              if name_node.family_name.size > 0
+                dv = name_node.given_name.size > 0 ? "#{name_node.family_name.text}, #{name_node.given_name.text}" : name_node.family_name.text
+              elsif name_node.given_name.size > 0
+                dv = name_node.given_name.text
+              end
+              if !dv.empty?
+                first = true
+                name_node.namePart.each { |np|
+                  if np.type_at == 'termsOfAddress' && !np.text.empty?
+                    if first
+                      dv = dv + " " + np.text
+                      first = false
+                    else
+                      dv = dv + ", " + np.text
+                    end
+                  end
+                }
+              else # no family or given name
+                dv = name_node.namePart.select {|np| np.type_at != 'date' && !np.text.empty?}.join(" ")
+              end
+            else # not a personal name
+              dv = name_node.namePart.select {|np| np.type_at != 'date' && !np.text.empty?}.join(" ")
+            end
+          end
+          dv.strip.empty? ? nil : dv.strip
+        }
+
+        # name convenience method
+        n.display_value_w_date :path => '.', :single => true, :accessor => lambda {|name_node|
+          dv = ''
+          dv = dv + name_node.display_value if name_node.display_value
+          name_node.namePart.each { |np|
+            if np.type_at == 'date' && !np.text.empty? && !dv.end_with?(np.text)
+              dv = dv + ", #{np.text}"
+            end
+          }
+          if dv.start_with?(', ')
+            dv.sub(', ', '')
+          end
+          dv.strip.empty? ? nil : dv.strip
+        }
+      } # t._plain_name
+
+      t.personal_name :path => '/m:mods/m:name[@type="personal"]'
+      t._personal_name :path => '//m:name[@type="personal"]'
+      t.corporate_name :path => '/m:mods/m:name[@type="corporate"]'
+      t._corporate_name :path => '//m:name[@type="corporate"]'
+      t.conference_name :path => '/m:mods/m:name[@type="conference"]'
+      t._conference_name :path => '//m:name[@type="conference"]'
+
+
 
 
 
