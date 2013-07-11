@@ -134,37 +134,37 @@ module Bplmodels
         t.holdingExternal :path => 'holdingExternal'
       } # t.location
 
-
+      :path => 'languageTerm', :attributes => { :type => "text" }
       # NAME ------------------------------------------------------------------------------------
-      t.plain_name :path => 'mods/oxns:name' {
-        Mods::Name::ATTRIBUTES.each { |attr_name|
+      t.plain_name(:path => 'mods/oxns:name') {
+        ::Mods::Name::ATTRIBUTES.each { |attr_name|
           if attr_name != 'type'
-            n.send attr_name, :path => "@#{attr_name}", :accessor => lambda { |a| a.text }
+            t.send attr_name, :path =>{:attribute=>"#{attr_name}"}
           else
-            n.type_at :path => "@#{attr_name}", :accessor => lambda { |a| a.text }
+            t.type_at :path =>{:attribute=>"#{attr_name}"}
           end
         }
         # elements
-        n.namePart :path => 'm:namePart' do |np|
-          np.type_at :path => '@type', :accessor => lambda { |a| a.text }
-        end
-        n.family_name :path => 'm:namePart[@type="family"]'
-        n.given_name :path => 'm:namePart[@type="given"]'
-        n.termsOfAddress :path => 'm:namePart[@type="termsOfAddress"]'
-        n.date :path => 'm:namePart[@type="date"]'
+        t.namePart(:path => 'namePart') {
+          t.type_at :path =>{:attribute=>"type"}
+        }
+        t.family_name :path => 'namePart', :attributes => {:type=>"family"}
+        t.given_name :path => 'namePart', :attributes => {:type=>"given"}
+        t.termsOfAddress :path => 'namePart', :attributes => {:type=>"termsOfAddress"}
+        t.date :path => 'namePart', :attributes => {:type=>"date"}
 
-        n.displayForm :path => 'm:displayForm'
-        n.affiliation :path => 'm:affiliation'
-        n.description_el :path => 'm:description' # description is used by Nokogiri
-        n.role :path => 'm:role' do |r|
-          r.roleTerm :path => 'm:roleTerm' do |rt|
-            rt.type_at :path => "@type", :accessor => lambda { |a| a.text }
-            Mods::AUTHORITY_ATTRIBS.each { |attr_name|
-              rt.send attr_name, :path => "@#{attr_name}", :accessor => lambda { |a| a.text }
+        t.displayForm :path => 'displayForm'
+        t.affiliation :path => 'affiliation'
+        t.description_el :path => 'description' # description is used by Nokogiri
+        t.role(:path => 'role') {
+          t.roleTerm(:path => 'roleTerm') {
+            t.type_at :path =>{:attribute=> "type"}
+            ::Mods::AUTHORITY_ATTRIBS.each { |attr_name|
+              t.send attr_name, :path =>{:attribute=>"#{attr_name}"}
             }
-          end
-          # role convenience method
-          r.authority :path => '.', :accessor => lambda { |role_node|
+          }
+          # role convenience method   FIXME
+          t.authority :path => '.', :accessor => lambda { |role_node|
             a = nil
             role_node.roleTerm.each { |role_t|
               # role_t.authority will be [] if it is missing from an earlier roleTerm
@@ -198,7 +198,7 @@ module Bplmodels
             end
             val
           }
-        end # role node
+        } # role node
 
         # name convenience method
         # uses the displayForm of a name if present
