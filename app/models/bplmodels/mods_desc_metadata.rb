@@ -163,7 +163,9 @@ module Bplmodels
               t.send attr_name, :path =>{:attribute=>"#{attr_name}"}
             }
           }
-          # role convenience method   FIXME
+          # FIXME - not sure how to do this stuff
+          # role convenience method
+=begin
           t.authority :path => '.', :accessor => lambda { |role_node|
             a = nil
             role_node.roleTerm.each { |role_t|
@@ -198,6 +200,7 @@ module Bplmodels
             end
             val
           }
+=end
         } # role node
 
         # name convenience method
