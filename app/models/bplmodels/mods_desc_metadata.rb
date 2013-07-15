@@ -38,6 +38,20 @@ module Bplmodels
         }
       }
 
+      # GENRE ----------------------------------------------------------------------------------
+      t.genre(:path => 'mods/oxns:genre') {
+        t.displayLabel :path => {:attribute=>'displayLabel'}
+        t.type_at :path=>{:attribute=>"type"}
+        t.usage :path=>{:attribute=>'usage'}
+        ::Mods::AUTHORITY_ATTRIBS.each { |attr_name|
+          t.send attr_name, :path =>{:attribute=>"#{attr_name}"}
+        }
+        ::Mods::LANG_ATTRIBS.each { |attr_name|
+          t.send attr_name, :path =>{:attribute=>"#{attr_name}"}
+        }
+      }
+
+=begin
       # ACCESS_CONDITION -----------------------------------------------------------------------
       t.accessCondition(:path => 'mods/oxns:accessCondition') {
         t.displayLabel :path=>{:attribute=>'displayLabel'}
@@ -63,19 +77,6 @@ module Bplmodels
       # EXTENSION ------------------------------------------------------------------------------
       t.extension(:path => 'mods/oxns:extension') {
         t.displayLabel :path=>{:attribute=>'displayLabel'}
-      }
-
-      # GENRE ----------------------------------------------------------------------------------
-      t.genre(:path => 'mods/oxns:genre') {
-        t.displayLabel :path => {:attribute=>'displayLabel'}
-        t.type_at :path=>{:attribute=>"type"}
-        t.usage :path=>{:attribute=>'usage'}
-        ::Mods::AUTHORITY_ATTRIBS.each { |attr_name|
-          t.send attr_name, :path =>{:attribute=>"#{attr_name}"}
-        }
-        ::Mods::LANG_ATTRIBS.each { |attr_name|
-          t.send attr_name, :path =>{:attribute=>"#{attr_name}"}
-        }
       }
 
       # IDENTIIER ------------------------------------------------------------------------------
@@ -165,7 +166,6 @@ module Bplmodels
           }
           # FIXME - not sure how to do this stuff
           # role convenience method
-=begin
           t.authority :path => '.', :accessor => lambda { |role_node|
             a = nil
             role_node.roleTerm.each { |role_t|
@@ -200,8 +200,8 @@ module Bplmodels
             end
             val
           }
-=end
         } # role node
+        #END FIXME
 
         # name convenience method
         # uses the displayForm of a name if present
@@ -263,6 +263,7 @@ module Bplmodels
       t._corporate_name :path => '//m:name[@type="corporate"]'
       t.conference_name :path => '/m:mods/m:name[@type="conference"]'
       t._conference_name :path => '//m:name[@type="conference"]'
+=end
 
 
 
