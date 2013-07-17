@@ -14,7 +14,7 @@ module Bplmodels
     has_and_belongs_to_many :members, :class_name=> "Bplmodels::Collection", :property=> :hasSubset
 
     has_metadata :name => "descMetadata", :type => ModsDescMetadata
-    has_metadata :name => "admin", :type => AdminDatastream
+    has_metadata :name => "workflowMetadata", :type => WorkflowMetadata
 
     # Uses the Hydra Rights Metadata Schema for tracking access permissions & copyright
     has_metadata :name => "rightsMetadata", :type => Hydra::Datastream::RightsMetadata
@@ -289,6 +289,10 @@ module Bplmodels
         if self.collection.institutions
            doc['institution_pid_si'] = self.collection.institutions.pid
         end
+      end
+
+      if self.workflowMetadata
+        doc['workflow_state_ssi'] = self.workflowMetadata.item_status.state
       end
 
 
