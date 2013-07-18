@@ -19,6 +19,12 @@ module Bplmodels
         t.state(:path=>"state")
         t.state_comment(:path=>"stateComment")
       }
+
+      t.item_source(:path=>"itemSource") {
+        t.ingest_origin(:path=>"ingestOrigin")
+        t.ingest_filepath(:path=>"ingestFilepath")
+      }
+
     end
 
     def self.xml_template
@@ -29,6 +35,12 @@ module Bplmodels
             xml.state
             xml.stateComment
           }
+
+          xml.itemSource {
+            xml.ingestOrigin
+            xml.ingestFilepath
+          }
+
         }
       end.doc
     end
