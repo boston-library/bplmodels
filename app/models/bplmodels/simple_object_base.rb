@@ -3,7 +3,10 @@ module Bplmodels
     #has_file_datastream :name => 'productionMaster', :type => ActiveFedora::Datastream
 
     include Hydra::ModelMixins::CommonMetadata
+    include Hydra::ModelMixins::RightsMetadata
     include Hydra::ModelMethods
+
+
 
     has_many :image_files, :class_name => "Bplmodels::ImageFile", :property=> :is_image_of
     belongs_to :institution, :class_name => 'Bplmodels::Institution', :property => :is_member_of

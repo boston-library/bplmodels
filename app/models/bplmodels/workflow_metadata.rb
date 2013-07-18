@@ -29,7 +29,7 @@ module Bplmodels
 
     def self.xml_template
       Nokogiri::XML::Builder.new do |xml|
-        xml.mods(ADMIN_PARAMS) {
+        xml.mods(WORKFLOW_PARAMS) {
 
           xml.itemStatus {
             xml.state

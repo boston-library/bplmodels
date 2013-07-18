@@ -2,6 +2,7 @@ module Bplmodels
   class RelationBase < ActiveFedora::Base
     include Hydra::ModelMixins::CommonMetadata
     include Hydra::ModelMethods
+    include Hydra::ModelMixins::RightsMetadata
 
     # Uses the Hydra Rights Metadata Schema for tracking access permissions & copyright
     has_metadata :name => "rightsMetadata", :type => Hydra::Datastream::RightsMetadata
@@ -31,6 +32,9 @@ module Bplmodels
       doc = super(doc)
       doc['label_ssim'] = self.label
       doc['active_fedora_model_suffix_ssi'] = self.rels_ext.model.class.to_s.gsub(/\A[\w]*::/,'')
+      if self.workflowMetadata
+        doc['workflow_state_ssi'] = self.workflowMetadata.item_status.state
+      end
       puts self.pid
       doc
     end

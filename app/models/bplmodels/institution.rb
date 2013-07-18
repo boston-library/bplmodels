@@ -3,6 +3,8 @@ module Bplmodels
 
     has_many :collections, :class_name=> "Bplmodels::Collection", :property=> :is_member_of
 
+    has_metadata :name => "workflowMetadata", :type => WorkflowMetadata
+
     #A collection can have another collection as a member, or an image
     def insert_member(fedora_object)
       if (fedora_object.instance_of?(Bplmodels::Collection))

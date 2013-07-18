@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    bplmodels (0.0.75)
+    bplmodels (0.0.76)
       mods
       rails (~> 3.2.13)
 
@@ -50,7 +50,7 @@ GEM
       mime-types (~> 1.16)
       treetop (~> 1.4.8)
     mime-types (1.23)
-    mini_portile (0.5.0)
+    mini_portile (0.5.1)
     mods (0.0.22)
       iso-639
       nokogiri
