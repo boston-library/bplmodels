@@ -9,6 +9,8 @@ module Bplmodels
 
     has_metadata :name => "descMetadata", :type => ModsDescMetadata
 
+    has_metadata :name => "workflowMetadata", :type => WorkflowMetadata
+
     # collections and institutions can have an associated image file
     has_many :image_files, :class_name => "Bplmodels::ImageFile", :property=> :is_image_of
 
