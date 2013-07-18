@@ -1036,11 +1036,12 @@ module Bplmodels
             xml.text value
           }
         }
-        xml.identifier(:type=>"uri") {
+        if(identifier != nil && identifier.length > 0)
+          xml.identifier(:type=>"uri") {
             xml.text identifier
-        }
-
-      }
+          }
+        end
+    }
     end
 
     def insert_host(value=nil, identifier=nil)
