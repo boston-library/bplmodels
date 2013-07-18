@@ -13,7 +13,7 @@ module Bplmodels
     }
 
     set_terminology do |t|
-      t.root :path => 'workflow', :xmlns => WORKFLOW_NS
+      t.root :path => 'workflowMetadata', :xmlns => WORKFLOW_NS
 
       t.item_status(:path=>"itemStatus") {
         t.state(:path=>"state")
@@ -29,7 +29,7 @@ module Bplmodels
 
     def self.xml_template
       Nokogiri::XML::Builder.new do |xml|
-        xml.mods(WORKFLOW_PARAMS) {
+        xml.workflowMetadata(WORKFLOW_PARAMS) {
 
           xml.itemStatus {
             xml.state
