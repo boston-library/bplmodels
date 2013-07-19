@@ -156,7 +156,7 @@ module Bplmodels
           if self.collection.institutions
             doc['institution_name_ssim'] = self.collection.institutions.label.to_s
             doc['institution_name_tsim'] = self.collection.institutions.label.to_s
-            doc['institution_pid_si'] = self.collection.institutions.pid
+            doc['institution_pid_ssi'] = self.collection.institutions.pid
           end
         end
 
@@ -177,7 +177,8 @@ module Bplmodels
 
       doc['publisher_tsim'] = self.descMetadata.origin_info.publisher
 
-      doc['lang_val_uri_ssim'] = self.descMetadata.language.language_term.lang_val_uri
+      doc['lang_term_ssim'] = self.descMetadata.language.language_term
+      #doc['lang_val_uri_ssim'] = self.descMetadata.language.language_term.lang_val_uri
 
       if self.descMetadata.related_item.length > 1
         (1..self.descMetadata.related_item.length-1).each do |index|
