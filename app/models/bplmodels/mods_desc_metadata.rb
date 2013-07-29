@@ -631,9 +631,11 @@ module Bplmodels
 
     define_template :access_links do |xml, preview, primary|
       xml.location {
-        xml.url(:access=>"preview") {
-          xml.text preview
-        }
+        if preview != nil && preview.length > 0
+          xml.url(:access=>"preview") {
+            xml.text preview
+          }
+        end
         xml.url(:usage=>"primary", :access=>"object in context") {
           xml.text primary
         }
