@@ -148,7 +148,7 @@ module Bplmodels
 
     define_template :access_links do |xml, primary|
       xml.location {
-        xml.url(:access=>"primary", :access=>"object in context") {
+        xml.url(:usage=>"primary", :access=>"object in context") {
           xml.text primary
         }
       }
