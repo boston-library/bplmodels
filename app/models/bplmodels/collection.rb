@@ -4,6 +4,8 @@ module Bplmodels
     #has_relationship "similar_audio", :has_part, :type=>AudioRecord
     has_many :objects, :class_name=> "Bplmodels::ObjectBase", :property=> :is_member_of_collection
 
+    has_many :objects_casted, :class_name=> "Bplmodels::ObjectBase", :property=> :is_member_of_collection, :cast=>true
+
     belongs_to :institutions, :class_name => 'Bplmodels::Institution', :property => :is_member_of
 
 

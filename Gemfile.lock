@@ -1,9 +1,9 @@
 PATH
   remote: .
   specs:
-    bplmodels (0.0.76)
+    bplmodels (0.0.78)
       mods
-      rails (~> 3.2.13)
+      rails
 
 GEM
   remote: http://rubygems.org/
