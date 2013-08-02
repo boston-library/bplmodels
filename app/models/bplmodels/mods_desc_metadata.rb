@@ -317,6 +317,7 @@ module Bplmodels
             t.sub_location(:path=>"subLocation")
           }
         }
+        t.url(:path=>"url")
       }
 
 
