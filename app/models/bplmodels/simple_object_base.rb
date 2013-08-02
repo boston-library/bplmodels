@@ -180,15 +180,17 @@ module Bplmodels
       doc['lang_term_ssim'] = self.descMetadata.language.language_term
       #doc['lang_val_uri_ssim'] = self.descMetadata.language.language_term.lang_val_uri
 
-      if self.descMetadata.related_item.length > 1
-        (1..self.descMetadata.related_item.length-1).each do |index|
+      if self.descMetadata.related_item.length > 0
+        (0..self.descMetadata.related_item.length-1).each do |index|
           related_item_type = self.descMetadata.related_item.type[index]
           if related_item_type == 'isReferencedBy'
             doc['related_item_' + related_item_type.downcase + '_ssm'] = []
             doc['related_item_' + related_item_type.downcase + '_ssm'].append(self.descMetadata.related_item.href[index])
           else
             doc['related_item_' + related_item_type + '_tsim'] = []
+            doc['related_item_' + related_item_type + '_ssim'] = []
             doc['related_item_' + related_item_type + '_tsim'].append(self.descMetadata.related_item.title_info.title[index])
+            doc['related_item_' + related_item_type + '_ssim'].append(self.descMetadata.related_item.title_info.title[index])
           end
         end
       end
