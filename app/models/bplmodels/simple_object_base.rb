@@ -250,28 +250,36 @@ module Bplmodels
       doc['subject_geographic_ssim'] = self.descMetadata.subject.geographic
 
 
+      #doc['subject_facet_ssim'] = self.descMetadata.subject.topic  +  self.descMetadata.subject.corporate_name.name_part + self.descMetadata.subject.personal_name.name_part
+      doc['subject_facet_ssim'] = self.descMetadata.subject.topic
+
       doc['subject_name_personal_tsim'] = []
       doc['subject_name_corporate_tsim'] = []
       0.upto self.descMetadata.subject.length-1 do |index|
         if self.descMetadata.subject(index).personal_name.length > 0
           if self.descMetadata.subject(index).personal_name.date.length > 0
-            doc['subject_name_personal_tsim'].append(self.descMetadata.subject(index).personal_name.name_part[0] + ", " + self.descMetadata.subject(index).personal_name.date[0])
+            #doc['subject_name_personal_tsim'].append(self.descMetadata.subject(index).personal_name.name_part[0] + ", " + self.descMetadata.subject(index).personal_name.date[0])
+            subject_name_personal = self.descMetadata.subject(index).personal_name.name_part[0] + ", " + self.descMetadata.subject(index).personal_name.date[0]
           else
-            doc['subject_name_personal_tsim'].append(self.descMetadata.subject(index).personal_name.name_part[0])
+            #doc['subject_name_personal_tsim'].append(self.descMetadata.subject(index).personal_name.name_part[0])
+            subject_name_personal = self.descMetadata.subject(index).personal_name.name_part[0]
           end
+          doc['subject_name_personal_tsim'].append(subject_name_personal)
+          doc['subject_facet_ssim'].append(subject_name_personal)
         end
         if self.descMetadata.subject(index).corporate_name.length > 0
           if self.descMetadata.subject(index).corporate_name.date.length > 0
-            doc['subject_name_corporate_tsim'].append(self.descMetadata.subject(index).corporate_name.name_part[0] + ", " + self.descMetadata.subject(index).corporate_name.date[0])
+            #doc['subject_name_corporate_tsim'].append(self.descMetadata.subject(index).corporate_name.name_part[0] + ", " + self.descMetadata.subject(index).corporate_name.date[0])
+            subject_name_corporate = self.descMetadata.subject(index).corporate_name.name_part[0] + ", " + self.descMetadata.subject(index).corporate_name.date[0]
           else
-            doc['subject_name_corporate_tsim'].append(self.descMetadata.subject(index).corporate_name.name_part[0])
+            #doc['subject_name_corporate_tsim'].append(self.descMetadata.subject(index).corporate_name.name_part[0])
+            subject_name_corporate = self.descMetadata.subject(index).corporate_name.name_part[0]
           end
+          doc['subject_name_corporate_tsim'].append(subject_name_corporate)
+          doc['subject_facet_ssim'].append(subject_name_corporate)
         end
 
       end
-
-
-      doc['subject_facet_ssim'] = self.descMetadata.subject.topic  +  self.descMetadata.subject.corporate_name.name_part + self.descMetadata.subject.personal_name.name_part
 
       doc['active_fedora_model_suffix_ssi'] = self.rels_ext.model.class.to_s.gsub(/\A[\w]*::/,'')
 
