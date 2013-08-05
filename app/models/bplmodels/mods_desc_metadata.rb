@@ -403,7 +403,7 @@ module Bplmodels
 
       t.related_item(:path=>"relatedItem") {
         t.type(:path=>{:attribute=>"type"})
-        t.href(:path=>{:attribute=>"href"})
+        t.href(:path=>{:attribute=>'xlink:href'})
         t.title_info(:path=>"titleInfo") {
           t.title
         }
