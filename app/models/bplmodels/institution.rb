@@ -49,17 +49,19 @@ module Bplmodels
       state = self.descMetadata.subject.hierarchical_geographic.state
       county = self.descMetadata.subject.hierarchical_geographic.county
       city = self.descMetadata.subject.hierarchical_geographic.city
+      city_section = self.descMetadata.subject.hierarchical_geographic.city_section
 
       doc['subject_geo_country_tsim'] = country
       doc['subject_geo_state_tsim'] = state
       doc['subject_geo_county_tsim'] = county
       doc['subject_geo_city_tsim'] = city
+      doc['subject_geo_citysection_tsim'] = city_section
 
-      doc['subject_geographic_ssim'] = county + city
+      doc['subject_geographic_ssim'] = county + city + city_section
 
 
       # coordinates
-      doc['subject_coordinates_ssm'] = self.descMetadata.subject.cartographics.coordinates
+      doc['subject_coordinates_coordinate'] = self.descMetadata.subject.cartographics.coordinates
 
       doc['institution_pid_si'] = self.pid
 
