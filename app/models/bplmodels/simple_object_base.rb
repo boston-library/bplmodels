@@ -185,7 +185,7 @@ module Bplmodels
           related_item_type = self.descMetadata.related_item.type[index]
           if related_item_type == 'isReferencedBy'
             doc['related_item_' + related_item_type.downcase + '_ssm'] = []
-            doc['related_item_' + related_item_type.downcase + '_ssm'].append(self.descMetadata.related_item(index).href)
+            doc['related_item_' + related_item_type.downcase + '_ssm'].append(self.descMetadata.related_item(index).href[0])
           else
             doc['related_item_' + related_item_type + '_tsim'] = []
             doc['related_item_' + related_item_type + '_ssim'] = []
