@@ -57,11 +57,11 @@ module Bplmodels
       doc['subject_geo_city_tsim'] = city
       doc['subject_geo_citysection_tsim'] = city_section
 
+      # add hierarchical geo to subject-geo facet field
       doc['subject_geographic_ssim'] = county + city + city_section
 
-
       # coordinates
-      doc['subject_coordinates_coordinate'] = self.descMetadata.subject.cartographics.coordinates
+      doc['subject_coordinates_geospatial'] = self.descMetadata.subject.cartographics.coordinates
 
       doc['institution_pid_si'] = self.pid
 
