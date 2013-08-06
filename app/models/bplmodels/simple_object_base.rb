@@ -245,10 +245,28 @@ module Bplmodels
 
       doc['subject_topic_tsim'] = self.descMetadata.subject.topic
 
-      doc['subject_geographic_tsim'] = self.descMetadata.subject.geographic
+      # subject - geographic
+      subject_geo = self.descMetadata.subject.geographic
+      doc['subject_geographic_tsim'] = subject_geo
 
-      doc['subject_geographic_ssim'] = self.descMetadata.subject.geographic
+      # hierarchical geo
+      country = self.descMetadata.subject.hierarchical_geographic.country
+      state = self.descMetadata.subject.hierarchical_geographic.state
+      county = self.descMetadata.subject.hierarchical_geographic.county
+      city = self.descMetadata.subject.hierarchical_geographic.city
+      city_section = self.descMetadata.subject.hierarchical_geographic.city_section
 
+      doc['subject_geo_country_tsim'] = country
+      doc['subject_geo_state_tsim'] = state
+      doc['subject_geo_county_tsim'] = county
+      doc['subject_geo_city_tsim'] = city
+      doc['subject_geo_citysection_tsim'] = city_section
+
+      # coordinates
+      doc['subject_coordinates_geospatial'] = self.descMetadata.subject.cartographics.coordinates
+
+      # add values to subject-geo facet field
+      doc['subject_geographic_ssim'] = subject_geo + county + city + city_section
 
       doc['subject_name_personal_tsim'] = []
       doc['subject_name_corporate_tsim'] = []

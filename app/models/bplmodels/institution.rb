@@ -64,6 +64,7 @@ module Bplmodels
       doc['subject_coordinates_geospatial'] = self.descMetadata.subject.cartographics.coordinates
 
       doc['institution_pid_si'] = self.pid
+      doc['institution_pid_ssi'] = self.pid
 
 
       doc
