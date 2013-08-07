@@ -331,8 +331,8 @@ module Bplmodels
         doc['workflow_state_ssi'] = self.workflowMetadata.item_status.state
       end
 
-      if self.exemplary_image
-        doc['exemplary_image_ss'] = self.exemplary_image[0].pid
+      if self.exemplary_image.first != nil
+        doc['exemplary_image_ss'] = self.exemplary_image.first.pid
       end
 
 
