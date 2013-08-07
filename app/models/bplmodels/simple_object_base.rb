@@ -332,7 +332,7 @@ module Bplmodels
       end
 
       if self.exemplary_image
-        doc['exemplary_image_ss'] = self.exemplary_image.pid
+        doc['exemplary_image_ss'] = self.exemplary_image[0].pid
       end
 
 
