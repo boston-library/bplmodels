@@ -6,9 +6,11 @@ module Bplmodels
     include Hydra::ModelMixins::RightsMetadata
     include Hydra::ModelMethods
 
-
+    has_many :exemplary_image, :class_name => "Bplmodels::ImageFile", :property=> :is_exemplary_image_of
 
     has_many :image_files, :class_name => "Bplmodels::ImageFile", :property=> :is_image_of
+
+
     belongs_to :institution, :class_name => 'Bplmodels::Institution', :property => :is_member_of
 
 
@@ -298,6 +300,12 @@ module Bplmodels
       if self.workflowMetadata
         doc['workflow_state_ssi'] = self.workflowMetadata.item_status.state
       end
+
+      if self.exemplary_image
+        doc['exemplary_image_ssi'] = self.exemplary_image.pid
+      end
+
+
 
 
       #doc['all_text_timv'] = [self.descMetadata.abstract, main_title, self.rels_ext.model.class.to_s.gsub(/\A[\w]*::/,''),self.descMetadata.item_location(0).physical_location[0]]

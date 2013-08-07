@@ -4,6 +4,8 @@ module Bplmodels
     include Hydra::ModelMethods
     include Hydra::ModelMixins::RightsMetadata
 
+    include ActiveFedora::Auditable
+
     # Uses the Hydra Rights Metadata Schema for tracking access permissions & copyright
     has_metadata :name => "rightsMetadata", :type => Hydra::Datastream::RightsMetadata
 

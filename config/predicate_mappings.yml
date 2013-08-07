@@ -58,3 +58,4 @@
     :has_subcollection: hasSubcollection
     :has_crop: hasCrop
     :is_crop_of: isCropOf
+    :is_exemplary_image_of: isExemplaryImageOf

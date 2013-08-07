@@ -39,6 +39,7 @@ role_map_test.yml
 *.dll
 *.sqlite
 *.sql
+*.lock
 
 # Specific Files to ignore #
 ############################
