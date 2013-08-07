@@ -51,6 +51,16 @@ module Bplmodels
         }
       }
 
+      # IDENTIIER ------------------------------------------------------------------------------
+      t.identifier(:path => 'mods/oxns:identifier') {
+        t.displayLabel :path=>{:attribute=>'displayLabel'}
+        t.invalid :path=>{:attribute=>'invalid'}
+        t.type_at :path=>{:attribute=>'type'}
+        ::Mods::LANG_ATTRIBS.each { |attr_name|
+          t.send attr_name, :path =>{:attribute=>"#{attr_name}"}
+        }
+      }
+
 =begin
       # ACCESS_CONDITION -----------------------------------------------------------------------
       t.accessCondition(:path => 'mods/oxns:accessCondition') {
@@ -77,16 +87,6 @@ module Bplmodels
       # EXTENSION ------------------------------------------------------------------------------
       t.extension(:path => 'mods/oxns:extension') {
         t.displayLabel :path=>{:attribute=>'displayLabel'}
-      }
-
-      # IDENTIIER ------------------------------------------------------------------------------
-      t.identifier(:path => 'mods/oxns:identifier') {
-        t.displayLabel :path=>{:attribute=>'displayLabel'}
-        t.invalid :path=>{:attribute=>'invalid'}
-        t.type_at :path=>{:attribute=>'type'}
-        ::Mods::LANG_ATTRIBS.each { |attr_name|
-          t.send attr_name, :path =>{:attribute=>"#{attr_name}"}
-        }
       }
 
       # LANGUAGE -------------------------------------------------------------------------------
@@ -317,6 +317,7 @@ module Bplmodels
             t.sub_location(:path=>"subLocation")
           }
         }
+        t.url(:path=>"url")
       }
 
 
@@ -337,7 +338,9 @@ module Bplmodels
         t.extent(:path=>"extent")
       }
 
-      t.note(:path=>"note")
+      t.note(:path=>"note") {
+        t.type_at(:path=>{:attribute=>"type"})
+      }
 
       t.test1(:path=>'mods/oxns:subject/oxns:name') {
         t.name_part(:path=>"namePart[not(@type)]")
@@ -400,7 +403,7 @@ module Bplmodels
 
       t.related_item(:path=>"relatedItem") {
         t.type(:path=>{:attribute=>"type"})
-        t.href(:path=>{:attribute=>"href"})
+        t.href(:path=>{:attribute=>'xlink:href'})
         t.title_info(:path=>"titleInfo") {
           t.title
         }
@@ -410,7 +413,7 @@ module Bplmodels
 
       t.use_and_reproduction(:path=>"accessCondition", :attributes=>{:type=>"use and reproduction"})
 
-      t.restriction_on_access(:path=>"accessCondition", :attributes=>{:type=>"restriction on access"})
+      t.restriction_on_access(:path=>"accessCondition", :attributes=>{:type=>"restrictions on access"})
 
 
 

@@ -182,15 +182,17 @@ module Bplmodels
       doc['lang_term_ssim'] = self.descMetadata.language.language_term
       #doc['lang_val_uri_ssim'] = self.descMetadata.language.language_term.lang_val_uri
 
-      if self.descMetadata.related_item.length > 1
-        (1..self.descMetadata.related_item.length-1).each do |index|
+      if self.descMetadata.related_item.length > 0
+        (0..self.descMetadata.related_item.length-1).each do |index|
           related_item_type = self.descMetadata.related_item.type[index]
           if related_item_type == 'isReferencedBy'
             doc['related_item_' + related_item_type.downcase + '_ssm'] = []
-            doc['related_item_' + related_item_type.downcase + '_ssm'].append(self.descMetadata.related_item.href[index])
+            doc['related_item_' + related_item_type.downcase + '_ssm'].append(self.descMetadata.related_item(index).href[0])
           else
             doc['related_item_' + related_item_type + '_tsim'] = []
+            doc['related_item_' + related_item_type + '_ssim'] = []
             doc['related_item_' + related_item_type + '_tsim'].append(self.descMetadata.related_item.title_info.title[index])
+            doc['related_item_' + related_item_type + '_ssim'].append(self.descMetadata.related_item.title_info.title[index])
           end
         end
       end
@@ -245,33 +247,61 @@ module Bplmodels
 
       doc['subject_topic_tsim'] = self.descMetadata.subject.topic
 
-      doc['subject_geographic_tsim'] = self.descMetadata.subject.geographic
+      # subject - geographic
+      subject_geo = self.descMetadata.subject.geographic
+      doc['subject_geographic_tsim'] = subject_geo
 
-      doc['subject_geographic_ssim'] = self.descMetadata.subject.geographic
+      # hierarchical geo
+      country = self.descMetadata.subject.hierarchical_geographic.country
+      state = self.descMetadata.subject.hierarchical_geographic.state
+      county = self.descMetadata.subject.hierarchical_geographic.county
+      city = self.descMetadata.subject.hierarchical_geographic.city
+      city_section = self.descMetadata.subject.hierarchical_geographic.city_section
 
+      doc['subject_geo_country_tsim'] = country
+      doc['subject_geo_state_tsim'] = state
+      doc['subject_geo_county_tsim'] = county
+      doc['subject_geo_city_tsim'] = city
+      doc['subject_geo_citysection_tsim'] = city_section
+
+      # coordinates
+      doc['subject_coordinates_geospatial'] = self.descMetadata.subject.cartographics.coordinates
+
+      # add values to subject-geo facet field
+      doc['subject_geographic_ssim'] = subject_geo + county + city + city_section
 
       doc['subject_name_personal_tsim'] = []
       doc['subject_name_corporate_tsim'] = []
+      doc['subject_facet_ssim'] = []
       0.upto self.descMetadata.subject.length-1 do |index|
         if self.descMetadata.subject(index).personal_name.length > 0
           if self.descMetadata.subject(index).personal_name.date.length > 0
-            doc['subject_name_personal_tsim'].append(self.descMetadata.subject(index).personal_name.name_part[0] + ", " + self.descMetadata.subject(index).personal_name.date[0])
+            #doc['subject_name_personal_tsim'].append(self.descMetadata.subject(index).personal_name.name_part[0] + ", " + self.descMetadata.subject(index).personal_name.date[0])
+            subject_name_personal = self.descMetadata.subject(index).personal_name.name_part[0] + ", " + self.descMetadata.subject(index).personal_name.date[0]
           else
-            doc['subject_name_personal_tsim'].append(self.descMetadata.subject(index).personal_name.name_part[0])
+            #doc['subject_name_personal_tsim'].append(self.descMetadata.subject(index).personal_name.name_part[0])
+            subject_name_personal = self.descMetadata.subject(index).personal_name.name_part[0]
           end
+          doc['subject_name_personal_tsim'].append(subject_name_personal)
+          doc['subject_facet_ssim'].append(subject_name_personal)
         end
         if self.descMetadata.subject(index).corporate_name.length > 0
           if self.descMetadata.subject(index).corporate_name.date.length > 0
-            doc['subject_name_corporate_tsim'].append(self.descMetadata.subject(index).corporate_name.name_part[0] + ", " + self.descMetadata.subject(index).corporate_name.date[0])
+            #doc['subject_name_corporate_tsim'].append(self.descMetadata.subject(index).corporate_name.name_part[0] + ", " + self.descMetadata.subject(index).corporate_name.date[0])
+            subject_name_corporate = self.descMetadata.subject(index).corporate_name.name_part[0] + ", " + self.descMetadata.subject(index).corporate_name.date[0]
           else
-            doc['subject_name_corporate_tsim'].append(self.descMetadata.subject(index).corporate_name.name_part[0])
+            #doc['subject_name_corporate_tsim'].append(self.descMetadata.subject(index).corporate_name.name_part[0])
+            subject_name_corporate = self.descMetadata.subject(index).corporate_name.name_part[0]
           end
+          doc['subject_name_corporate_tsim'].append(subject_name_corporate)
+          doc['subject_facet_ssim'].append(subject_name_corporate)
         end
 
       end
 
+      #doc['subject_facet_ssim'] = self.descMetadata.subject.topic  +  self.descMetadata.subject.corporate_name.name_part + self.descMetadata.subject.personal_name.name_part
 
-      doc['subject_facet_ssim'] = self.descMetadata.subject.topic  +  self.descMetadata.subject.corporate_name.name_part + self.descMetadata.subject.personal_name.name_part
+      doc['subject_facet_ssim'].concat(self.descMetadata.subject.topic)
 
       doc['active_fedora_model_suffix_ssi'] = self.rels_ext.model.class.to_s.gsub(/\A[\w]*::/,'')
 
