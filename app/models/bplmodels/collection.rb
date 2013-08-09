@@ -8,7 +8,7 @@ module Bplmodels
 
     belongs_to :institutions, :class_name => 'Bplmodels::Institution', :property => :is_member_of
 
-    has_many :image_files, :class_name => "Bplmodels::ImageFile", :property=> :is_image_of
+    has_many :image_files, :class_name => "Bplmodels::ImageFile", :property=> :is_exemplary_image_of
 
     # Uses the Hydra modsCollection profile for collection list
     #has_metadata :name => "members", :type => Hydra::ModsCollectionMembers
