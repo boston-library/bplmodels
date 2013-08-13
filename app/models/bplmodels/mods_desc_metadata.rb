@@ -300,7 +300,7 @@ module Bplmodels
       t.type_of_resource(:path=>"typeOfResource")
 
 
-      t.genre_basic(:path=>"genre", :attributes=>{ :authority => "gmgpc", :displayLabel => "general"})
+      t.genre_basic(:path=>"genre", :attributes=>{:displayLabel => "general"})
 
       t.genre_specific(:path=>"genre", :attributes=>{:displayLabel => "specific"})
 
