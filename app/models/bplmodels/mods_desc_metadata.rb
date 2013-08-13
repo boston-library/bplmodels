@@ -30,7 +30,8 @@ module Bplmodels
       #t.abstract(:path=>"abstract", :index_as=>[indexer_single])
 
       # ABSTRACT -------------------------------------------------------------------------------
-      t.abstract(:path=>"mods/oxns:abstract") {
+      #t.abstract(:path=>"mods/oxns:abstract") {
+      t.abstract(:path=>"abstract") {
         t.displayLabel :path=>{:attribute=>'displayLabel'}
         t.type_at :path=>{:attribute=>"type"}
         ::Mods::LANG_ATTRIBS.each { |attr_name|
