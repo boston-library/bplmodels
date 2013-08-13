@@ -73,6 +73,10 @@ module Bplmodels
         doc['institution_pid_ssi'] = self.institutions.pid
       end
 
+      if self.image_files.first != nil
+        doc['exemplary_image_ss'] = self.image_files.first.pid
+      end
+
 
 
 =begin
