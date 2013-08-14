@@ -18,6 +18,10 @@ module Bplmodels
 
     delegate :abstract, :to=>'descMetadata', :at => [:abstract], :unique=>true
 
+    delegate :abstract2, :to=>'descMetadata', :at => [:abstract]
+
+
+
     #delegate :title, :to=>'descMetadata', :at => [:mods, :titleInfo, :title], :unique=>true
     #delegate :abstract, :to => "descMetadata"
     #delegate :url, :to=>'descMetadata', :at => [:relatedItem, :location, :url], :unique=>true

@@ -39,6 +39,10 @@ module Bplmodels
         }
       }
 
+      #t.stripped_abstract(:path=>"abstract", :attributes=>{:displayLabel=>"Plain text"})
+
+
+
       # GENRE ----------------------------------------------------------------------------------
       t.genre(:path => 'mods/oxns:genre') {
         t.displayLabel :path => {:attribute=>'displayLabel'}
