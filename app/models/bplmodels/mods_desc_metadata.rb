@@ -39,7 +39,9 @@ module Bplmodels
         }
       }
 
-      #t.stripped_abstract(:path=>"abstract", :attributes=>{:displayLabel=>"Plain text"})
+      t.abstract_plain(:path=>"abstract", :attributes=>{:displayLabel=>"Plain Text"})
+
+      t.abstract_html(:path=>"abstract", :attributes=>{:displayLabel=>"HTML Text"})
 
 
 

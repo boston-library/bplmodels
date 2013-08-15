@@ -24,6 +24,12 @@ module Bplmodels
     # Uses the Hydra Rights Metadata Schema for tracking access permissions & copyright
     has_metadata :name => "rightsMetadata", :type => Hydra::Datastream::RightsMetadata
 
+    delegate :abstract, :to=>'descMetadata', :at => [:abstract]
+
+    delegate :abstract_plain, :to=>'descMetadata', :at => [:abstract_plain]
+
+    delegate :abstract_html, :to=>'descMetadata', :at => [:abstract_html]
+
 
     #has_file_datastream :name => "productionMaster", :type => FileContentDatastream
     #has_file_datastream :name => "accessMaster", :type => FileContentDatastream
