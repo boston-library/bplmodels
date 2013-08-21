@@ -16,11 +16,7 @@ module Bplmodels
     # collections and institutions can have an associated image file
     has_many :image_files, :class_name => "Bplmodels::ImageFile", :property=> :is_image_of
 
-    delegate :abstract, :to=>'descMetadata', :at => [:abstract]
-
-    delegate :abstract_plain, :to=>'descMetadata', :at => [:abstract_plain]
-
-    delegate :abstract_html, :to=>'descMetadata', :at => [:abstract_html]
+    delegate :abstract, :to=>'descMetadata', :at => [:abstract], :unique=>true
 
 
 
