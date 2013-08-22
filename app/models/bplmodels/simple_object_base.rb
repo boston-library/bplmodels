@@ -141,17 +141,6 @@ module Bplmodels
 
       doc['abstract_tsim'] = self.descMetadata.abstract
 
-      # HTML description
-      doc['abstract_html_ssi'] = self.descMetadata.abstract_html
-
-      # Plain Text description
-      if self.descMetadata.abstract_plain.first == nil
-        doc['abstract_plain_ssi'] = self.descMetadata.abstract
-      else
-        doc['abstract_plain_ssi'] = self.descMetadata.abstract_plain
-      end
-
-
       doc['genre_basic_tsim'] = self.descMetadata.genre_basic
       doc['genre_specific_tsim'] = self.descMetadata.genre_specific
 
