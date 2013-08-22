@@ -143,7 +143,6 @@ module Bplmodels
 
       doc['abstract_tsim'] = self.descMetadata.abstract
 
-
       doc['genre_basic_tsim'] = self.descMetadata.genre_basic
       doc['genre_specific_tsim'] = self.descMetadata.genre_specific
 
