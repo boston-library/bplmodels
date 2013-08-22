@@ -26,6 +26,8 @@ module Bplmodels
 
     delegate :abstract, :to=>'descMetadata', :at => [:abstract], :unique=>true
     delegate :title, :to=>'descMetadata', :at => [:title]
+    delegate :supplied_title, :to=>'descMetadata', :at => [:title_info, :supplied]
+    delegate :note_value, :to=>'descMetadata', :at => [:note]
 
 
     #has_file_datastream :name => "productionMaster", :type => FileContentDatastream
@@ -140,16 +142,6 @@ module Bplmodels
       end
 
       doc['abstract_tsim'] = self.descMetadata.abstract
-
-      # HTML description
-      doc['abstract_html_ssi'] = self.descMetadata.abstract_html
-
-      # Plain Text description
-      if self.descMetadata.abstract_plain.first == nil
-        doc['abstract_plain_ssi'] = self.descMetadata.abstract
-      else
-        doc['abstract_plain_ssi'] = self.descMetadata.abstract_plain
-      end
 
 
       doc['genre_basic_tsim'] = self.descMetadata.genre_basic
