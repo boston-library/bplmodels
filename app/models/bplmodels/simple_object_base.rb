@@ -28,6 +28,7 @@ module Bplmodels
     delegate :title, :to=>'descMetadata', :at => [:title]
     delegate :supplied_title, :to=>'descMetadata', :at => [:title_info, :supplied]
     delegate :note_value, :to=>'descMetadata', :at => [:note]
+    delegate :workflow_state, :to=>'workflowMetadata', :at => [:item_status, :state], :unique=>true
 
 
     #has_file_datastream :name => "productionMaster", :type => FileContentDatastream
