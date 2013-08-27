@@ -234,15 +234,6 @@ module Bplmodels
       end
 
 
-
-      if self.descMetadata.name(0).type[0] == "personal"
-        doc['name_personal_tsim'] =  [self.descMetadata.name(0).namePart[0]]
-        doc['name_personal_role_tsim'] =  [self.descMetadata.name(0).role[0].strip]
-      elsif self.descMetadata.name(0).type[0] == "corporate"
-        doc['name_corporate_tsim'] =  [self.descMetadata.name(0).namePart[0]]
-        doc['name_corporate_role_tsim'] =  [self.descMetadata.name(0).role[0].strip]
-      end
-
       doc['type_of_resource_ssim'] = self.descMetadata.type_of_resource
 
       doc['extent_tsi']  = self.descMetadata.physical_description(0).extent[0]
