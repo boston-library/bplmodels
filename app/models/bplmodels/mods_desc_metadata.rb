@@ -590,17 +590,32 @@ module Bplmodels
       self.find_by_terms(:type_of_resource).slice(index.to_i).remove
     end
 
-    define_template :publisher do |xml, value|
-      xml.originInfo {
-        xml.publisher {
-          xml.text value
+    define_template :publisher do |xml, value, place|
+      if place != nil && place.length > 0
+        xml.originInfo {
+          xml.publisher {
+            xml.text value
+          }
+          xml.place {
+            xml.placeTerm(:type=>"text") {
+              xml.text place
+            }
+          }
         }
-      }
+
+      else
+        xml.originInfo {
+          xml.publisher {
+            xml.text value
+          }
+        }
+      end
+
     end
 
-    def insert_publisher(value=nil)
+    def insert_publisher(value=nil, place=nil)
       if(value != nil && value.length > 1)
-        add_child_node(ng_xml.root, :publisher, value)
+        add_child_node(ng_xml.root, :publisher, value, place)
       end
     end
 
@@ -609,7 +624,7 @@ module Bplmodels
     end
 
 
-    define_template :genre do |xml, value, authority, value_uri, is_general|
+    define_template :genre do |xml, value, value_uri, authority, is_general|
 
       if is_general
         xml.genre(:authority=>authority, :authorityURI=>"http://id.loc.gov/vocabulary/graphicMaterials", :valueURI=>value_uri, :displayLabel=>"general") {
@@ -704,11 +719,20 @@ module Bplmodels
     end
 
 
-    define_template :name do |xml, name, type, authority, role, uri|
-      if type != nil && type.length > 1 && authority !=nil && authority.length > 1 && uri !=nil && uri.length > 1
-        xml.name(:type=>type, :authority=>authority) {
+    define_template :name do |xml, name, type, authority, role, uri, role_uri|
+      if type != nil && type.length > 1 && authority !=nil && authority.length > 1 && uri !=nil && uri.length > 1 && role_uri !=nil && role_uri.length > 1
+        xml.name(:type=>type, :authority=>authority, :valueURI=>uri) {
           xml.role {
-            xml.roleTerm(:type=>"text", :authority=>"marcrelator", :authorityURI=>"http://id.loc.gov/vocabulary/relators", :valueURI=>uri)   {
+            xml.roleTerm(:type=>"text", :authority=>"marcrelator", :authorityURI=>"http://id.loc.gov/vocabulary/relators", :valueURI=>role_uri)   {
+              xml.text role
+            }
+          }
+          xml.namePart(name)
+        }
+      elsif type != nil && type.length > 1 && authority !=nil && authority.length > 1 && uri !=nil && uri.length > 1
+        xml.name(:type=>type, :authority=>authority, :valueURI=>uri) {
+          xml.role {
+            xml.roleTerm(:type=>"text", :authority=>"marcrelator", :authorityURI=>"http://id.loc.gov/vocabulary/relators")   {
               xml.text role
             }
           }
@@ -745,8 +769,8 @@ module Bplmodels
 
     end
 
-    def insert_name(name=nil, type=nil, authority=nil, role=nil, uri=nil)
-      add_child_node(ng_xml.root, :name, name, type, authority, role, uri)
+    def insert_name(name=nil, type=nil, authority=nil, role=nil, uri=nil, role_uri=nil)
+      add_child_node(ng_xml.root, :name, name, type, authority, role, uri, role_uri)
     end
 
     define_template :namePart do |xml, name|
@@ -974,33 +998,58 @@ module Bplmodels
     end
 
     #FIXME: doesn't support multiple!
-    define_template :subject_name do |xml, name, type, authority, date|
-      if date != nil && date.length > 1
-        xml.subject {
-          xml.name(:type=>type, :authority=>authority) {
-            xml.namePart {
-              xml.text name
-            }
-            xml.namePart(:type=>"date") {
-              xml.text date
+    define_template :subject_name do |xml, name, type, authority, valueURI, date|
+      if authority != nil && authority.length > 0
+        if date != nil && date.length > 1
+          xml.subject {
+            xml.name(:type=>type, :authority=>authority, :valueURI=>valueURI) {
+              xml.namePart {
+                xml.text name
+              }
+              xml.namePart(:type=>"date") {
+                xml.text date
+              }
             }
           }
-        }
 
-      else
-        xml.subject {
-          xml.name(:type=>type, :authority=>authority) {
-            xml.namePart {
-              xml.text name
+        else
+          xml.subject {
+            xml.name(:type=>type, :authority=>authority, :valueURI=>valueURI) {
+              xml.namePart {
+                xml.text name
+              }
             }
           }
-        }
+        end
+      else
+        if date != nil && date.length > 1
+          xml.subject {
+            xml.name(:type=>type) {
+              xml.namePart {
+                xml.text name
+              }
+              xml.namePart(:type=>"date") {
+                xml.text date
+              }
+            }
+          }
+
+        else
+          xml.subject {
+            xml.name(:type=>type) {
+              xml.namePart {
+                xml.text name
+              }
+            }
+          }
+        end
       end
+
 
     end
 
-    def insert_subject_name(name=nil, type=nil, authority=nil, date=nil)
-      add_child_node(ng_xml.root, :subject_name, name, type, authority, date)
+    def insert_subject_name(name=nil, type=nil, authority=nil, valueURI=nil, date=nil)
+      add_child_node(ng_xml.root, :subject_name, name, type, authority, valueURI, date)
     end
 
     define_template :subject_geographic do |xml, geographic, authority|
