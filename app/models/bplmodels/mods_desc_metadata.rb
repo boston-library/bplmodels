@@ -538,7 +538,7 @@ module Bplmodels
 
     define_template :language do |xml, value|
       xml.language {
-        xml.languageTerm(:authority=>"iso639-2b", :authorityURI=>"http://id.loc.gov/vocabulary/iso639-2", :valueURI=>"http://id.loc.gov/vocabulary/iso639-2/eng", :lang=>"eng") {
+        xml.languageTerm(:type=>"text", :authority=>"iso639-2b", :authorityURI=>"http://id.loc.gov/vocabulary/iso639-2", :valueURI=>"http://id.loc.gov/vocabulary/iso639-2/eng", :lang=>"eng") {
           xml.text "English"
         }
       }
@@ -719,7 +719,7 @@ module Bplmodels
     end
 
 
-    define_template :name do |xml, name, type, authority, role, uri, role_uri|
+    define_template :name do |xml, name, type, authority, uri, role, role_uri|
       if type != nil && type.length > 1 && authority !=nil && authority.length > 1 && uri !=nil && uri.length > 1 && role_uri !=nil && role_uri.length > 1
         xml.name(:type=>type, :authority=>authority, :valueURI=>uri) {
           xml.role {
@@ -733,6 +733,15 @@ module Bplmodels
         xml.name(:type=>type, :authority=>authority, :valueURI=>uri) {
           xml.role {
             xml.roleTerm(:type=>"text", :authority=>"marcrelator", :authorityURI=>"http://id.loc.gov/vocabulary/relators")   {
+              xml.text role
+            }
+          }
+          xml.namePart(name)
+        }
+      elsif type != nil && type.length > 1 && authority !=nil && authority.length > 1 && role_uri !=nil && role_uri.length > 1
+        xml.name(:type=>type, :authority=>authority) {
+          xml.role {
+            xml.roleTerm(:type=>"text", :authority=>"marcrelator", :authorityURI=>"http://id.loc.gov/vocabulary/relators", :valueURI=>role_uri)   {
               xml.text role
             }
           }
@@ -769,8 +778,8 @@ module Bplmodels
 
     end
 
-    def insert_name(name=nil, type=nil, authority=nil, role=nil, uri=nil, role_uri=nil)
-      add_child_node(ng_xml.root, :name, name, type, authority, role, uri, role_uri)
+    def insert_name(name=nil, type=nil, authority=nil, uri=nil, role=nil, role_uri=nil)
+      add_child_node(ng_xml.root, :name, name, type, authority, uri, role, role_uri)
     end
 
     define_template :namePart do |xml, name|
