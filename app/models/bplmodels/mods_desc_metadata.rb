@@ -1023,7 +1023,7 @@ module Bplmodels
     def insert_date_issued(dateStarted=nil, dateEnding=nil, dateQualifier=nil)
       #begin
       if self.find_by_terms(:origin_info) != nil && self.find_by_terms(:origin_info).slice(0) != nil
-        add_child_node(self.find_by_terms(:origin_info).slice(0), :date_issued_partial, dateStarted, dateEnding, dateQualifier, dateOther)
+        add_child_node(self.find_by_terms(:origin_info).slice(0), :date_issued_partial, dateStarted, dateEnding, dateQualifier)
       else
         add_child_node(ng_xml.root, :date_issued, dateStarted, dateEnding, dateQualifier)
       end
