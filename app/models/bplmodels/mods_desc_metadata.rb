@@ -536,16 +536,16 @@ module Bplmodels
 
 
 
-    define_template :language do |xml, value|
+    define_template :language do |xml, value, code|
       xml.language {
-        xml.languageTerm(:type=>"text", :authority=>"iso639-2b", :authorityURI=>"http://id.loc.gov/vocabulary/iso639-2", :valueURI=>"http://id.loc.gov/vocabulary/iso639-2/eng", :lang=>"eng") {
-          xml.text "English"
+        xml.languageTerm(:type=>"text", :authority=>"iso639-2b", :authorityURI=>"http://id.loc.gov/vocabulary/iso639-2", :valueURI=>"http://id.loc.gov/vocabulary/iso639-2/#{code}", :lang=>code) {
+          xml.text value
         }
       }
     end
 
-    def insert_language(value=nil)
-      add_child_node(ng_xml.root, :language, value)
+    def insert_language(value=nil, code='eng')
+      add_child_node(ng_xml.root, :language, value, code)
     end
 
     def remove_language(index)
@@ -950,6 +950,89 @@ module Bplmodels
 
     def remove_date(index)
       self.find_by_terms(:date).slice(index.to_i).remove
+    end
+
+    define_template :date_issued do |xml, dateStarted, dateEnding, dateQualifier|
+
+      if dateStarted != nil && dateStarted.length > 0 && dateEnding != nil && dateEnding.length > 0 && dateQualifier!= nil && dateQualifier.length > 0
+        xml.originInfo {
+          xml.dateIssued(:encoding=>"w3cdtf", :keyDate=>"yes", :point=>"start", :qualifier=>dateQualifier) {
+            xml.text dateStarted
+          }
+          xml.dateCreated(:encoding=>"w3cdtf", :point=>"end", :qualifier=>dateQualifier) {
+            xml.text dateEnding
+          }
+        }
+      elsif dateStarted != nil && dateStarted.length > 0 && dateEnding != nil && dateEnding.length > 0
+        xml.originInfo {
+          xml.dateIssued(:encoding=>"w3cdtf", :keyDate=>"yes", :point=>"start") {
+            xml.text dateStarted
+          }
+          xml.dateCreated(:encoding=>"w3cdtf", :point=>"end") {
+            xml.text dateEnding
+          }
+        }
+      elsif dateStarted != nil && dateStarted.length > 0 && dateQualifier!= nil && dateQualifier.length > 0
+        xml.originInfo {
+          xml.dateIssued(:encoding=>"w3cdtf", :keyDate=>"yes", :qualifier=>dateQualifier) {
+            xml.text dateStarted
+          }
+        }
+      elsif dateStarted != nil && dateStarted.length > 0
+        xml.originInfo {
+          xml.dateIssued(:encoding=>"w3cdtf", :keyDate=>"yes") {
+            xml.text dateStarted
+          }
+        }
+      else
+        #puts "error in dates?"
+
+      end
+    end
+
+    define_template :date_issued_partial do |xml, dateStarted, dateEnding, dateQualifier|
+
+      if dateStarted != nil && dateStarted.length > 0 && dateEnding != nil && dateEnding.length > 0 && dateQualifier!= nil && dateQualifier.length > 0
+        xml.dateIssued(:encoding=>"w3cdtf", :keyDate=>"yes", :point=>"start", :qualifier=>dateQualifier) {
+          xml.text dateStarted
+        }
+        xml.dateIssued(:encoding=>"w3cdtf", :point=>"end", :qualifier=>dateQualifier) {
+          xml.text dateEnding
+        }
+      elsif dateStarted != nil && dateStarted.length > 0 && dateEnding != nil && dateEnding.length > 0
+        xml.dateIssued(:encoding=>"w3cdtf", :keyDate=>"yes", :point=>"start") {
+          xml.text dateStarted
+        }
+        xml.dateIssued(:encoding=>"w3cdtf", :point=>"end") {
+          xml.text dateEnding
+        }
+      elsif dateStarted != nil && dateStarted.length > 0 && dateQualifier!= nil && dateQualifier.length > 0
+        xml.dateIssued(:encoding=>"w3cdtf", :keyDate=>"yes", :qualifier=>dateQualifier) {
+          xml.text dateStarted
+        }
+      elsif dateStarted != nil && dateStarted.length > 0
+        xml.dateIssued(:encoding=>"w3cdtf", :keyDate=>"yes") {
+          xml.text dateStarted
+        }
+      else
+        #puts "error in dates?"
+
+      end
+    end
+
+    def insert_date_issued(dateStarted=nil, dateEnding=nil, dateQualifier=nil)
+      #begin
+      if self.find_by_terms(:origin_info) != nil && self.find_by_terms(:origin_info).slice(0) != nil
+        add_child_node(self.find_by_terms(:origin_info).slice(0), :date_issued_partial, dateStarted, dateEnding, dateQualifier, dateOther)
+      else
+        add_child_node(ng_xml.root, :date_issued, dateStarted, dateEnding, dateQualifier)
+      end
+
+      #rescue OM::XML::Terminology::BadPointerError
+      #add_child_node(ng_xml.root, :date, dateStarted, dateEnding, dateQualifier, dateOther)
+      #end
+
+
     end
 
     define_template :internet_media do |xml, value|
