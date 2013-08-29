@@ -676,6 +676,42 @@ module Bplmodels
           xml.title(main_title)
           xml.subtitle(subtitle)
         }
+      elsif subtitle!=nil && subtitle.length > 0 && usage != nil && nonSort!=nil && main_title != nil && supplied != nil && supplied.strip.downcase == "x"
+        xml.titleInfo(:usage=>usage, :supplied=>"yes") {
+          xml.nonSort(nonSort)
+          xml.title(main_title)
+          xml.subtitle(subtitle)
+        }
+      elsif subtitle!=nil && subtitle.length > 0 && usage != nil && nonSort!=nil && main_title != nil
+        xml.titleInfo(:usage=>usage) {
+          xml.nonSort(nonSort)
+          xml.title(main_title)
+          xml.subtitle(subtitle)
+        }
+
+      elsif subtitle!=nil && subtitle.length > 0 && usage != nil && main_title != nil && supplied != nil && supplied.strip.downcase == "x"
+        xml.titleInfo(:usage=>usage, :supplied=>"yes") {
+          xml.title(main_title)
+          xml.subtitle(subtitle)
+        }
+      elsif subtitle!=nil && subtitle.length > 0 && usage != nil && main_title != nil
+        xml.titleInfo(:usage=>usage) {
+          xml.title(main_title)
+          xml.subtitle(subtitle)
+        }
+
+      elsif subtitle!=nil && subtitle.length > 0 && nonSort!=nil && main_title != nil
+        xml.titleInfo {
+          xml.nonSort(nonSort)
+          xml.title(main_title)
+          xml.subtitle(subtitle)
+        }
+      elsif subtitle!=nil && subtitle.length > 0 && main_title != nil
+        xml.titleInfo {
+          xml.title(main_title)
+          xml.subtitle(subtitle)
+        }
+
       elsif usage != nil && nonSort!=nil && main_title != nil && supplied != nil && supplied.strip.downcase == "x"
         xml.titleInfo(:usage=>usage, :supplied=>"yes") {
           xml.nonSort(nonSort)
@@ -711,12 +747,14 @@ module Bplmodels
       add_child_node(ng_xml.root, :title_info, nonSort, main_title, usage, supplied, subtitle, language, type, authority, authorityURI, valueURI)
     end
 
-    #image.descMetadata.find_by_terms(:name).slice(0).set_attribute("new", "true")
-
-
     def remove_title(index)
       self.find_by_terms(:title_info).slice(index.to_i).remove
     end
+
+    #image.descMetadata.find_by_terms(:name).slice(0).set_attribute("new", "true")
+
+
+
 
 
     define_template :name do |xml, name, type, authority, uri, role, role_uri|
