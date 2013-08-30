@@ -186,9 +186,9 @@ module Bplmodels
       end
 
 
-      #doc['publisher_tsim'] = self.descMetadata.origin_info.publisher
+      doc['publisher_tsim'] = self.descMetadata.origin_info.publisher
 
-      #doc['pubplace_tsim'] = self.descMetadata.origin_info.place
+      doc['pubplace_tsim'] = self.descMetadata.origin_info.place.place_term
 
       doc['lang_term_ssim'] = self.descMetadata.language.language_term
       #doc['lang_val_uri_ssim'] = self.descMetadata.language.language_term.lang_val_uri

@@ -306,6 +306,9 @@ module Bplmodels
 
       t.origin_info(:path=>"originInfo") {
         t.publisher(:path=>"publisher")
+        t.place(:path=>"place") {
+          t.place_term(:path=>"placeTerm")
+        }
       }
 
       t.related_item(:path=>"relatedItem", :attributes=>{ :type => "host"}) {
