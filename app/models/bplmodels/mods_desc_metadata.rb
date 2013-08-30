@@ -538,7 +538,7 @@ module Bplmodels
 
     define_template :language do |xml, value, code|
       xml.language {
-        xml.languageTerm(:type=>"text", :authority=>"iso639-2b", :authorityURI=>"http://id.loc.gov/vocabulary/iso639-2", :valueURI=>"http://id.loc.gov/vocabulary/iso639-2/#{code}", :lang=>code) {
+        xml.languageTerm(:type=>"text", :authority=>"iso639-2b", :authorityURI=>"http://id.loc.gov/vocabulary/iso639-2", :valueURI=>"http://id.loc.gov/vocabulary/iso639-2/#{code}") {
           xml.text value
         }
       }
