@@ -323,6 +323,8 @@ module Bplmodels
         main_title = self.descMetadata.title_info(0).main_title[0]
       end
 
+      doc['subtitle_tsim'] = self.descMetadata.title_info.subtitle
+
       if self.collection
         if self.collection.institutions
            doc['institution_pid_si'] = self.collection.institutions.pid
