@@ -106,12 +106,20 @@ module Bplmodels
           # TODO insert code for date_other values here
         end
       else
-        # TODO refactor this date stuff for other date types
-        if self.descMetadata.date(0).dates_created[0] != nil
-          date_start = self.descMetadata.date(0).dates_created[0]
+        # TODO refactor this date stuff for other date types (copyrightDate)
+        # date end
+        if self.descMetadata.date(0).dates_created[0] != nil || self.descMetadata.date(0).dates_issued[0] != nil
+          # if dateCreated
+          if self.descMetadata.date(0).dates_created[0] != nil
+            date_start = self.descMetadata.date(0).dates_created[0]
+            doc['date_start_qualifier_ssm'] = self.descMetadata.date(0).dates_created.qualifier[0]
+          # if dateIssued
+          elsif self.descMetadata.date(0).dates_issued[0] != nil
+            date_start = self.descMetadata.date(0).dates_issued[0]
+            doc['date_start_qualifier_ssm'] = self.descMetadata.date(0).dates_created.qualifier[0]
+          end
           date_start.length > 4 ? date_range_start = date_start[0..3] : date_range_start = date_start
           doc['date_start_tsim'].append(date_start)
-          doc['date_start_qualifier_ssm'] = self.descMetadata.date(0).dates_created.qualifier[0]
           if date_start.length == 4
             doc['date_start_dtsi'].append(date_start + '-01-01T00:00:00.000Z')
           elsif date_start.length == 7
@@ -122,11 +130,19 @@ module Bplmodels
             doc['date_start_dtsi'].append(date_start + 'T00:00:00.000Z')
           end
         end
-        if self.descMetadata.date(0).dates_created[1] != nil
-          date_end = self.descMetadata.date(0).dates_created[1]
+        # date end
+        if self.descMetadata.date(0).dates_created[1] != nil || self.descMetadata.date(0).dates_issued[1] != nil
+          # if dateCreated
+          if self.descMetadata.date(0).dates_created[1] != nil
+            date_end = self.descMetadata.date(0).dates_created[1]
+            doc['date_end_qualifier_ssm'] = self.descMetadata.date(0).dates_created.qualifier[1]
+          # if dateIssued
+          elsif self.descMetadata.date(0).dates_issued[1] != nil
+            date_end = self.descMetadata.date(0).dates_issued[1]
+            doc['date_end_qualifier_ssm'] = self.descMetadata.date(0).dates_issued.qualifier[1]
+          end
           date_end.length > 4 ? date_range_end = date_end[0..3] : date_range_end = date_end
           doc['date_end_tsim'].append(date_end)
-          doc['date_end_qualifier_ssm'] = self.descMetadata.date(0).dates_created.qualifier[1]
           if date_start.length == 4
             doc['date_end_dtsi'].append(date_end + '-01-01T00:00:00.000Z')
           elsif date_start.length == 7
@@ -186,9 +202,9 @@ module Bplmodels
       end
 
 
-      #doc['publisher_tsim'] = self.descMetadata.origin_info.publisher
+      doc['publisher_tsim'] = self.descMetadata.origin_info.publisher
 
-      #doc['pubplace_tsim'] = self.descMetadata.origin_info.place
+      doc['pubplace_tsim'] = self.descMetadata.origin_info.place.place_term
 
       doc['lang_term_ssim'] = self.descMetadata.language.language_term
       #doc['lang_val_uri_ssim'] = self.descMetadata.language.language_term.lang_val_uri
@@ -322,6 +338,8 @@ module Bplmodels
         doc['title_info_primary_ssort'] = self.descMetadata.title_info(0).main_title[0]
         main_title = self.descMetadata.title_info(0).main_title[0]
       end
+
+      doc['subtitle_tsim'] = self.descMetadata.title_info.subtitle
 
       if self.collection
         if self.collection.institutions

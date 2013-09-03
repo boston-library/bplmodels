@@ -306,6 +306,9 @@ module Bplmodels
 
       t.origin_info(:path=>"originInfo") {
         t.publisher(:path=>"publisher")
+        t.place(:path=>"place") {
+          t.place_term(:path=>"placeTerm")
+        }
       }
 
       t.related_item(:path=>"relatedItem", :attributes=>{ :type => "host"}) {
@@ -538,7 +541,7 @@ module Bplmodels
 
     define_template :language do |xml, value, code|
       xml.language {
-        xml.languageTerm(:type=>"text", :authority=>"iso639-2b", :authorityURI=>"http://id.loc.gov/vocabulary/iso639-2", :valueURI=>"http://id.loc.gov/vocabulary/iso639-2/#{code}", :lang=>code) {
+        xml.languageTerm(:type=>"text", :authority=>"iso639-2b", :authorityURI=>"http://id.loc.gov/vocabulary/iso639-2", :valueURI=>"http://id.loc.gov/vocabulary/iso639-2/#{code}") {
           xml.text value
         }
       }
