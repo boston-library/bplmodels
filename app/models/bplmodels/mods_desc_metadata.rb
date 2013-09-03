@@ -759,41 +759,89 @@ module Bplmodels
 
     define_template :name do |xml, name, type, authority, uri, role, role_uri|
       if type != nil && type.length > 1 && authority !=nil && authority.length > 1 && uri !=nil && uri.length > 1 && role_uri !=nil && role_uri.length > 1
-        xml.name(:type=>type, :authority=>authority, :valueURI=>uri) {
-          xml.role {
-            xml.roleTerm(:type=>"text", :authority=>"marcrelator", :authorityURI=>"http://id.loc.gov/vocabulary/relators", :valueURI=>role_uri)   {
-              xml.text role
+        if(authority == 'naf')
+          xml.name(:type=>type, :authority=>authority, :authorityURI=>'http://id.loc.gov/authorities/names.html', :valueURI=>uri) {
+            xml.role {
+              xml.roleTerm(:type=>"text", :authority=>"marcrelator", :authorityURI=>"http://id.loc.gov/vocabulary/relators", :valueURI=>role_uri)   {
+                xml.text role
+              }
             }
+            xml.namePart(name)
           }
-          xml.namePart(name)
-        }
+        else
+          xml.name(:type=>type, :authority=>authority, :valueURI=>uri) {
+            xml.role {
+              xml.roleTerm(:type=>"text", :authority=>"marcrelator", :authorityURI=>"http://id.loc.gov/vocabulary/relators", :valueURI=>role_uri)   {
+                xml.text role
+              }
+            }
+            xml.namePart(name)
+          }
+        end
+
       elsif type != nil && type.length > 1 && authority !=nil && authority.length > 1 && uri !=nil && uri.length > 1
-        xml.name(:type=>type, :authority=>authority, :valueURI=>uri) {
-          xml.role {
-            xml.roleTerm(:type=>"text", :authority=>"marcrelator", :authorityURI=>"http://id.loc.gov/vocabulary/relators")   {
-              xml.text role
+        if(authority == 'naf')
+          xml.name(:type=>type, :authority=>authority, :authorityURI=>'http://id.loc.gov/authorities/names.html', :valueURI=>uri) {
+            xml.role {
+              xml.roleTerm(:type=>"text", :authority=>"marcrelator", :authorityURI=>"http://id.loc.gov/vocabulary/relators")   {
+                xml.text role
+              }
             }
+            xml.namePart(name)
           }
-          xml.namePart(name)
-        }
+        else
+          xml.name(:type=>type, :authority=>authority, :valueURI=>uri) {
+            xml.role {
+              xml.roleTerm(:type=>"text", :authority=>"marcrelator", :authorityURI=>"http://id.loc.gov/vocabulary/relators")   {
+                xml.text role
+              }
+            }
+            xml.namePart(name)
+          }
+        end
+
       elsif type != nil && type.length > 1 && authority !=nil && authority.length > 1 && role_uri !=nil && role_uri.length > 1
-        xml.name(:type=>type, :authority=>authority) {
-          xml.role {
-            xml.roleTerm(:type=>"text", :authority=>"marcrelator", :authorityURI=>"http://id.loc.gov/vocabulary/relators", :valueURI=>role_uri)   {
-              xml.text role
+        if(authority == 'naf')
+          xml.name(:type=>type, :authorityURI=>'http://id.loc.gov/authorities/names.html', :authority=>authority) {
+            xml.role {
+              xml.roleTerm(:type=>"text", :authority=>"marcrelator", :authorityURI=>"http://id.loc.gov/vocabulary/relators", :valueURI=>role_uri)   {
+                xml.text role
+              }
             }
+            xml.namePart(name)
           }
-          xml.namePart(name)
-        }
+        else
+          xml.name(:type=>type, :authority=>authority) {
+            xml.role {
+              xml.roleTerm(:type=>"text", :authority=>"marcrelator", :authorityURI=>"http://id.loc.gov/vocabulary/relators", :valueURI=>role_uri)   {
+                xml.text role
+              }
+            }
+            xml.namePart(name)
+          }
+        end
+
       elsif type != nil && type.length > 1 && authority !=nil && authority.length > 1
-        xml.name(:type=>type, :authority=>authority) {
-          xml.role {
-            xml.roleTerm(:type=>"text", :authority=>"marcrelator")   {
-              xml.text role
+        if(authority == 'naf')
+          xml.name(:type=>type, :authorityURI=>'http://id.loc.gov/authorities/names.html', :authority=>authority) {
+            xml.role {
+              xml.roleTerm(:type=>"text", :authority=>"marcrelator")   {
+                xml.text role
+              }
             }
+            xml.namePart(name)
           }
-          xml.namePart(name)
-        }
+        else
+          xml.name(:type=>type, :authority=>authority) {
+            xml.role {
+              xml.roleTerm(:type=>"text", :authority=>"marcrelator")   {
+                xml.text role
+              }
+            }
+            xml.namePart(name)
+          }
+        end
+
       elsif type != nil && type.length > 1
         xml.name(:type=>type) {
           xml.role {
@@ -1133,25 +1181,69 @@ module Bplmodels
     define_template :subject_name do |xml, name, type, authority, valueURI, date|
       if authority != nil && authority.length > 0
         if date != nil && date.length > 1
-          xml.subject {
-            xml.name(:type=>type, :authority=>authority, :valueURI=>valueURI) {
-              xml.namePart {
-                xml.text name
-              }
-              xml.namePart(:type=>"date") {
-                xml.text date
+          if authority == 'naf'
+            xml.subject {
+              xml.name(:type=>type, :authority=>authority, :authorityURI=>'http://id.loc.gov/authorities/names.html', :valueURI=>valueURI) {
+                xml.namePart {
+                  xml.text name
+                }
+                xml.namePart(:type=>"date") {
+                  xml.text date
+                }
               }
             }
-          }
+          elsif authority == 'local'
+            xml.subject {
+              xml.name(:type=>type, :authority=>authority) {
+                xml.namePart {
+                  xml.text name
+                }
+                xml.namePart(:type=>"date") {
+                  xml.text date
+                }
+              }
+            }
+          else
+            xml.subject {
+              xml.name(:type=>type, :authority=>authority, :valueURI=>valueURI) {
+                xml.namePart {
+                  xml.text name
+                }
+                xml.namePart(:type=>"date") {
+                  xml.text date
+                }
+              }
+            }
+          end
+
 
         else
-          xml.subject {
-            xml.name(:type=>type, :authority=>authority, :valueURI=>valueURI) {
-              xml.namePart {
-                xml.text name
+          if authority == 'naf'
+            xml.subject {
+              xml.name(:type=>type, :authority=>authority, :authorityURI=>'http://id.loc.gov/authorities/names.html', :valueURI=>valueURI) {
+                xml.namePart {
+                  xml.text name
+                }
               }
             }
-          }
+          elsif authority == 'local'
+            xml.subject {
+              xml.name(:type=>type, :authority=>authority) {
+                xml.namePart {
+                  xml.text name
+                }
+              }
+            }
+          else
+            xml.subject {
+              xml.name(:type=>type, :authority=>authority, :valueURI=>valueURI) {
+                xml.namePart {
+                  xml.text name
+                }
+              }
+            }
+          end
+
         end
       else
         if date != nil && date.length > 1
@@ -1340,7 +1432,9 @@ module Bplmodels
         xml.text "human prepared"
       }
       xml.languageOfCataloging(:usage=>"primary") {
-        xml.languageTerm(:authority=>"iso639-2b", :authorityURI=>"http://id.loc.gov/vocabulary/iso639-2", :valueURI=>"http://id.loc.gov/vocabulary/iso639-2/eng")
+        xml.languageTerm(:authority=>"iso639-2b", :authorityURI=>"http://id.loc.gov/vocabulary/iso639-2", :type=>'text', :valueURI=>"http://id.loc.gov/vocabulary/iso639-2/eng") {
+          xml.text "English"
+        }
       }
       xml.descriptionStandard(:authority=>"marcdescription") {
         xml.text "gihc"
