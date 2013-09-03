@@ -763,7 +763,7 @@ module Bplmodels
     define_template :name do |xml, name, type, authority, uri, role, role_uri|
       if type != nil && type.length > 1 && authority !=nil && authority.length > 1 && uri !=nil && uri.length > 1 && role_uri !=nil && role_uri.length > 1
         if(authority == 'naf')
-          xml.name(:type=>type, :authority=>authority, :authorityURI=>'http://id.loc.gov/authorities/names.html', :valueURI=>uri) {
+          xml.name(:type=>type, :authority=>authority, :authorityURI=>' http://id.loc.gov/authorities/names', :valueURI=>uri) {
             xml.role {
               xml.roleTerm(:type=>"text", :authority=>"marcrelator", :authorityURI=>"http://id.loc.gov/vocabulary/relators", :valueURI=>role_uri)   {
                 xml.text role
@@ -784,7 +784,7 @@ module Bplmodels
 
       elsif type != nil && type.length > 1 && authority !=nil && authority.length > 1 && uri !=nil && uri.length > 1
         if(authority == 'naf')
-          xml.name(:type=>type, :authority=>authority, :authorityURI=>'http://id.loc.gov/authorities/names.html', :valueURI=>uri) {
+          xml.name(:type=>type, :authority=>authority, :authorityURI=>' http://id.loc.gov/authorities/names', :valueURI=>uri) {
             xml.role {
               xml.roleTerm(:type=>"text", :authority=>"marcrelator", :authorityURI=>"http://id.loc.gov/vocabulary/relators")   {
                 xml.text role
@@ -805,7 +805,7 @@ module Bplmodels
 
       elsif type != nil && type.length > 1 && authority !=nil && authority.length > 1 && role_uri !=nil && role_uri.length > 1
         if(authority == 'naf')
-          xml.name(:type=>type, :authorityURI=>'http://id.loc.gov/authorities/names.html', :authority=>authority) {
+          xml.name(:type=>type, :authorityURI=>' http://id.loc.gov/authorities/names', :authority=>authority) {
             xml.role {
               xml.roleTerm(:type=>"text", :authority=>"marcrelator", :authorityURI=>"http://id.loc.gov/vocabulary/relators", :valueURI=>role_uri)   {
                 xml.text role
@@ -826,7 +826,7 @@ module Bplmodels
 
       elsif type != nil && type.length > 1 && authority !=nil && authority.length > 1
         if(authority == 'naf')
-          xml.name(:type=>type, :authorityURI=>'http://id.loc.gov/authorities/names.html', :authority=>authority) {
+          xml.name(:type=>type, :authorityURI=>' http://id.loc.gov/authorities/names', :authority=>authority) {
             xml.role {
               xml.roleTerm(:type=>"text", :authority=>"marcrelator")   {
                 xml.text role
@@ -1186,7 +1186,7 @@ module Bplmodels
         if date != nil && date.length > 1
           if authority == 'naf'
             xml.subject {
-              xml.name(:type=>type, :authority=>authority, :authorityURI=>'http://id.loc.gov/authorities/names.html', :valueURI=>valueURI) {
+              xml.name(:type=>type, :authority=>authority, :authorityURI=>' http://id.loc.gov/authorities/names', :valueURI=>valueURI) {
                 xml.namePart {
                   xml.text name
                 }
@@ -1223,7 +1223,7 @@ module Bplmodels
         else
           if authority == 'naf'
             xml.subject {
-              xml.name(:type=>type, :authority=>authority, :authorityURI=>'http://id.loc.gov/authorities/names.html', :valueURI=>valueURI) {
+              xml.name(:type=>type, :authority=>authority, :authorityURI=>' http://id.loc.gov/authorities/names', :valueURI=>valueURI) {
                 xml.namePart {
                   xml.text name
                 }
