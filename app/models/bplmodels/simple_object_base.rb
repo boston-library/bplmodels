@@ -271,22 +271,32 @@ module Bplmodels
 
       # hierarchical geo
       country = self.descMetadata.subject.hierarchical_geographic.country
+      province = self.descMetadata.subject.hierarchical_geographic.province
+      region = self.descMetadata.subject.hierarchical_geographic.region
       state = self.descMetadata.subject.hierarchical_geographic.state
+      territory = self.descMetadata.subject.hierarchical_geographic.territory
       county = self.descMetadata.subject.hierarchical_geographic.county
       city = self.descMetadata.subject.hierarchical_geographic.city
       city_section = self.descMetadata.subject.hierarchical_geographic.city_section
+      island = self.descMetadata.subject.hierarchical_geographic.island
+      area = self.descMetadata.subject.hierarchical_geographic.area
 
       doc['subject_geo_country_tsim'] = country
+      doc['subject_geo_province_tsim'] = province
+      doc['subject_geo_region_tsim'] = region
       doc['subject_geo_state_tsim'] = state
+      doc['subject_geo_territory_tsim'] = territory
       doc['subject_geo_county_tsim'] = county
       doc['subject_geo_city_tsim'] = city
       doc['subject_geo_citysection_tsim'] = city_section
+      doc['subject_geo_island_tsim'] = island
+      doc['subject_geo_area_tsim'] = area
 
       # coordinates
       doc['subject_coordinates_geospatial'] = self.descMetadata.subject.cartographics.coordinates
 
       # add values to subject-geo facet field
-      doc['subject_geographic_ssim'] = subject_geo + county + city + city_section
+      doc['subject_geographic_ssim'] = subject_geo + province + region + state + territory + county + city + city_section + island + area
 
       doc['subject_name_personal_tsim'] = []
       doc['subject_name_corporate_tsim'] = []

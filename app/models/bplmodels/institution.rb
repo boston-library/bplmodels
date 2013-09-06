@@ -58,7 +58,7 @@ module Bplmodels
       doc['subject_geo_citysection_tsim'] = city_section
 
       # add hierarchical geo to subject-geo facet field
-      doc['subject_geographic_ssim'] = county + city + city_section
+      doc['subject_geographic_ssim'] = state + county + city + city_section
 
       # coordinates
       doc['subject_coordinates_geospatial'] = self.descMetadata.subject.cartographics.coordinates
