@@ -1,3 +1,4 @@
+#encoding: utf-8
 require 'mods'
 
 module Bplmodels
@@ -1186,9 +1187,20 @@ module Bplmodels
     define_template :subject_name do |xml, name, type, authority, valueURI, date|
       if authority != nil && authority.length > 0
         if date != nil && date.length > 1
-          if authority == 'naf'
+          if authority == 'naf' && valueURI != nil && valueURI.length > 0
             xml.subject {
               xml.name(:type=>type, :authority=>authority, :authorityURI=>'http://id.loc.gov/authorities/names', :valueURI=>valueURI) {
+                xml.namePart {
+                  xml.text name
+                }
+                xml.namePart(:type=>"date") {
+                  xml.text date
+                }
+              }
+            }
+          elsif authority == 'naf'
+            xml.subject {
+              xml.name(:type=>type, :authority=>authority, :authorityURI=>'http://id.loc.gov/authorities/names') {
                 xml.namePart {
                   xml.text name
                 }
