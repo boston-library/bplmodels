@@ -300,14 +300,13 @@ module Bplmodels
 
       doc['subject_name_personal_tsim'] = []
       doc['subject_name_corporate_tsim'] = []
+      doc['subject_name_conference_tsim'] = []
       doc['subject_facet_ssim'] = []
       0.upto self.descMetadata.subject.length-1 do |index|
         if self.descMetadata.subject(index).personal_name.length > 0
           if self.descMetadata.subject(index).personal_name.date.length > 0
-            #doc['subject_name_personal_tsim'].append(self.descMetadata.subject(index).personal_name.name_part[0] + ", " + self.descMetadata.subject(index).personal_name.date[0])
             subject_name_personal = self.descMetadata.subject(index).personal_name.name_part[0] + ", " + self.descMetadata.subject(index).personal_name.date[0]
           else
-            #doc['subject_name_personal_tsim'].append(self.descMetadata.subject(index).personal_name.name_part[0])
             subject_name_personal = self.descMetadata.subject(index).personal_name.name_part[0]
           end
           doc['subject_name_personal_tsim'].append(subject_name_personal)
@@ -315,14 +314,17 @@ module Bplmodels
         end
         if self.descMetadata.subject(index).corporate_name.length > 0
           if self.descMetadata.subject(index).corporate_name.date.length > 0
-            #doc['subject_name_corporate_tsim'].append(self.descMetadata.subject(index).corporate_name.name_part[0] + ", " + self.descMetadata.subject(index).corporate_name.date[0])
             subject_name_corporate = self.descMetadata.subject(index).corporate_name.name_part[0] + ", " + self.descMetadata.subject(index).corporate_name.date[0]
           else
-            #doc['subject_name_corporate_tsim'].append(self.descMetadata.subject(index).corporate_name.name_part[0])
             subject_name_corporate = self.descMetadata.subject(index).corporate_name.name_part[0]
           end
           doc['subject_name_corporate_tsim'].append(subject_name_corporate)
           doc['subject_facet_ssim'].append(subject_name_corporate)
+        end
+        if self.descMetadata.subject(index).conference_name.length > 0
+          subject_name_conference = self.descMetadata.subject(index).conference_name.name_part[0]
+          doc['subject_name_conference_tsim'].append(subject_name_conference)
+          doc['subject_facet_ssim'].append(subject_name_conference)
         end
 
       end
