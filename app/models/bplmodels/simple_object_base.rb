@@ -337,8 +337,15 @@ module Bplmodels
 
       doc['use_and_reproduction_ssm'] = self.descMetadata.use_and_reproduction
 
-      doc['note_tsim'] = self.descMetadata.note
-
+      doc['note_tsim'] = []
+      doc['note_resp_tsim'] = []
+      0.upto self.descMetadata.note.length-1 do |index|
+        if self.descMetadata.note(index).type_at.first == 'statement of responsibility'
+          doc['note_resp_tsim'].append(self.descMetadata.note(index).first)
+        else
+          doc['note_tsim'].append(self.descMetadata.note(index).first)
+        end
+      end
 
       main_title = ''
       if self.descMetadata.title_info(0).nonSort[0] != nil
