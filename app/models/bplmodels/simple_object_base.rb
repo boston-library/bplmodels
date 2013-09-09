@@ -295,8 +295,8 @@ module Bplmodels
       # coordinates
       doc['subject_coordinates_geospatial'] = self.descMetadata.subject.cartographics.coordinates
 
-      # add values to subject-geo facet field
-      doc['subject_geographic_ssim'] = subject_geo + province + region + state + territory + county + city + city_section + island + area
+      # add all subject-geo values to subject-geo facet field (remove dupes)
+      doc['subject_geographic_ssim'] = (country + province + region + state + territory + area + island + county + city + city_section + subject_geo).uniq
 
       doc['subject_name_personal_tsim'] = []
       doc['subject_name_corporate_tsim'] = []
