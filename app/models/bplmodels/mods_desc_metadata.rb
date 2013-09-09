@@ -6,6 +6,10 @@ module Bplmodels
     #include Hydra::Datastream::CommonModsIndexMethods
     # MODS XML constants.
 
+    def self.default_attributes
+      super.merge(:mimeType => 'application/xml')
+    end
+
     MODS_NS = 'http://www.loc.gov/mods/v3'
     MODS_SCHEMA = 'http://www.loc.gov/standards/mods/v3/mods-3-4.xsd'
     MODS_PARAMS = {
@@ -376,6 +380,7 @@ module Bplmodels
         t.geographic
         t.authority(:path=>{:attribute=>"authority"})
         t.valueURI(:path=>{:attribute=>"valueURI"})
+        t.authorityURI(:path=>{:attribute=>"authorityURI"})
         t.personal_name(:path=>'name', :attributes=>{:type => "personal"}) {
           t.name_part(:path=>"namePart[not(@type)]")
           t.date(:path=>"namePart", :attributes=>{:type=>"date"})

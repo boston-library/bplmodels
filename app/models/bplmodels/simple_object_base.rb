@@ -18,8 +18,8 @@ module Bplmodels
     belongs_to :organization, :class_name => 'Bplmodels::Collection', :property => :is_member_of_collection
     has_and_belongs_to_many :members, :class_name=> "Bplmodels::Collection", :property=> :hasSubset
 
-    has_metadata :name => "descMetadata", :type => ModsDescMetadata, :mime_type => 'application/xml'
-    has_metadata :name => "workflowMetadata", :type => WorkflowMetadata, :mime_type => 'application/xml'
+    has_metadata :name => "descMetadata", :type => ModsDescMetadata
+    has_metadata :name => "workflowMetadata", :type => WorkflowMetadata
 
     # Uses the Hydra Rights Metadata Schema for tracking access permissions & copyright
     has_metadata :name => "rightsMetadata", :type => Hydra::Datastream::RightsMetadata
