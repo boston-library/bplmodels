@@ -312,9 +312,6 @@ module Bplmodels
         }
       }
 
-      t.related_item(:path=>"relatedItem", :attributes=>{ :type => "host"}) {
-      }
-
       t.item_location(:path=>"location") {
         t.physical_location(:path=>"physicalLocation")
         t.holding_simple(:path=>"holdingSimple") {
@@ -324,6 +321,7 @@ module Bplmodels
         }
         t.url(:path=>"url")
       }
+
 
 
 
@@ -372,6 +370,7 @@ module Bplmodels
         t.date(:path=>"namePart", :attributes=>{:type=>"date"})
       }
 
+
       t.subject  do
         t.topic
         t.geographic
@@ -409,6 +408,24 @@ module Bplmodels
         }
 
       end
+
+      #t.related_item(:path=>"relatedItem", :attributes=>{ :type => "host"}) {
+        #t.type(:path=>{:attribute=>"type"})
+        #t.href(:path=>{:attribute=>'xlink:href'})
+        #t.title_info(:path=>"titleInfo") {
+          #t.title
+        #}
+        #t.identifier
+      #}
+
+      #t.related_item_series(:path=>"relatedItem", :attributes=>{ :type => "series"}) {
+        #t.type(:path=>{:attribute=>"type"})
+        #t.href(:path=>{:attribute=>'xlink:href'})
+        #t.title_info(:path=>"titleInfo") {
+        #t.title
+      #}
+        #t.identifier
+      #}
 
 
       t.related_item(:path=>"relatedItem") {
@@ -1236,9 +1253,9 @@ module Bplmodels
             }
           end
 
-
+        #No date
         else
-          if authority == 'naf'
+          if authority == 'naf'  && valueURI != nil && valueURI.length > 0
             xml.subject {
               xml.name(:type=>type, :authority=>authority, :authorityURI=>'http://id.loc.gov/authorities/names', :valueURI=>valueURI) {
                 xml.namePart {
@@ -1246,6 +1263,15 @@ module Bplmodels
                 }
               }
             }
+          elsif authority == 'naf'
+            xml.subject {
+              xml.name(:type=>type, :authority=>authority, :authorityURI=>'http://id.loc.gov/authorities/names') {
+                xml.namePart {
+                  xml.text name
+                }
+              }
+            }
+
           elsif authority == 'local'
             xml.subject {
               xml.name(:type=>type, :authority=>authority) {
