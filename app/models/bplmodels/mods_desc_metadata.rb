@@ -496,7 +496,7 @@ module Bplmodels
 =end
 
     def self.xml_template
-      builder = Nokogiri::XML::Builder.new do |xml|
+      builder = Nokogiri::XML::Builder.new(:encoding => "UTF-8") do |xml|
         xml.mods(MODS_PARAMS) {
           xml.parent.namespace = xml.parent.namespace_definitions.find{|ns|ns.prefix=="mods"}
 
