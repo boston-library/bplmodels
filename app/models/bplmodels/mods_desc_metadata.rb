@@ -1038,7 +1038,7 @@ module Bplmodels
           xml.dateIssued(:encoding=>"w3cdtf", :keyDate=>"yes", :point=>"start", :qualifier=>dateQualifier) {
             xml.text dateStarted
           }
-          xml.dateCreated(:encoding=>"w3cdtf", :point=>"end", :qualifier=>dateQualifier) {
+          xml.dateIssued(:encoding=>"w3cdtf", :point=>"end", :qualifier=>dateQualifier) {
             xml.text dateEnding
           }
         }
@@ -1047,7 +1047,7 @@ module Bplmodels
           xml.dateIssued(:encoding=>"w3cdtf", :keyDate=>"yes", :point=>"start") {
             xml.text dateStarted
           }
-          xml.dateCreated(:encoding=>"w3cdtf", :point=>"end") {
+          xml.dateIssued(:encoding=>"w3cdtf", :point=>"end") {
             xml.text dateEnding
           }
         }
