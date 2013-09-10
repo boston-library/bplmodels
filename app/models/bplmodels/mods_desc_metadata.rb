@@ -1482,7 +1482,7 @@ module Bplmodels
       xml.recordOrigin {
         xml.text "human prepared"
       }
-      xml.languageOfCataloging(:usage=>"primary") {
+      xml.languageOfCataloging {
         xml.languageTerm(:authority=>"iso639-2b", :authorityURI=>"http://id.loc.gov/vocabulary/iso639-2", :type=>'text', :valueURI=>"http://id.loc.gov/vocabulary/iso639-2/eng") {
           xml.text "English"
         }
