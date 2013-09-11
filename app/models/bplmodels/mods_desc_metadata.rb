@@ -289,7 +289,8 @@ module Bplmodels
       }
       t.title(:proxy=>[:title_info, :main_title])
 
-      t.name(:path=>"mods/oxns:name") {
+      #t.name(:path=>"mods/oxns:name") {
+      t.name(:path=>"name") {
         # this is a namepart
         t.usage(:path=>{:attribute=>"usage"})
         t.namePart(:type=>:string, :label=>"generic name")
