@@ -247,7 +247,9 @@ module Bplmodels
           else
             doc['name_corporate_tsim'].append(self.descMetadata.name(index).namePart[0])
           end
+          if self.descMetadata.name(index).role.text[0] != nil
           doc['name_corporate_role_tsim'].append(self.descMetadata.name(index).role.text[0].strip)
+          end
         end
       end
 
