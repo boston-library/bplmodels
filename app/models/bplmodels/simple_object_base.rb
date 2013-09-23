@@ -239,14 +239,14 @@ module Bplmodels
           else
             doc['name_personal_tsim'].append(self.descMetadata.name(index).namePart[0])
           end
-          doc['name_personal_role_tsim'].append(self.descMetadata.name(index).role.text[0].strip)
+          doc['name_personal_role_tsim'].append(self.descMetadata.name(index).role.text[0])
         elsif self.descMetadata.name(index).type[0] == "corporate"
           if self.descMetadata.name(index).date.length > 0
             doc['name_corporate_tsim'].append(self.descMetadata.name(index).namePart[0] + ", " + self.descMetadata.name(index).date[0])
           else
             doc['name_corporate_tsim'].append(self.descMetadata.name(index).namePart[0])
           end
-          doc['name_corporate_role_tsim'].append(self.descMetadata.name(index).role.text[0].strip)
+          doc['name_corporate_role_tsim'].append(self.descMetadata.name(index).role.text[0])
         end
       end
 
