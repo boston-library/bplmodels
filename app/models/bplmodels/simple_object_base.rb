@@ -80,7 +80,6 @@ module Bplmodels
     end
 
     def save
-      #self.add_relationship(:has_model, "info:fedora/afmodel:Bplmodels_SimpleObjectBase")
       super()
     end
 
