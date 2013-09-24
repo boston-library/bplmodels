@@ -142,11 +142,11 @@ module Bplmodels
           end
           date_end.length > 4 ? date_range_end = date_end[0..3] : date_range_end = date_end
           doc['date_end_tsim'].append(date_end)
-          if date_start.length == 4
+          if date_end.length == 4
             doc['date_end_dtsi'].append(date_end + '-01-01T00:00:00.000Z')
-          elsif date_start.length == 7
+          elsif date_end.length == 7
             doc['date_end_dtsi'].append(date_end + '-01T00:00:00.000Z')
-          elsif date_start.length > 11
+          elsif date_end.length > 11
             doc['date_end_dtsi'].append(date_end)
           else
             doc['date_end_dtsi'].append(date_end + 'T00:00:00.000Z')
