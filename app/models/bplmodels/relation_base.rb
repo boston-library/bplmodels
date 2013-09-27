@@ -64,7 +64,7 @@ module Bplmodels
     #use test2.relationships(:has_model)?
     def convert_to(klass)
       #if !self.instance_of?(klass)
-      self.adapt_to(klass)
+      self = self.adapt_to(klass)
       self.relationships.each_statement do |statement|
         if statement.predicate == "info:fedora/fedora-system:def/model#hasModel"
           self.remove_relationship(:has_model, statement.object)
