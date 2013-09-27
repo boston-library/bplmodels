@@ -39,7 +39,13 @@ module Bplmodels
     def to_solr(doc = {} )
       doc = super(doc)
       doc['label_ssim'] = self.label
-      doc['active_fedora_model_suffix_ssi'] = self.rels_ext.model.class.to_s.gsub(/\A[\w]*::/,'')
+      #FIXME
+      if self.class.to_s == 'Bplmodels::Institution' ||  self.class.to_s == 'Bplmodels::Collection'
+        doc['active_fedora_model_suffix_ssi'] = self.class.to_s.gsub(/\A[\w]*::/,'')
+      else
+        doc['active_fedora_model_suffix_ssi'] = self.class.superclass.to_s.gsub(/\A[\w]*::/,'')
+      end
+
       if self.workflowMetadata
         doc['workflow_state_ssi'] = self.workflowMetadata.item_status.state
       end
