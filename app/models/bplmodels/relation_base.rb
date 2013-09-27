@@ -60,12 +60,10 @@ module Bplmodels
       end
     end
 
-  end
-
-  #Rough initial attempt at this implementation
-  #use test2.relationships(:has_model)?
-  def convert_to(klass)
-    #if !self.instance_of?(klass)
+    #Rough initial attempt at this implementation
+    #use test2.relationships(:has_model)?
+    def convert_to(klass)
+      #if !self.instance_of?(klass)
       self.adapt_to(klass)
       self.relationships.each_statement do |statement|
         if statement.predicate == "info:fedora/fedora-system:def/model#hasModel"
@@ -75,7 +73,9 @@ module Bplmodels
 
       self.assert_content_model
       self.save
-    #end
+      #end
+
+    end
 
   end
 end
