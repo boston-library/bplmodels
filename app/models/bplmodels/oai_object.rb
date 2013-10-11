@@ -1,5 +1,7 @@
 module Bplmodels
   class OAIObject < Bplmodels::SimpleObjectBase
+
+    has_metadata :name => "oaiMetadata", :type => OAIMetadata
     #has_file_datastream :name => 'productionMaster', :type => ActiveFedora::Datastream
 
 
