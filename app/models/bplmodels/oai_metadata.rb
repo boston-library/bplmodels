@@ -29,6 +29,8 @@ module Bplmodels
 
       t.original_record(:path=>"originalRecord")
 
+      t.file_urls(:path=>"fileURL")
+
     end
 
     def self.xml_template
