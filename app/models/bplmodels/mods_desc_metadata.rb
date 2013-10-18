@@ -1176,6 +1176,10 @@ module Bplmodels
       xml.subject(:authority=>authority, :authorityURI=>"http://id.loc.gov/vocabulary/graphicMaterials", :valueURI=>uri) {
         xml.topic(topic)
       }
+      elsif(authority != nil && authority.length > 1 && authority == 'lctgm')
+        xml.subject(:authority=>authority, :authorityURI=>"http://id.loc.gov/vocabulary/graphicMaterials") {
+          xml.topic(topic)
+        }
       elsif(authority != nil && authority.length > 1)
         xml.subject(:authority=>authority) {
           xml.topic(topic)
