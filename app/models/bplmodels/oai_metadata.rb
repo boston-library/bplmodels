@@ -18,6 +18,7 @@ module Bplmodels
       t.ingestion_information(:path=>"ingestionInformation") {
         t.url(:path=>"url")
         t.oai_format(:path=>'format')
+        t.set_name(:path=>'setName')
       }
 
       t.header_information(:path=>'headerInformation') {
