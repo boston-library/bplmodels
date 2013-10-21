@@ -346,6 +346,15 @@ module Bplmodels
         end
       end
 
+      0.upto self.descMetadata.physical_description.length-1 do |physical_index|
+        0.upto self.descMetadata.physical_description(physical_index).note.length-1 do |note_index|
+          if self.descMetadata.physical_description(physical_index).note(note_index).first != nil
+            doc['note_tsim'].append(self.descMetadata.physical_description(physical_index).note(note_index).first)
+          end
+        end
+      end
+
+
       main_title = ''
       if self.descMetadata.title_info(0).nonSort[0] != nil
         doc['title_info_primary_tsi'] =  self.descMetadata.title_info(0).nonSort[0] + ' ' + self.descMetadata.title_info(0).main_title[0]

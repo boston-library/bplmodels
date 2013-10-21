@@ -345,6 +345,7 @@ module Bplmodels
         t.internet_media_type(:path=>"internetMediaType")
         t.digital_origin(:path=>"digitalOrigin")
         t.extent(:path=>"extent")
+        t.note(:path=>'note')
       }
 
       t.note(:path=>"note") {
