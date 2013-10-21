@@ -268,6 +268,8 @@ module Bplmodels
 
       doc['sub_location_tsim']  = self.descMetadata.item_location(0).holding_simple(0).copy_information(0).sub_location
 
+      doc['shelf_locator_tsim']  = self.descMetadata.item_location(0).holding_simple(0).copy_information(0).shelf_locator
+
       doc['subject_topic_tsim'] = self.descMetadata.subject.topic
 
       # subject - geographic

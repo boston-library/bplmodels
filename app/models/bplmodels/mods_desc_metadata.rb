@@ -323,6 +323,7 @@ module Bplmodels
         t.holding_simple(:path=>"holdingSimple") {
           t.copy_information(:path=>"copyInformation") {
             t.sub_location(:path=>"subLocation")
+            t.shelf_locator(:path=>"shelfLocator")
           }
         }
         t.url(:path=>"url")
