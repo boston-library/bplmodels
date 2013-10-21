@@ -289,6 +289,7 @@ module Bplmodels
       }
       t.title(:proxy=>[:title_info, :main_title])
 
+      #t.name(:path=>"root/oxns:name") {
       t.name(:path=>"mods/oxns:name") {
       #t.name(:path=>"name") {
         # this is a namepart
@@ -530,8 +531,24 @@ module Bplmodels
       return builder.doc
     end
 
-    define_template :physical_description do |xml, media_type, digital_origin, media_type2|
-      if media_type2 != nil
+    define_template :physical_description do |xml, media_type, digital_origin, media_type2, note|
+      if media_type2 != nil && note != nil && note.length > 0
+        xml.physicalDescription {
+          xml.internetMediaType {
+            xml.text media_type
+          }
+          xml.internetMediaType {
+            xml.text media_type2
+          }
+          xml.digitalOrigin {
+            xml.text digital_origin
+          }
+          xml.note {
+            xml.text note
+          }
+
+        }
+      elsif media_type2 != nil
         xml.physicalDescription {
           xml.internetMediaType {
             xml.text media_type
@@ -543,6 +560,18 @@ module Bplmodels
             xml.text digital_origin
           }
 
+        }
+      elsif note != nil && note.length > 0
+        xml.physicalDescription {
+          xml.internetMediaType {
+            xml.text media_type
+          }
+          xml.digitalOrigin {
+            xml.text digital_origin
+          }
+          xml.note {
+            xml.text note
+          }
         }
       else
         xml.physicalDescription {
@@ -558,8 +587,8 @@ module Bplmodels
 
     end
 
-    def insert_physical_description(media_type=nil, digital_origin=nil, media_type2=nil)
-      add_child_node(ng_xml.root, :physical_description, media_type, digital_origin, media_type2)
+    def insert_physical_description(media_type=nil, digital_origin=nil, media_type2=nil, note=nil)
+      add_child_node(ng_xml.root, :physical_description, media_type, digital_origin, media_type2, note)
     end
 
     def remove_physical_description(index)
@@ -1427,28 +1456,33 @@ module Bplmodels
       self.find_by_terms(:related_item_xref).slice(index.to_i).remove
     end
 
-
-
-    define_template :physical_location do |xml, location, sublocation|
+    define_template :physical_location do |xml, location, sublocation, shelf_locator|
 
       xml.location {
         xml.physicalLocation {
           xml.text location
         }
-        if sublocation != nil
+        if sublocation != nil || shelf_locator != nil
           xml.holdingSimple {
             xml.copyInformation {
-              xml.subLocation {
-                xml.text sublocation
-              }
+              if sublocation != nil
+                xml.subLocation {
+                  xml.text sublocation
+                }
+              end
+              if shelf_locator != nil
+                xml.shelfLocator {
+                  xml.text shelf_locator
+                }
+              end
             }
           }
         end
       }
     end
 
-    def insert_physical_location(location=nil, sublocation=nil)
-      add_child_node(ng_xml.root, :physical_location, location, sublocation)
+    def insert_physical_location(location=nil, sublocation=nil, shelf_locator=nil)
+      add_child_node(ng_xml.root, :physical_location, location, sublocation, shelf_locator)
     end
 
     def remove_physical_location(index)
