@@ -349,7 +349,7 @@ module Bplmodels
         t.note(:path=>'note')
       }
 
-      t.note(:path=>"note") {
+      t.note(:path=>"mods/oxns:note") {
         t.type_at(:path=>{:attribute=>"type"})
       }
 
