@@ -1147,6 +1147,88 @@ module Bplmodels
 
 
 
+
+    define_template :date_copyright do |xml, dateStarted, dateEnding, dateQualifier|
+
+      if dateStarted != nil && dateStarted.length > 0 && dateEnding != nil && dateEnding.length > 0 && dateQualifier!= nil && dateQualifier.length > 0
+        xml.originInfo {
+          xml.copyrightDate(:encoding=>"w3cdtf", :keyDate=>"yes", :point=>"start", :qualifier=>dateQualifier) {
+            xml.text dateStarted
+          }
+          xml.copyrightDate(:encoding=>"w3cdtf", :point=>"end", :qualifier=>dateQualifier) {
+            xml.text dateEnding
+          }
+        }
+      elsif dateStarted != nil && dateStarted.length > 0 && dateEnding != nil && dateEnding.length > 0
+        xml.originInfo {
+          xml.copyrightDate(:encoding=>"w3cdtf", :keyDate=>"yes", :point=>"start") {
+            xml.text dateStarted
+          }
+          xml.copyrightDate(:encoding=>"w3cdtf", :point=>"end") {
+            xml.text dateEnding
+          }
+        }
+      elsif dateStarted != nil && dateStarted.length > 0 && dateQualifier!= nil && dateQualifier.length > 0
+        xml.originInfo {
+          xml.copyrightDate(:encoding=>"w3cdtf", :keyDate=>"yes", :qualifier=>dateQualifier) {
+            xml.text dateStarted
+          }
+        }
+      elsif dateStarted != nil && dateStarted.length > 0
+        xml.originInfo {
+          xml.copyrightDate(:encoding=>"w3cdtf", :keyDate=>"yes") {
+            xml.text dateStarted
+          }
+        }
+      else
+        #puts "error in dates?"
+
+      end
+    end
+
+    define_template :date_copyright_partial do |xml, dateStarted, dateEnding, dateQualifier|
+
+      if dateStarted != nil && dateStarted.length > 0 && dateEnding != nil && dateEnding.length > 0 && dateQualifier!= nil && dateQualifier.length > 0
+        xml.copyrightDate(:encoding=>"w3cdtf", :keyDate=>"yes", :point=>"start", :qualifier=>dateQualifier) {
+          xml.text dateStarted
+        }
+        xml.copyrightDate(:encoding=>"w3cdtf", :point=>"end", :qualifier=>dateQualifier) {
+          xml.text dateEnding
+        }
+      elsif dateStarted != nil && dateStarted.length > 0 && dateEnding != nil && dateEnding.length > 0
+        xml.copyrightDate(:encoding=>"w3cdtf", :keyDate=>"yes", :point=>"start") {
+          xml.text dateStarted
+        }
+        xml.copyrightDate(:encoding=>"w3cdtf", :point=>"end") {
+          xml.text dateEnding
+        }
+      elsif dateStarted != nil && dateStarted.length > 0 && dateQualifier!= nil && dateQualifier.length > 0
+        xml.copyrightDate(:encoding=>"w3cdtf", :keyDate=>"yes", :qualifier=>dateQualifier) {
+          xml.text dateStarted
+        }
+      elsif dateStarted != nil && dateStarted.length > 0
+        xml.copyrightDate(:encoding=>"w3cdtf", :keyDate=>"yes") {
+          xml.text dateStarted
+        }
+      else
+        #puts "error in dates?"
+
+      end
+    end
+
+    def insert_date_copyright(dateStarted=nil, dateEnding=nil, dateQualifier=nil)
+      #begin
+      if self.find_by_terms(:origin_info) != nil && self.find_by_terms(:origin_info).slice(0) != nil
+        add_child_node(self.find_by_terms(:origin_info).slice(0), :date_copyright_partial, dateStarted, dateEnding, dateQualifier)
+      else
+        add_child_node(ng_xml.root, :date_copyright, dateStarted, dateEnding, dateQualifier)
+      end
+
+
+    end
+
+
+
     define_template :internet_media do |xml, value|
       xml.internetMediaType(value)
     end

@@ -346,6 +346,7 @@ module Bplmodels
         end
       end
 
+=begin
       0.upto self.descMetadata.physical_description.length-1 do |physical_index|
         0.upto self.descMetadata.physical_description(physical_index).note.length-1 do |note_index|
           if self.descMetadata.physical_description(physical_index).note(note_index).first != nil
@@ -353,6 +354,7 @@ module Bplmodels
           end
         end
       end
+=end
 
 
       main_title = ''
