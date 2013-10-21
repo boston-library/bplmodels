@@ -133,7 +133,7 @@ module Bplmodels
           end
         end
         # date end
-        if self.descMetadata.date(0).dates_created[1] != nil || self.descMetadata.date(0).dates_issued[1] != nil || self.descMetadata.date(0).dates_copyright[0]
+        if self.descMetadata.date(0).dates_created[1] != nil || self.descMetadata.date(0).dates_issued[1] != nil || self.descMetadata.date(0).dates_copyright[1]
           # if dateCreated
           if self.descMetadata.date(0).dates_created[1] != nil
             date_end = self.descMetadata.date(0).dates_created[1]
