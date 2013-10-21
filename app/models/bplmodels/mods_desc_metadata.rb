@@ -289,9 +289,7 @@ module Bplmodels
       }
       t.title(:proxy=>[:title_info, :main_title])
 
-      #t.name(:path=>"root/oxns:name") {
-      t.name(:path=>"mods/oxns:name") {
-      #t.name(:path=>"name") {
+      t.name(:xpath=>'oxns:mods/oxns:name') {
         # this is a namepart
         t.usage(:path=>{:attribute=>"usage"})
         t.namePart(:type=>:string, :label=>"generic name")
@@ -349,7 +347,7 @@ module Bplmodels
         t.note(:path=>'note')
       }
 
-      t.note(:path=>"mods/oxns:note") {
+      t.note(:xpath=>"oxns:mods/oxns:note") {
         t.type_at(:path=>{:attribute=>"type"})
       }
 
