@@ -105,9 +105,9 @@ module Bplmodels
           # TODO insert code for date_other values here
         end
       else
-        # TODO refactor this date stuff for other date types (copyrightDate)
+        # TODO refactor this date stuff for other date types
         # date end
-        if self.descMetadata.date(0).dates_created[0] != nil || self.descMetadata.date(0).dates_issued[0] != nil
+        if self.descMetadata.date(0).dates_created[0] != nil || self.descMetadata.date(0).dates_issued[0] != nil || self.descMetadata.date(0).dates_copyright[0]
           # if dateCreated
           if self.descMetadata.date(0).dates_created[0] != nil
             date_start = self.descMetadata.date(0).dates_created[0]
@@ -116,6 +116,9 @@ module Bplmodels
           elsif self.descMetadata.date(0).dates_issued[0] != nil
             date_start = self.descMetadata.date(0).dates_issued[0]
             doc['date_start_qualifier_ssm'] = self.descMetadata.date(0).dates_issued.qualifier[0]
+          elsif self.descMetadata.date(0).dates_copyright[0] != nil
+            date_start = self.descMetadata.date(0).dates_copyright[0]
+            doc['date_start_qualifier_ssm'] = self.descMetadata.date(0).dates_copyright.qualifier[0]
           end
           date_start.length > 4 ? date_range_start = date_start[0..3] : date_range_start = date_start
           doc['date_start_tsim'].append(date_start)
@@ -130,7 +133,7 @@ module Bplmodels
           end
         end
         # date end
-        if self.descMetadata.date(0).dates_created[1] != nil || self.descMetadata.date(0).dates_issued[1] != nil
+        if self.descMetadata.date(0).dates_created[1] != nil || self.descMetadata.date(0).dates_issued[1] != nil || self.descMetadata.date(0).dates_copyright[0]
           # if dateCreated
           if self.descMetadata.date(0).dates_created[1] != nil
             date_end = self.descMetadata.date(0).dates_created[1]
@@ -139,6 +142,9 @@ module Bplmodels
           elsif self.descMetadata.date(0).dates_issued[1] != nil
             date_end = self.descMetadata.date(0).dates_issued[1]
             doc['date_end_qualifier_ssm'] = self.descMetadata.date(0).dates_issued.qualifier[1]
+          elsif self.descMetadata.date(0).dates_copyright[1] != nil
+            date_end = self.descMetadata.date(0).dates_copyright[1]
+            doc['date_end_qualifier_ssm'] = self.descMetadata.date(0).dates_copyright.qualifier[1]
           end
           date_end.length > 4 ? date_range_end = date_end[0..3] : date_range_end = date_end
           doc['date_end_tsim'].append(date_end)
