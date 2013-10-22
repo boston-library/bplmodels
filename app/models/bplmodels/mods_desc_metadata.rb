@@ -275,7 +275,7 @@ module Bplmodels
 
 
 
-      t.title_info(:path=>"titleInfo") {
+      t.title_info(:xpath=>'oxns:mods/oxns:titleInfo') {
         t.usage(:path=>{:attribute=>"usage"})
         t.nonSort(:path=>"nonSort", :index_as=>[:searchable, :displayable])
         t.main_title(:path=>"title", :label=>"title")
@@ -312,7 +312,7 @@ module Bplmodels
       t.origin_info(:path=>"originInfo") {
         t.publisher(:path=>"publisher")
         t.place(:path=>"place") {
-          t.place_term(:path=>"placeTerm")
+          t.place_term(:path=>"placeTerm", :attributes=>{:type=>'text'})
         }
       }
 
@@ -524,8 +524,6 @@ module Bplmodels
         xml.mods(MODS_PARAMS) {
           xml.parent.namespace = xml.parent.namespace_definitions.find{|ns|ns.prefix=="mods"}
 
-          xml.abstract
-
         }
       end
       return builder.doc
@@ -684,6 +682,15 @@ module Bplmodels
       self.find_by_terms(:publisher).slice(index.to_i).remove
     end
 
+    def insert_publisher2(publisher=nil, place=nil)
+      origin_index = self.origin_info.count
+      publisher_index = self.origin_info(origin_index).publisher.count
+      place_index =  self.origin_info(origin_index).place.count
+
+      self.origin_info(origin_index).publisher[publisher_index] = publisher unless publisher.empty?
+      self.origin_info(origin_index).place(place_index).place_term = place unless place.empty?
+    end
+
 
     define_template :genre do |xml, value, value_uri, authority, is_general|
 
@@ -810,6 +817,20 @@ module Bplmodels
 
     def remove_title(index)
       self.find_by_terms(:title_info).slice(index.to_i).remove
+    end
+
+
+    #usage=nil,  supplied=nil, subtitle=nil, language=nil, type=nil, authority=nil, authorityURI=nil, valueURI=nil
+    def insert_title2(nonSort=nil, main_title=nil, usage=nil, args={})
+      title_index = self.title_info.count
+      self.title_info(title_index).nonSort = nonSort unless nonSort.empty?
+      self.title_info(title_index).main_title = main_title unless main_title.empty?
+      self.title_info(title_index).usage = usage unless usage.empty?
+
+      args.each do |key, value|
+        self.title_info(title_index).send(key, utf8Encode(value)) unless value.empty?
+      end
+
     end
 
     #image.descMetadata.find_by_terms(:name).slice(0).set_attribute("new", "true")
@@ -961,6 +982,65 @@ module Bplmodels
 
     def remove_name(index)
       self.find_by_terms(:name).slice(index.to_i).remove
+    end
+
+    t.date(:path=>"originInfo") {
+      t.date_other(:path=>"dateOther") {
+        t.encoding(:path=>{:attribute=>"encoding"})
+        t.key_date(:path=>{:attribute=>"keyDate"})
+        t.type(:path=>{:attribute=>"type"})
+        t.qualifier(:path=>{:attribute=>"qualifier"})
+      }
+      t.dates_created(:path=>"dateCreated") {
+        t.encoding(:path=>{:attribute=>"encoding"})
+        t.key_date(:path=>{:attribute=>"keyDate"})
+        t.point(:path=>{:attribute=>"point"})
+        t.qualifier(:path=>{:attribute=>"qualifier"})
+      }
+      t.dates_issued(:path=>"dateIssued") {
+        t.encoding(:path=>{:attribute=>"encoding"})
+        t.key_date(:path=>{:attribute=>"keyDate"})
+        t.point(:path=>{:attribute=>"point"})
+        t.qualifier(:path=>{:attribute=>"qualifier"})
+      }
+      t.dates_copyright(:path=>"copyrightDate") {
+        t.encoding(:path=>{:attribute=>"encoding"})
+        t.key_date(:path=>{:attribute=>"keyDate"})
+        t.point(:path=>{:attribute=>"point"})
+        t.qualifier(:path=>{:attribute=>"qualifier"})
+      }
+
+    }
+
+    def insert_oai_date(date)
+      date_index = 0
+      date_list = date.split('-')
+      if date_list.length == 1
+        date_first = date_list.first
+      else
+        date_first = date_list.first
+        date_last = date_list.last unless date_list.last == 'unknown'
+      end
+      if date_first.present? && date_last.present?
+        date_created_index = self.date(date_index).dates_created.length
+        self.date(date_index).dates_created[date_created_index] = date_first
+        self.date(date_index).dates_created(date_created_index).encoding = 'w3cdtf'
+        self.date(date_index).dates_created(date_created_index).key_date = 'yes'
+        self.date(date_index).dates_created(date_created_index).point = 'start'
+        #self.date(date_index).dates_created(date_created_index).qualifier = ????
+
+        date_created_index = self.date(date_index).dates_created.length
+        self.date(date_index).dates_created[date_created_index] = date_last
+        self.date(date_index).dates_created(date_created_index).encoding = 'w3cdtf'
+        self.date(date_index).dates_created(date_created_index).point = 'end'
+        #self.date(date_index).dates_created(date_created_index).qualifier = ????
+      elsif date_first.present?
+        date_created_index = self.date(date_index).dates_created.length
+        self.date(date_index).dates_created[date_created_index] = date_first
+        self.date(date_index).dates_created(date_created_index).encoding = 'w3cdtf'
+        self.date(date_index).dates_created(date_created_index).key_date = 'yes'
+      end
+
     end
 
     define_template :date do |xml, dateStarted, dateEnding, dateQualifier, dateOther|
@@ -1632,6 +1712,10 @@ module Bplmodels
         node.remove
         self.dirty = true
       end
+    end
+
+    def utf8Encode(value)
+      return HTMLEntities.new.decode(ActionView::Base.full_sanitizer.sanitize(value.to_s.gsub(/\r?\n?\t/, ' ').gsub(/\r?\n/, ' '))).strip
     end
 
   end
