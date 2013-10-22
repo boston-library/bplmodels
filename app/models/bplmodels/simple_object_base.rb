@@ -95,6 +95,7 @@ module Bplmodels
       doc['date_end_dtsi'] = []
       doc['date_end_tsim'] = []
       doc['date_facet_ssim'] = []
+      doc['date_type_ssm'] = []
       date_start = -1
       date_end = -1
 
@@ -112,13 +113,17 @@ module Bplmodels
           if self.descMetadata.date(0).dates_created[0] != nil
             date_start = self.descMetadata.date(0).dates_created[0]
             doc['date_start_qualifier_ssm'] = self.descMetadata.date(0).dates_created.qualifier[0]
+            doc['date_type_ssm'] << 'dateCreated'
           # if dateIssued
           elsif self.descMetadata.date(0).dates_issued[0] != nil
             date_start = self.descMetadata.date(0).dates_issued[0]
             doc['date_start_qualifier_ssm'] = self.descMetadata.date(0).dates_issued.qualifier[0]
+            doc['date_type_ssm'] << 'dateIssued'
+          # if copyrightDate
           elsif self.descMetadata.date(0).dates_copyright[0] != nil
             date_start = self.descMetadata.date(0).dates_copyright[0]
             doc['date_start_qualifier_ssm'] = self.descMetadata.date(0).dates_copyright.qualifier[0]
+            doc['date_type_ssm'] << 'copyrightDate'
           end
           date_start.length > 4 ? date_range_start = date_start[0..3] : date_range_start = date_start
           doc['date_start_tsim'].append(date_start)
@@ -289,21 +294,39 @@ module Bplmodels
       area = self.descMetadata.subject.hierarchical_geographic.area
 
       doc['subject_geo_country_tsim'] = country
+      doc['subject_geo_country_ssim'] = country
       doc['subject_geo_province_tsim'] = province
+      doc['subject_geo_province_ssim'] = province
       doc['subject_geo_region_tsim'] = region
+      doc['subject_geo_region_ssim'] = region
       doc['subject_geo_state_tsim'] = state
+      doc['subject_geo_state_ssim'] = state
       doc['subject_geo_territory_tsim'] = territory
+      doc['subject_geo_territory_ssim'] = territory
       doc['subject_geo_county_tsim'] = county
+      doc['subject_geo_county_ssim'] = county
       doc['subject_geo_city_tsim'] = city
+      doc['subject_geo_city_ssim'] = city
       doc['subject_geo_citysection_tsim'] = city_section
+      doc['subject_geo_citysection_ssim'] = city_section
       doc['subject_geo_island_tsim'] = island
+      doc['subject_geo_island_ssim'] = island
       doc['subject_geo_area_tsim'] = area
+      doc['subject_geo_area_ssim'] = area
 
       # coordinates
       doc['subject_coordinates_geospatial'] = self.descMetadata.subject.cartographics.coordinates
 
+      # add " (county)" to county values for better faceting
+      county_facet = []
+      if county.length > 0
+        county.each do |county_value|
+          county_facet << county_value + ' (county)'
+        end
+      end
+
       # add all subject-geo values to subject-geo facet field (remove dupes)
-      doc['subject_geographic_ssim'] = (country + province + region + state + territory + area + island + county + city + city_section + subject_geo).uniq
+      doc['subject_geographic_ssim'] = (country + province + region + state + territory + area + island + county_facet + city + city_section + subject_geo).uniq
 
       doc['subject_name_personal_tsim'] = []
       doc['subject_name_corporate_tsim'] = []
@@ -374,6 +397,11 @@ module Bplmodels
         main_title = self.descMetadata.title_info(0).main_title[0]
       end
 
+      if self.descMetadata.title_info(0).supplied[0] == 'yes'
+        doc['supplied_title_bs'] = []
+        doc['supplied_title_bs'] << 'true'
+      end
+
       doc['subtitle_tsim'] = self.descMetadata.title_info.subtitle
 
       if self.collection
@@ -387,7 +415,9 @@ module Bplmodels
       end
 
       if self.exemplary_image.first != nil
+        # keep both for now, we will eventually phase out exemplary_image_ss
         doc['exemplary_image_ss'] = self.exemplary_image.first.pid
+        doc['exemplary_image_ssi'] = self.exemplary_image.first.pid
       end
 
 

@@ -75,6 +75,7 @@ module Bplmodels
 
       if self.image_files.first != nil
         doc['exemplary_image_ss'] = self.image_files.first.pid
+        doc['exemplary_image_ssi'] = self.image_files.first.pid
       end
 
       doc
