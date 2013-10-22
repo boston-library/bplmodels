@@ -1477,6 +1477,46 @@ module Bplmodels
       self.find_by_terms(:subject_geographic).slice(index.to_i).remove
     end
 
+
+    define_template :subject_cartographic do |xml, coordinates, scale, projection|
+      xml.subject {
+        xml.cartographics {
+          if coordinates != nil && coordinates.length > 1
+            xml.coordinates {
+              xml.text coordinates
+            }
+          end
+          if scale != nil && scale.length > 1
+            xml.scale {
+              xml.text scale
+            }
+          end
+          if projection != nil && projection.length > 1
+            xml.projection {
+              xml.text projection
+            }
+          end
+        }
+      }
+    end
+
+    def insert_subject_cartopgraphic(coordinates=nil, scale=nil, projection=nil)
+      if coordinates != nil && coordinates.length > 1
+        add_child_node(ng_xml.root, :subject_cartographic, coordinates)
+      end
+      if scale != nil && scale.length > 1
+        add_child_node(ng_xml.root, :subject_cartographic, scale)
+      end
+      if projection != nil && projection.length > 1
+        add_child_node(ng_xml.root, :subject_cartographic, projection)
+      end
+    end
+
+    def remove_subject_cartopgraphic(index)
+      self.find_by_terms(:subject_cartographic).slice(index.to_i).remove
+    end
+
+
     define_template :host do |xml, value, identifier|
       xml.relatedItem(:type=>"host") {
         xml.titleInfo {
