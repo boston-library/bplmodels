@@ -95,6 +95,7 @@ module Bplmodels
       doc['date_end_dtsi'] = []
       doc['date_end_tsim'] = []
       doc['date_facet_ssim'] = []
+      doc['date_type_ssm'] = []
       date_start = -1
       date_end = -1
 
@@ -112,13 +113,17 @@ module Bplmodels
           if self.descMetadata.date(0).dates_created[0] != nil
             date_start = self.descMetadata.date(0).dates_created[0]
             doc['date_start_qualifier_ssm'] = self.descMetadata.date(0).dates_created.qualifier[0]
+            doc['date_type_ssm'] << 'dateCreated'
           # if dateIssued
           elsif self.descMetadata.date(0).dates_issued[0] != nil
             date_start = self.descMetadata.date(0).dates_issued[0]
             doc['date_start_qualifier_ssm'] = self.descMetadata.date(0).dates_issued.qualifier[0]
+            doc['date_type_ssm'] << 'dateIssued'
+          # if copyrightDate
           elsif self.descMetadata.date(0).dates_copyright[0] != nil
             date_start = self.descMetadata.date(0).dates_copyright[0]
             doc['date_start_qualifier_ssm'] = self.descMetadata.date(0).dates_copyright.qualifier[0]
+            doc['date_type_ssm'] << 'copyrightDate'
           end
           date_start.length > 4 ? date_range_start = date_start[0..3] : date_range_start = date_start
           doc['date_start_tsim'].append(date_start)
