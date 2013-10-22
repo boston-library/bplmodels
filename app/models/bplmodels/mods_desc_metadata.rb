@@ -984,34 +984,6 @@ module Bplmodels
       self.find_by_terms(:name).slice(index.to_i).remove
     end
 
-    t.date(:path=>"originInfo") {
-      t.date_other(:path=>"dateOther") {
-        t.encoding(:path=>{:attribute=>"encoding"})
-        t.key_date(:path=>{:attribute=>"keyDate"})
-        t.type(:path=>{:attribute=>"type"})
-        t.qualifier(:path=>{:attribute=>"qualifier"})
-      }
-      t.dates_created(:path=>"dateCreated") {
-        t.encoding(:path=>{:attribute=>"encoding"})
-        t.key_date(:path=>{:attribute=>"keyDate"})
-        t.point(:path=>{:attribute=>"point"})
-        t.qualifier(:path=>{:attribute=>"qualifier"})
-      }
-      t.dates_issued(:path=>"dateIssued") {
-        t.encoding(:path=>{:attribute=>"encoding"})
-        t.key_date(:path=>{:attribute=>"keyDate"})
-        t.point(:path=>{:attribute=>"point"})
-        t.qualifier(:path=>{:attribute=>"qualifier"})
-      }
-      t.dates_copyright(:path=>"copyrightDate") {
-        t.encoding(:path=>{:attribute=>"encoding"})
-        t.key_date(:path=>{:attribute=>"keyDate"})
-        t.point(:path=>{:attribute=>"point"})
-        t.qualifier(:path=>{:attribute=>"qualifier"})
-      }
-
-    }
-
     def insert_oai_date(date)
       date_index = 0
       date_list = date.split('-')
