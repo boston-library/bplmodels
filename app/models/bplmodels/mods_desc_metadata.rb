@@ -275,7 +275,8 @@ module Bplmodels
 
 
 
-      t.title_info(:xpath=>'oxns:mods/oxns:titleInfo') {
+      #t.title_info(:xpath=>'oxns:mods/oxns:titleInfo') {
+      t.title_info(:path=>'titleInfo') {
         t.usage(:path=>{:attribute=>"usage"})
         t.nonSort(:path=>"nonSort", :index_as=>[:searchable, :displayable])
         t.main_title(:path=>"title", :label=>"title")
