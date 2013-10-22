@@ -1482,37 +1482,23 @@ module Bplmodels
       xml.subject {
         xml.cartographics {
           if coordinates != nil && coordinates.length > 1
-            xml.coordinates {
-              xml.text coordinates
-            }
+            xml.coordinates(coordinates)
           end
           if scale != nil && scale.length > 1
-            xml.scale {
-              xml.text scale
-            }
+            xml.scale(scale)
           end
           if projection != nil && projection.length > 1
-            xml.projection {
-              xml.text projection
-            }
+            xml.projection(projection)
           end
         }
       }
     end
 
-    def insert_subject_cartopgraphic(coordinates=nil, scale=nil, projection=nil)
-      if coordinates != nil && coordinates.length > 1
-        add_child_node(ng_xml.root, :subject_cartographic, coordinates)
-      end
-      if scale != nil && scale.length > 1
-        add_child_node(ng_xml.root, :subject_cartographic, scale)
-      end
-      if projection != nil && projection.length > 1
-        add_child_node(ng_xml.root, :subject_cartographic, projection)
-      end
+    def insert_subject_cartographic(coordinates=nil, scale=nil, projection=nil)
+      add_child_node(ng_xml.root, :subject_cartographic, coordinates, scale, projection)
     end
 
-    def remove_subject_cartopgraphic(index)
+    def remove_subject_cartographic(index)
       self.find_by_terms(:subject_cartographic).slice(index.to_i).remove
     end
 
