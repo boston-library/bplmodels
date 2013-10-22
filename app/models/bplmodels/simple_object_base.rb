@@ -379,6 +379,11 @@ module Bplmodels
         main_title = self.descMetadata.title_info(0).main_title[0]
       end
 
+      if self.descMetadata.title_info(0).supplied[0] == 'yes'
+        doc['supplied_title_bs'] = []
+        doc['supplied_title_bs'] << 'true'
+      end
+
       doc['subtitle_tsim'] = self.descMetadata.title_info.subtitle
 
       if self.collection
