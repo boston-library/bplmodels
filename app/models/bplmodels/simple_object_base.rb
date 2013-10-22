@@ -387,7 +387,9 @@ module Bplmodels
       end
 
       if self.exemplary_image.first != nil
+        # keep both for now, we will eventually phase out exemplary_image_ss
         doc['exemplary_image_ss'] = self.exemplary_image.first.pid
+        doc['exemplary_image_ssi'] = self.exemplary_image.first.pid
       end
 
 
