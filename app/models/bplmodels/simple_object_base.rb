@@ -294,21 +294,39 @@ module Bplmodels
       area = self.descMetadata.subject.hierarchical_geographic.area
 
       doc['subject_geo_country_tsim'] = country
+      doc['subject_geo_country_ssim'] = country
       doc['subject_geo_province_tsim'] = province
+      doc['subject_geo_province_ssim'] = province
       doc['subject_geo_region_tsim'] = region
+      doc['subject_geo_region_ssim'] = region
       doc['subject_geo_state_tsim'] = state
+      doc['subject_geo_state_ssim'] = state
       doc['subject_geo_territory_tsim'] = territory
+      doc['subject_geo_territory_ssim'] = territory
       doc['subject_geo_county_tsim'] = county
+      doc['subject_geo_county_ssim'] = county
       doc['subject_geo_city_tsim'] = city
+      doc['subject_geo_city_ssim'] = city
       doc['subject_geo_citysection_tsim'] = city_section
+      doc['subject_geo_citysection_ssim'] = city_section
       doc['subject_geo_island_tsim'] = island
+      doc['subject_geo_island_ssim'] = island
       doc['subject_geo_area_tsim'] = area
+      doc['subject_geo_area_ssim'] = area
 
       # coordinates
       doc['subject_coordinates_geospatial'] = self.descMetadata.subject.cartographics.coordinates
 
+      # add " (county)" to county values for better faceting
+      county_facet = []
+      if county.length > 0
+        county.each do |county_value|
+          county_facet << county_value + ' (county)'
+        end
+      end
+
       # add all subject-geo values to subject-geo facet field (remove dupes)
-      doc['subject_geographic_ssim'] = (country + province + region + state + territory + area + island + county + city + city_section + subject_geo).uniq
+      doc['subject_geographic_ssim'] = (country + province + region + state + territory + area + island + county_facet + city + city_section + subject_geo).uniq
 
       doc['subject_name_personal_tsim'] = []
       doc['subject_name_corporate_tsim'] = []
