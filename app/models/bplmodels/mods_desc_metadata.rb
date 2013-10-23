@@ -218,17 +218,17 @@ module Bplmodels
           if name_node.displayForm && name_node.displayForm.text.size > 0
             dv = name_node.displayForm.text
           end
-          if dv.empty?
+          if dv.blank?
             if name_node.type_at == 'personal'
               if name_node.family_name.size > 0
                 dv = name_node.given_name.size > 0 ? "#{name_node.family_name.text}, #{name_node.given_name.text}" : name_node.family_name.text
               elsif name_node.given_name.size > 0
                 dv = name_node.given_name.text
               end
-              if !dv.empty?
+              if !dv.blank?
                 first = true
                 name_node.namePart.each { |np|
-                  if np.type_at == 'termsOfAddress' && !np.text.empty?
+                  if np.type_at == 'termsOfAddress' && !np.text.blank?
                     if first
                       dv = dv + " " + np.text
                       first = false
@@ -238,13 +238,13 @@ module Bplmodels
                   end
                 }
               else # no family or given name
-                dv = name_node.namePart.select {|np| np.type_at != 'date' && !np.text.empty?}.join(" ")
+                dv = name_node.namePart.select {|np| np.type_at != 'date' && !np.text.blank?}.join(" ")
               end
             else # not a personal name
-              dv = name_node.namePart.select {|np| np.type_at != 'date' && !np.text.empty?}.join(" ")
+              dv = name_node.namePart.select {|np| np.type_at != 'date' && !np.text.blank?}.join(" ")
             end
           end
-          dv.strip.empty? ? nil : dv.strip
+          dv.strip.blank? ? nil : dv.strip
         }
 
         # name convenience method
@@ -252,14 +252,14 @@ module Bplmodels
           dv = ''
           dv = dv + name_node.display_value if name_node.display_value
           name_node.namePart.each { |np|
-            if np.type_at == 'date' && !np.text.empty? && !dv.end_with?(np.text)
+            if np.type_at == 'date' && !np.text.blank? && !dv.end_with?(np.text)
               dv = dv + ", #{np.text}"
             end
           }
           if dv.start_with?(', ')
             dv.sub(', ', '')
           end
-          dv.strip.empty? ? nil : dv.strip
+          dv.strip.blank? ? nil : dv.strip
         }
       } # t._plain_name
 
@@ -491,6 +491,10 @@ module Bplmodels
         }
       }
 
+      t.record_info(:path=>'recordInfo') {
+       t.description_standard(:path=>'descriptionStandard', :attributes=>{:authority=>"marcdescription"})
+      }
+
     end
 
     # Blocks to pass into Nokogiri::XML::Builder.new()
@@ -688,8 +692,8 @@ module Bplmodels
       publisher_index = self.origin_info(origin_index).publisher.count
       place_index =  self.origin_info(origin_index).place.count
 
-      self.origin_info(origin_index).publisher[publisher_index] = publisher unless publisher.empty?
-      self.origin_info(origin_index).place(place_index).place_term = place unless place.empty?
+      self.origin_info(origin_index).publisher[publisher_index] = publisher unless publisher.blank?
+      self.origin_info(origin_index).place(place_index).place_term = place unless place.blank?
     end
 
 
@@ -824,12 +828,12 @@ module Bplmodels
     #usage=nil,  supplied=nil, subtitle=nil, language=nil, type=nil, authority=nil, authorityURI=nil, valueURI=nil
     def insert_title2(nonSort=nil, main_title=nil, usage=nil, args={})
       title_index = self.title_info.count
-      self.title_info(title_index).nonSort = nonSort unless nonSort.empty?
-      self.title_info(title_index).main_title = main_title unless main_title.empty?
-      self.title_info(title_index).usage = usage unless usage.empty?
+      self.title_info(title_index).nonSort = nonSort unless nonSort.blank?
+      self.title_info(title_index).main_title = main_title unless main_title.blank?
+      self.title_info(title_index).usage = usage unless usage.blank?
 
       args.each do |key, value|
-        self.title_info(title_index).send(key, utf8Encode(value)) unless value.empty?
+        self.title_info(title_index).send(key, utf8Encode(value)) unless value.blank?
       end
 
     end
@@ -996,20 +1000,20 @@ module Bplmodels
       end
       if date_first.present? && date_last.present?
         date_created_index = self.date(date_index).dates_created.length
-        self.date(date_index).dates_created[date_created_index] = date_first
+        self.date(date_index).dates_created(date_created_index, date_first)
         self.date(date_index).dates_created(date_created_index).encoding = 'w3cdtf'
         self.date(date_index).dates_created(date_created_index).key_date = 'yes'
         self.date(date_index).dates_created(date_created_index).point = 'start'
         #self.date(date_index).dates_created(date_created_index).qualifier = ????
 
         date_created_index = self.date(date_index).dates_created.length
-        self.date(date_index).dates_created[date_created_index] = date_last
+        self.date(date_index).dates_created(date_created_index, date_last)
         self.date(date_index).dates_created(date_created_index).encoding = 'w3cdtf'
         self.date(date_index).dates_created(date_created_index).point = 'end'
         #self.date(date_index).dates_created(date_created_index).qualifier = ????
       elsif date_first.present?
         date_created_index = self.date(date_index).dates_created.length
-        self.date(date_index).dates_created[date_created_index] = date_first
+        self.date(date_index).dates_created(date_created_index, date_first)
         self.date(date_index).dates_created(date_created_index).encoding = 'w3cdtf'
         self.date(date_index).dates_created(date_created_index).key_date = 'yes'
       end
@@ -1687,9 +1691,7 @@ module Bplmodels
           xml.text "English"
         }
       }
-      xml.descriptionStandard(:authority=>"marcdescription") {
-        xml.text "gihc"
-      }
+
     }
   end
 

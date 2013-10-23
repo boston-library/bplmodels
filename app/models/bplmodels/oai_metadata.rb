@@ -28,9 +28,14 @@ module Bplmodels
         t.set_spec(:path=>'setSpec')
       }
 
-      t.original_record(:path=>"originalRecord")
 
-      t.file_urls(:path=>"fileURL")
+      t.original_record(:path=>'originalRecord')
+
+      t.raw_info(:path=>'rawInfo') {
+        t.file_urls(:path=>'fileURL')
+        t.unparsed_dates(:path=>'unparsedDates')
+      }
+
 
     end
 
@@ -38,22 +43,18 @@ module Bplmodels
       Nokogiri::XML::Builder.new do |xml|
         xml.oaiMetadata(OAI_PARAMS) {
 
-          xml.ingestionInformation {
-            xml.url
-            xml.format
-          }
 
-          xml.headerInformation {
-            xml.status
-            xml.identifier
-            xml.datestamp
-            xml.setSpec
-          }
-
-          xml.original_record
 
         }
       end.doc
+    end
+
+    def set_values(term, value)
+      if term == 'original_record'
+        ng_xml.root.append(Nokogiri::XML::CDATA.new(value))
+      else
+        super
+      end
     end
   end
 end
