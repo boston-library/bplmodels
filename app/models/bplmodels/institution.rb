@@ -52,13 +52,26 @@ module Bplmodels
       city_section = self.descMetadata.subject.hierarchical_geographic.city_section
 
       doc['subject_geo_country_tsim'] = country
+      doc['subject_geo_country_ssim'] = country
       doc['subject_geo_state_tsim'] = state
+      doc['subject_geo_state_ssim'] = state
       doc['subject_geo_county_tsim'] = county
+      doc['subject_geo_county_ssim'] = county
       doc['subject_geo_city_tsim'] = city
+      doc['subject_geo_city_ssim'] = city
       doc['subject_geo_citysection_tsim'] = city_section
+      doc['subject_geo_citysection_ssim'] = city_section
+
+      # add " (county)" to county values for better faceting
+      county_facet = []
+      if county.length > 0
+        county.each do |county_value|
+          county_facet << county_value + ' (county)'
+        end
+      end
 
       # add hierarchical geo to subject-geo facet field
-      doc['subject_geographic_ssim'] = state + county + city + city_section
+      doc['subject_geographic_ssim'] = state + county_facet + city + city_section
 
       # coordinates
       doc['subject_coordinates_geospatial'] = self.descMetadata.subject.cartographics.coordinates
