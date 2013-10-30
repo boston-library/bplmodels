@@ -45,7 +45,7 @@ module Bplmodels
 
     # a function to convert date data from OAI feeds into MODS-usable date data
     # assumes date values containing ";" have already been split
-    # returns a hash with :single_date, :date_range, and/or :date_note values
+    # returns hash with :single_date, :date_range, :date_qualifier, and/or :date_note values
     def self.convert_to_mods_date(value)
 
       date_data = {} # create the hash to hold all the data
