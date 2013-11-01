@@ -32,7 +32,9 @@ module Bplmodels
       t.original_record(:path=>'originalRecord')
 
       t.raw_info(:path=>'rawInfo') {
-        t.file_urls(:path=>'fileURL')
+        t.file_urls(:path=>'fileURL') {
+          t.index(:path=>{:attribute=>"index"})
+        }
         t.unparsed_dates(:path=>'unparsedDates')
       }
 
@@ -49,12 +51,19 @@ module Bplmodels
       end.doc
     end
 
-    def set_values(term, value)
-      if term == 'original_record'
-        ng_xml.root.append(Nokogiri::XML::CDATA.new(value))
-      else
-        super
-      end
+    define_template :original_record do |xml, content|
+        xml.original_record {
+          xml.cdata content
+        }
+    end
+
+
+    def insert_original_record(content)
+        add_child_node(ng_xml.root, :original_record, content)
+    end
+
+    def remove_original_record(index)
+      self.find_by_terms(:original_record).slice(index.to_i).remove
     end
   end
 end

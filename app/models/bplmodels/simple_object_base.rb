@@ -243,21 +243,21 @@ module Bplmodels
       doc['name_corporate_tsim'] = []
       doc['name_corporate_role_tsim'] = []
 
-      0.upto self.descMetadata.name.length-1 do |index|
-        if self.descMetadata.name(index).type[0] == "personal"
-          if self.descMetadata.name(index).date.length > 0
-            doc['name_personal_tsim'].append(self.descMetadata.name(index).namePart[0] + ", " + self.descMetadata.name(index).date[0])
+      0.upto self.descMetadata.mods(0).name.length-1 do |index|
+        if self.descMetadata.mods(0).name(index).type[0] == "personal"
+          if self.descMetadata.mods(0).name(index).date.length > 0
+            doc['name_personal_tsim'].append(self.descMetadata.mods(0).name(index).namePart[0] + ", " + self.descMetadata.mods(0).name(index).date[0])
           else
-            doc['name_personal_tsim'].append(self.descMetadata.name(index).namePart[0])
+            doc['name_personal_tsim'].append(self.descMetadata.mods(0).name(index).namePart[0])
           end
-          doc['name_personal_role_tsim'].append(self.descMetadata.name(index).role.text[0])
-        elsif self.descMetadata.name(index).type[0] == "corporate"
-          if self.descMetadata.name(index).date.length > 0
-            doc['name_corporate_tsim'].append(self.descMetadata.name(index).namePart[0] + ", " + self.descMetadata.name(index).date[0])
+          doc['name_personal_role_tsim'].append(self.descMetadata.mods(0).name(index).role.text[0])
+        elsif self.descMetadata.mods(0).name(index).type[0] == "corporate"
+          if self.descMetadata.mods(0).name(index).date.length > 0
+            doc['name_corporate_tsim'].append(self.descMetadata.mods(0).name(index).namePart[0] + ", " + self.descMetadata.mods(0).name(index).date[0])
           else
-            doc['name_corporate_tsim'].append(self.descMetadata.name(index).namePart[0])
+            doc['name_corporate_tsim'].append(self.descMetadata.mods(0).name(index).namePart[0])
           end
-          doc['name_corporate_role_tsim'].append(self.descMetadata.name(index).role.text[0])
+          doc['name_corporate_role_tsim'].append(self.descMetadata.mods(0).name(index).role.text[0])
         end
       end
 
@@ -387,14 +387,14 @@ module Bplmodels
       end
 
       main_title = ''
-      if self.descMetadata.title_info(0).nonSort[0] != nil
-        doc['title_info_primary_tsi'] =  self.descMetadata.title_info(0).nonSort[0] + ' ' + self.descMetadata.title_info(0).main_title[0]
-        doc['title_info_primary_ssort'] = self.descMetadata.title_info(0).main_title[0]
-        main_title = self.descMetadata.title_info(0).nonSort[0] + ' ' + self.descMetadata.title_info(0).main_title[0]
+      if self.descMetadata.mods(0).title_info(0).nonSort[0] != nil
+        doc['title_info_primary_tsi'] =  self.descMetadata.mods(0).title_info(0).nonSort[0] + ' ' + self.descMetadata.mods(0).title_info(0).main_title[0]
+        doc['title_info_primary_ssort'] = self.descMetadata.mods(0).title_info(0).main_title[0]
+        main_title = self.descMetadata.mods(0).title_info(0).nonSort[0] + ' ' + self.descMetadata.mods(0).title_info(0).main_title[0]
       else
-        doc['title_info_primary_tsi'] =  self.descMetadata.title_info(0).main_title[0]
-        doc['title_info_primary_ssort'] = self.descMetadata.title_info(0).main_title[0]
-        main_title = self.descMetadata.title_info(0).main_title[0]
+        doc['title_info_primary_tsi'] =  self.descMetadata.mods(0).title_info(0).main_title[0]
+        doc['title_info_primary_ssort'] = self.descMetadata.mods(0).title_info(0).main_title[0]
+        main_title = self.descMetadata.mods(0).title_info(0).main_title[0]
       end
 
       if self.descMetadata.title_info(0).supplied[0] == 'yes'

@@ -275,8 +275,8 @@ module Bplmodels
 
 
 
-      #t.title_info(:xpath=>'oxns:mods/oxns:titleInfo') {
-      t.title_info(:path=>'mods/oxns:titleInfo') {
+
+      t.title_info(:path=>'titleInfo') {
         t.usage(:path=>{:attribute=>"usage"})
         t.nonSort(:path=>"nonSort", :index_as=>[:searchable, :displayable])
         t.main_title(:path=>"title", :label=>"title")
@@ -290,7 +290,7 @@ module Bplmodels
       }
       t.title(:proxy=>[:title_info, :main_title])
 
-      t.name(:path=>'mods/oxns:name') {
+      t.name(:path=>'name') {
         # this is a namepart
         t.usage(:path=>{:attribute=>"usage"})
         t.namePart(:type=>:string, :label=>"generic name")
@@ -352,20 +352,6 @@ module Bplmodels
         t.type_at(:path=>{:attribute=>"type"})
       }
 
-      t.test1(:path=>'mods/oxns:subject/oxns:name') {
-        t.name_part(:path=>"namePart[not(@type)]")
-        t.date(:path=>"namePart", :attributes=>{:type=>"date"})
-      }
-
-      t.test2(:path=>'subject/oxns:name') {
-        t.name_part(:path=>"namePart[not(@type)]")
-        t.date(:path=>"namePart", :attributes=>{:type=>"date"})
-      }
-
-      t.test3(:path=>'name') {
-        t.name_part(:path=>"namePart[not(@type)]")
-        t.date(:path=>"namePart", :attributes=>{:type=>"date"})
-      }
 
       t.personal_name(:path=>'mods/oxns:subject/oxns:name', :attributes=>{:type => "personal"}) {
         t.name_part(:path=>"namePart[not(@type)]")
@@ -417,24 +403,6 @@ module Bplmodels
 
       end
 
-      #t.related_item(:path=>"relatedItem", :attributes=>{ :type => "host"}) {
-        #t.type(:path=>{:attribute=>"type"})
-        #t.href(:path=>{:attribute=>'xlink:href'})
-        #t.title_info(:path=>"titleInfo") {
-          #t.title
-        #}
-        #t.identifier
-      #}
-
-      #t.related_item_series(:path=>"relatedItem", :attributes=>{ :type => "series"}) {
-        #t.type(:path=>{:attribute=>"type"})
-        #t.href(:path=>{:attribute=>'xlink:href'})
-        #t.title_info(:path=>"titleInfo") {
-        #t.title
-      #}
-        #t.identifier
-      #}
-
 
       t.related_item(:path=>"relatedItem") {
         t.type(:path=>{:attribute=>"type"})
@@ -443,7 +411,6 @@ module Bplmodels
           t.title
         }
         t.identifier
-
       }
 
       t.use_and_reproduction(:path=>"accessCondition", :attributes=>{:type=>"use and reproduction"})
@@ -481,8 +448,9 @@ module Bplmodels
       }
 
       t.role {
-        t.text(:path=>"roleTerm",:attributes=>{:type=>"text"})
-        t.code(:path=>"roleTerm",:attributes=>{:type=>"code"})
+        t.text(:path=>'roleTerm',:attributes=>{:type=>'text', :authority=>'marcrelator', :authorityURI=>'http://id.loc.gov/vocabulary/relators'})
+        t.valueURI(:path=>{:attribute=>'valueURI'})
+        t.code(:path=>'roleTerm',:attributes=>{:type=>'code'})
       }
 
       t.language(:path=>"language") {
@@ -654,46 +622,17 @@ module Bplmodels
       self.find_by_terms(:type_of_resource).slice(index.to_i).remove
     end
 
-    define_template :publisher do |xml, value, place|
-      if place != nil && place.length > 0
-        xml.originInfo {
-          xml.publisher {
-            xml.text value
-          }
-          xml.place {
-            xml.placeTerm(:type=>"text") {
-              xml.text place
-            }
-          }
-        }
-
-      else
-        xml.originInfo {
-          xml.publisher {
-            xml.text value
-          }
-        }
-      end
-
-    end
-
-    def insert_publisher(value=nil, place=nil)
-      if(value != nil && value.length > 1)
-        add_child_node(ng_xml.root, :publisher, value, place)
-      end
-    end
-
-    def remove_publisher(index)
-      self.find_by_terms(:publisher).slice(index.to_i).remove
-    end
-
-    def insert_publisher2(publisher=nil, place=nil)
+    def insert_publisher(publisher=nil, place=nil)
       origin_index = self.origin_info.count
       publisher_index = self.origin_info(origin_index).publisher.count
       place_index =  self.origin_info(origin_index).place.count
 
-      self.origin_info(origin_index).publisher[publisher_index] = publisher unless publisher.blank?
+      self.origin_info(origin_index).publisher(publisher_index, publisher) unless publisher.blank?
       self.origin_info(origin_index).place(place_index).place_term = place unless place.blank?
+    end
+
+    def remove_publisher(index)
+      self.find_by_terms(:mods, :publisher).slice(index.to_i).remove
     end
 
 
@@ -742,281 +681,101 @@ module Bplmodels
       self.find_by_terms(:access_links).slice(index.to_i).remove
     end
 
-    define_template :title_info do |xml, nonSort, main_title, usage, supplied, subtitle, language, type, authority, authorityURI, valueURI|
-      if nonSort!=nil && main_title!=nil && subtitle!=nil && language!=nil && supplied!=nil && type!=nil && usage!=nil && authority!=nil && authorityURI!=nil && valueURI!=nil
-        xml.titleInfo(:language=>language, :supplied=>supplied, :type=>type, :usage=>usage, :authority=>authority, :authorityURI=>authorityURI, :valueURI=>valueURI) {
-          xml.nonSort(nonSort)
-          xml.title(main_title)
-          xml.subtitle(subtitle)
-        }
-      elsif subtitle!=nil && subtitle.length > 0 && usage != nil && nonSort!=nil && main_title != nil && supplied != nil && supplied.strip.downcase == "x"
-        xml.titleInfo(:usage=>usage, :supplied=>"yes") {
-          xml.nonSort(nonSort)
-          xml.title(main_title)
-          xml.subtitle(subtitle)
-        }
-      elsif subtitle!=nil && subtitle.length > 0 && usage != nil && nonSort!=nil && main_title != nil
-        xml.titleInfo(:usage=>usage) {
-          xml.nonSort(nonSort)
-          xml.title(main_title)
-          xml.subtitle(subtitle)
-        }
+    #usage=nil,  supplied=nil, subtitle=nil, language=nil, type=nil, authority=nil, authorityURI=nil, valueURI=nil
+    def insert_title(nonSort=nil, main_title=nil, usage=nil, supplied=nil, args={})
+      title_index = self.mods(0).title_info.count
+      self.mods(0).title_info(title_index).nonSort = nonSort unless nonSort.blank?
+      self.mods(0).title_info(title_index).main_title = main_title unless main_title.blank?
 
-      elsif subtitle!=nil && subtitle.length > 0 && usage != nil && main_title != nil && supplied != nil && supplied.strip.downcase == "x"
-        xml.titleInfo(:usage=>usage, :supplied=>"yes") {
-          xml.title(main_title)
-          xml.subtitle(subtitle)
-        }
-      elsif subtitle!=nil && subtitle.length > 0 && usage != nil && main_title != nil
-        xml.titleInfo(:usage=>usage) {
-          xml.title(main_title)
-          xml.subtitle(subtitle)
-        }
+      self.mods(0).title_info(title_index).usage = usage unless usage.blank?
+      self.mods(0).title_info(title_index).supplied = 'yes' unless supplied.blank? || supplied == 'no'
 
-      elsif subtitle!=nil && subtitle.length > 0 && nonSort!=nil && main_title != nil
-        xml.titleInfo {
-          xml.nonSort(nonSort)
-          xml.title(main_title)
-          xml.subtitle(subtitle)
-        }
-      elsif subtitle!=nil && subtitle.length > 0 && main_title != nil
-        xml.titleInfo {
-          xml.title(main_title)
-          xml.subtitle(subtitle)
-        }
-
-      elsif usage != nil && nonSort!=nil && main_title != nil && supplied != nil && supplied.strip.downcase == "x"
-        xml.titleInfo(:usage=>usage, :supplied=>"yes") {
-          xml.nonSort(nonSort)
-          xml.title(main_title)
-        }
-      elsif usage != nil && nonSort!=nil && main_title != nil
-        xml.titleInfo(:usage=>usage) {
-          xml.nonSort(nonSort)
-          xml.title(main_title)
-        }
-      elsif usage != nil && main_title != nil && supplied != nil && supplied.strip.downcase == "x"
-        xml.titleInfo(:usage=>usage, :supplied=>"yes") {
-          xml.title(main_title)
-        }
-      elsif usage != nil && main_title != nil
-        xml.titleInfo(:usage=>usage) {
-          xml.title(main_title)
-        }
-
-      elsif nonSort!=nil && main_title != nil
-        xml.titleInfo {
-          xml.nonSort(nonSort)
-          xml.title(main_title)
-        }
-      elsif main_title != nil
-        xml.titleInfo {
-          xml.title(main_title)
-        }
+      args.each do |key, value|
+        self.mods(0).title_info(title_index).send(key, utf8Encode(value)) unless value.blank?
       end
-    end
-
-    def insert_title(nonSort=nil, main_title=nil, usage=nil,  supplied=nil, subtitle=nil, language=nil, type=nil, authority=nil, authorityURI=nil, valueURI=nil)
-      add_child_node(ng_xml.root, :title_info, nonSort, main_title, usage, supplied, subtitle, language, type, authority, authorityURI, valueURI)
     end
 
     def remove_title(index)
-      self.find_by_terms(:title_info).slice(index.to_i).remove
-    end
-
-
-    #usage=nil,  supplied=nil, subtitle=nil, language=nil, type=nil, authority=nil, authorityURI=nil, valueURI=nil
-    def insert_title2(nonSort=nil, main_title=nil, usage=nil, args={})
-      title_index = self.title_info.count
-      self.title_info(title_index).nonSort = nonSort unless nonSort.blank?
-      self.title_info(title_index).main_title = main_title unless main_title.blank?
-      self.title_info(title_index).usage = usage unless usage.blank?
-
-      args.each do |key, value|
-        self.title_info(title_index).send(key, utf8Encode(value)) unless value.blank?
-      end
-
+      self.find_by_terms(:mods, :title_info).slice(index.to_i).remove
     end
 
     #image.descMetadata.find_by_terms(:name).slice(0).set_attribute("new", "true")
 
 
+    def insert_name(name=nil, type=nil, authority=nil, value_uri=nil, role=nil, role_uri=nil, args={})
+      name_index = self.mods(0).name.count
+      self.mods(0).name(name_index).type = type unless type.blank?
+      self.mods(0).name(name_index).authority = authority unless authority.blank?
+      self.mods(0).name(name_index).valueURI = value_uri unless value_uri.blank?
 
-
-
-    define_template :name do |xml, name, type, authority, uri, role, role_uri|
-      if type != nil && type.length > 1 && authority !=nil && authority.length > 1 && uri !=nil && uri.length > 1 && role_uri !=nil && role_uri.length > 1
-        if(authority == 'naf')
-          xml.name(:type=>type, :authority=>authority, :authorityURI=>'http://id.loc.gov/authorities/names', :valueURI=>uri) {
-            xml.role {
-              xml.roleTerm(:type=>"text", :authority=>"marcrelator", :authorityURI=>"http://id.loc.gov/vocabulary/relators", :valueURI=>role_uri)   {
-                xml.text role
-              }
-            }
-            xml.namePart(name)
-          }
-        else
-          xml.name(:type=>type, :authority=>authority, :valueURI=>uri) {
-            xml.role {
-              xml.roleTerm(:type=>"text", :authority=>"marcrelator", :authorityURI=>"http://id.loc.gov/vocabulary/relators", :valueURI=>role_uri)   {
-                xml.text role
-              }
-            }
-            xml.namePart(name)
-          }
-        end
-
-      elsif type != nil && type.length > 1 && authority !=nil && authority.length > 1 && uri !=nil && uri.length > 1
-        if(authority == 'naf')
-          xml.name(:type=>type, :authority=>authority, :authorityURI=>'http://id.loc.gov/authorities/names', :valueURI=>uri) {
-            xml.role {
-              xml.roleTerm(:type=>"text", :authority=>"marcrelator", :authorityURI=>"http://id.loc.gov/vocabulary/relators")   {
-                xml.text role
-              }
-            }
-            xml.namePart(name)
-          }
-        else
-          xml.name(:type=>type, :authority=>authority, :valueURI=>uri) {
-            xml.role {
-              xml.roleTerm(:type=>"text", :authority=>"marcrelator", :authorityURI=>"http://id.loc.gov/vocabulary/relators")   {
-                xml.text role
-              }
-            }
-            xml.namePart(name)
-          }
-        end
-
-      elsif type != nil && type.length > 1 && authority !=nil && authority.length > 1 && role_uri !=nil && role_uri.length > 1
-        if(authority == 'naf')
-          xml.name(:type=>type, :authorityURI=>'http://id.loc.gov/authorities/names', :authority=>authority) {
-            xml.role {
-              xml.roleTerm(:type=>"text", :authority=>"marcrelator", :authorityURI=>"http://id.loc.gov/vocabulary/relators", :valueURI=>role_uri)   {
-                xml.text role
-              }
-            }
-            xml.namePart(name)
-          }
-        else
-          xml.name(:type=>type, :authority=>authority) {
-            xml.role {
-              xml.roleTerm(:type=>"text", :authority=>"marcrelator", :authorityURI=>"http://id.loc.gov/vocabulary/relators", :valueURI=>role_uri)   {
-                xml.text role
-              }
-            }
-            xml.namePart(name)
-          }
-        end
-
-      elsif type != nil && type.length > 1 && authority !=nil && authority.length > 1
-        if(authority == 'naf')
-          xml.name(:type=>type, :authorityURI=>'http://id.loc.gov/authorities/names', :authority=>authority) {
-            xml.role {
-              xml.roleTerm(:type=>"text", :authority=>"marcrelator")   {
-                xml.text role
-              }
-            }
-            xml.namePart(name)
-          }
-        else
-          xml.name(:type=>type, :authority=>authority) {
-            xml.role {
-              xml.roleTerm(:type=>"text", :authority=>"marcrelator")   {
-                xml.text role
-              }
-            }
-            xml.namePart(name)
-          }
-        end
-
-      elsif type != nil && type.length > 1
-        xml.name(:type=>type) {
-          xml.role {
-            xml.roleTerm(:type=>"text", :authority=>"marcrelator")   {
-              xml.text role
-            }
-          }
-          xml.namePart(name)
-        }
-      else
-        xml.name {
-          xml.role {
-            xml.roleTerm(:type=>"text", :authority=>"marcrelator")   {
-              xml.text role
-            }
-          }
-          xml.namePart(name)
-        }
+      if role.present?
+        self.mods(0).name(name_index).role.text = role unless role.blank?
+        self.mods(0).name(name_index).role.valueURI = role_uri unless role_uri.blank?
       end
 
-    end
+      if(authority == 'naf')
+        self.mods(0).name(name_index).authorityURI = 'http://id.loc.gov/authorities/names'
+      end
 
-    def insert_name(name=nil, type=nil, authority=nil, uri=nil, role=nil, role_uri=nil)
-      add_child_node(ng_xml.root, :name, name, type, authority, uri, role, role_uri)
-    end
+      if type == 'corporate'
+        name_hash = Bplmodels::DatastreamInputFuncs.corpNamePartSplitter(name)
+        0.upto name_hash.size do |hash_pos|
+          self.mods(0).name(name_index).namePart.append = name
+        end
+      else
+        name_hash = Bplmodels::DatastreamInputFuncs.persNamePartSplitter(name_list[pos])
+        self.mods(0).name(name_index).namePart = name_hash[:namePart]
+        self.mods(0).name(name_index).date = name_hash[:datePart] unless name_hash[:datePart].blank?
+      end
 
-    define_template :namePart do |xml, name|
-      xml.namePart(:type=>"date") {
-        xml.text name
-      }
-    end
+      self.mods(0).name(name_index).namePart = name
 
-    define_template :namePartDate do |xml, date|
-      xml.namePart(:type=>"date") {
-        xml.text date
-      }
-    end
-
-    #test = ["test1", "test2"]
-    #test.each do |k|
-      #define_method "current_#{k.underscore}" do
-        #puts k.underscore
-      #end
-    #end
-
-
-
-    def insert_namePart(index, name=nil)
-      add_child_node(self.find_by_terms(:name).slice(index.to_i), :namePart, name)
-    end
-
-    def insert_namePartDate(index, date=nil)
-      add_child_node(self.find_by_terms(:name).slice(index.to_i), :namePartDate, date)
+      args.each do |key, value|
+        self.mods(0).name(name_index).send(key, utf8Encode(value)) unless value.blank?
+      end
     end
 
 
     def remove_name(index)
-      self.find_by_terms(:name).slice(index.to_i).remove
+      self.find_by_terms(:mods, :name).slice(index.to_i).remove
     end
 
+    #test = ["test1", "test2"]
+    #test.each do |k|
+    #define_method "current_#{k.underscore}" do
+    #puts k.underscore
+    #end
+    #end
+
     def insert_oai_date(date)
-      date_index = 0
-      date_list = date.split('-')
-      if date_list.length == 1
-        date_first = date_list.first
-      else
-        date_first = date_list.first
-        date_last = date_list.last unless date_list.last == 'unknown'
-      end
-      if date_first.present? && date_last.present?
+      converted = Bplmodels::DatastreamInputFuncs.convert_to_mods_date(date)
+
+      date_index =  self.date.length
+
+      if converted.has_key?(:single_date)
         date_created_index = self.date(date_index).dates_created.length
-        self.date(date_index).dates_created(date_created_index, date_first)
+        self.date(date_index).dates_created(date_created_index, converted[:single_date])
+        self.date(date_index).dates_created(date_created_index).encoding = 'w3cdtf'
+        self.date(date_index).dates_created(date_created_index).key_date = 'yes'
+        if converted.has_key?(:date_qualifier)
+          self.date(date_index).dates_created(date_created_index).qualifier =  converted[:date_qualifier]
+        end
+      elsif converted.has_key?(:date_range)
+        date_created_index = self.date(date_index).dates_created.length
+        self.date(date_index).dates_created(date_created_index, converted[:date_range][:start])
         self.date(date_index).dates_created(date_created_index).encoding = 'w3cdtf'
         self.date(date_index).dates_created(date_created_index).key_date = 'yes'
         self.date(date_index).dates_created(date_created_index).point = 'start'
-        #self.date(date_index).dates_created(date_created_index).qualifier = ????
+        self.date(date_index).dates_created(date_created_index).qualifier = converted[:date_qualifier]
 
         date_created_index = self.date(date_index).dates_created.length
-        self.date(date_index).dates_created(date_created_index, date_last)
+        self.date(date_index).dates_created(date_created_index, converted[:date_range][:end])
         self.date(date_index).dates_created(date_created_index).encoding = 'w3cdtf'
         self.date(date_index).dates_created(date_created_index).point = 'end'
-        #self.date(date_index).dates_created(date_created_index).qualifier = ????
-      elsif date_first.present?
-        date_created_index = self.date(date_index).dates_created.length
-        self.date(date_index).dates_created(date_created_index, date_first)
-        self.date(date_index).dates_created(date_created_index).encoding = 'w3cdtf'
-        self.date(date_index).dates_created(date_created_index).key_date = 'yes'
+        self.date(date_index).dates_created(date_created_index).qualifier = converted[:date_qualifier]
       end
+
+      self.insert_note(converted[:date_note],"date") unless !converted.has_key?(:date_note)
 
     end
 
@@ -1559,29 +1318,23 @@ module Bplmodels
       self.find_by_terms(:subject_cartographic).slice(index.to_i).remove
     end
 
+    def insert_host(value=nil, identifier=nil, args={})
+      related_index = self.mods(0).related_item.count
 
-    define_template :host do |xml, value, identifier|
-      xml.relatedItem(:type=>"host") {
-        xml.titleInfo {
-          xml.title {
-            xml.text value
-          }
-        }
-        if(identifier != nil && identifier.length > 0)
-          xml.identifier(:type=>"uri") {
-            xml.text identifier
-          }
-        end
-    }
-    end
+      self.mods(0).related_item(related_index).type = 'host' unless value.blank? && identifier.blank?
+      self.mods(0).related_item(related_index).title_info(0).title = value unless value.blank?
+      self.mods(0).related_item(related_index).identifier = identifier unless identifier.blank?
 
-    def insert_host(value=nil, identifier=nil)
-      add_child_node(ng_xml.root, :host, value, identifier)
+      args.each do |key, value|
+        self.mods(0).related_item(related_index).send(key, utf8Encode(value)) unless value.blank?
+      end
     end
 
     def remove_host(index)
-      self.find_by_terms(:host).slice(index.to_i).remove
+      self.find_by_terms(:mods, :host).slice(index.to_i).remove
     end
+
+
 
 
     define_template :related_item do |xml, value, qualifier|
