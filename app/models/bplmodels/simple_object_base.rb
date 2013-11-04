@@ -369,6 +369,7 @@ module Bplmodels
 
       doc['note_tsim'] = []
       doc['note_resp_tsim'] = []
+      doc['note_date_tsim'] = []
       0.upto self.descMetadata.note.length-1 do |index|
         if self.descMetadata.note(index).type_at.first == 'statement of responsibility'
           doc['note_resp_tsim'].append(self.descMetadata.note(index).first)
