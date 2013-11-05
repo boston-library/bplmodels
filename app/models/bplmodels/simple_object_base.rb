@@ -242,6 +242,8 @@ module Bplmodels
       doc['name_personal_role_tsim'] = []
       doc['name_corporate_tsim'] = []
       doc['name_corporate_role_tsim'] = []
+      doc['name_notype_tsim'] = []
+      doc['name_notype_role_tsim'] = []
 
       0.upto self.descMetadata.mods(0).name.length-1 do |index|
         if self.descMetadata.mods(0).name(index).type[0] == "personal"
@@ -258,7 +260,11 @@ module Bplmodels
             doc['name_corporate_tsim'].append(self.descMetadata.mods(0).name(index).namePart[0])
           end
           doc['name_corporate_role_tsim'].append(self.descMetadata.mods(0).name(index).role.text[0])
+        else
+          doc['name_notype_tsim'].append(self.descMetadata.mods(0).name(index).namePart[0])
+          doc['name_notype_role_tsim'].append(self.descMetadata.mods(0).name(index).role.text[0])
         end
+
       end
 
 
@@ -369,6 +375,8 @@ module Bplmodels
 
       doc['note_tsim'] = []
       doc['note_resp_tsim'] = []
+      doc['note_date_tsim'] = []
+
       0.upto self.descMetadata.note.length-1 do |index|
         if self.descMetadata.note(index).type_at.first == 'statement of responsibility'
           doc['note_resp_tsim'].append(self.descMetadata.note(index).first)
@@ -416,7 +424,7 @@ module Bplmodels
         doc['workflow_state_ssi'] = self.workflowMetadata.item_status.state
       end
 
-      if self.exemplary_image.first != nil
+      if self.exemplary_image.first != nil && self.exemplary_image.first.pid != nil
         # keep both for now, we will eventually phase out exemplary_image_ss
         doc['exemplary_image_ss'] = self.exemplary_image.first.pid
         doc['exemplary_image_ssi'] = self.exemplary_image.first.pid

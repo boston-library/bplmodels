@@ -460,7 +460,9 @@ module Bplmodels
       }
 
       t.record_info(:path=>'recordInfo') {
-       t.description_standard(:path=>'descriptionStandard', :attributes=>{:authority=>"marcdescription"})
+        t.description_standard(:path=>'descriptionStandard', :attributes=>{:authority=>"marcdescription"})
+        t.record_content_source(:path=>'recordContentSource')
+        t.record_origin(:path=>'recordOrigin')
       }
 
     end
@@ -722,13 +724,13 @@ module Bplmodels
         0.upto name_hash.size do |hash_pos|
           self.mods(0).name(name_index).namePart.append = name
         end
-      else
-        name_hash = Bplmodels::DatastreamInputFuncs.persNamePartSplitter(name_list[pos])
+      elsif type=='personal'
+        name_hash = Bplmodels::DatastreamInputFuncs.persNamePartSplitter(name)
         self.mods(0).name(name_index).namePart = name_hash[:namePart]
         self.mods(0).name(name_index).date = name_hash[:datePart] unless name_hash[:datePart].blank?
+      else
+        self.mods(0).name(name_index).namePart = name
       end
-
-      self.mods(0).name(name_index).namePart = name
 
       args.each do |key, value|
         self.mods(0).name(name_index).send(key, utf8Encode(value)) unless value.blank?
@@ -750,13 +752,17 @@ module Bplmodels
     def insert_oai_date(date)
       converted = Bplmodels::DatastreamInputFuncs.convert_to_mods_date(date)
 
-      date_index =  self.date.length
+      #date_index =  self.date.length
+      date_index = 0
 
       if converted.has_key?(:single_date)
         date_created_index = self.date(date_index).dates_created.length
         self.date(date_index).dates_created(date_created_index, converted[:single_date])
         self.date(date_index).dates_created(date_created_index).encoding = 'w3cdtf'
-        self.date(date_index).dates_created(date_created_index).key_date = 'yes'
+        if date_created_index == 0
+          self.date(date_index).dates_created(date_created_index).key_date = 'yes'
+        end
+
         if converted.has_key?(:date_qualifier)
           self.date(date_index).dates_created(date_created_index).qualifier =  converted[:date_qualifier]
         end
@@ -764,7 +770,9 @@ module Bplmodels
         date_created_index = self.date(date_index).dates_created.length
         self.date(date_index).dates_created(date_created_index, converted[:date_range][:start])
         self.date(date_index).dates_created(date_created_index).encoding = 'w3cdtf'
-        self.date(date_index).dates_created(date_created_index).key_date = 'yes'
+        if date_created_index == 0
+          self.date(date_index).dates_created(date_created_index).key_date = 'yes'
+        end
         self.date(date_index).dates_created(date_created_index).point = 'start'
         self.date(date_index).dates_created(date_created_index).qualifier = converted[:date_qualifier]
 

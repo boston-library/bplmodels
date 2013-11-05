@@ -290,6 +290,157 @@ module Bplmodels
 
     end
 
+    # retrieve data from Getty TGN to populate <mods:subject auth="tgn">
+    def self.get_tgn_data(tgn_id)
+      tgn_response = Typhoeus::Request.get('http://vocabsservices.getty.edu/TGNService.asmx/TGNGetSubject?subjectID=' + tgn_id, userpwd: BPL_CONFIG_GLOBAL['getty_un'] + ':' + BPL_CONFIG_GLOBAL['getty_pw'])
+      unless tgn_response.code == 500
+        tgnrec = Nokogiri::XML(tgn_response.body)
+        #puts tgnrec.to_s
+
+        # coordinates
+        if tgnrec.at_xpath("//Coordinates")
+          coords = {}
+          coords[:latitude] = tgnrec.at_xpath("//Latitude/Decimal").children.to_s
+          coords[:longitude] = tgnrec.at_xpath("//Longitude/Decimal").children.to_s
+        else
+          coords = nil
+        end
+
+        hier_geo = {}
+
+        #main term
+        if tgnrec.at_xpath("//Terms/Preferred_Term/Term_Text")
+          tgn_term_type = tgnrec.at_xpath("//Preferred_Place_Type/Place_Type_ID").children.to_s
+          pref_term_langs = tgnrec.xpath("//Terms/Preferred_Term/Term_Languages/Term_Language/Language")
+          # if the preferred term is the preferred English form, use that
+          if pref_term_langs.children.to_s.include? "English"
+            tgn_term = tgnrec.at_xpath("//Terms/Preferred_Term/Term_Text").children.to_s
+          else # use the non-preferred term which is the preferred English form
+            if tgnrec.xpath("//Terms/Non-Preferred_Term")
+              non_pref_terms = tgnrec.xpath("//Terms/Non-Preferred_Term")
+              non_pref_terms.each do |non_pref_term|
+                non_pref_term_langs = non_pref_term.children.css("Term_Language")
+                # have to loop through these, as sometimes languages share form
+                non_pref_term_langs.each do |non_pref_term_lang|
+                  if non_pref_term_lang.children.css("Preferred").children.to_s == "Preferred" && non_pref_term_lang.children.css("Language").children.to_s == "English"
+                    tgn_term = non_pref_term.children.css("Term_Text").children.to_s
+                  end
+                end
+              end
+            end
+          end
+          # if no term is the preferred English form, just use the preferred term
+          tgn_term ||= tgnrec.at_xpath("//Terms/Preferred_Term/Term_Text").children.to_s
+        end
+        if tgn_term && tgn_term_type
+          case tgn_term_type
+            when '29000/continent'
+              hier_geo[:continent] = tgn_term
+            when '81010/nation'
+              hier_geo[:country] = tgn_term
+            when '81161/province'
+              hier_geo[:province] = tgn_term
+            when '81165/region', '82193/union', '80005/semi-independent political entity'
+              hier_geo[:region] = tgn_term
+            when '81175/state', '81117/department', '82133/governorate'
+              hier_geo[:state] = tgn_term
+            when '81181/territory', '81021/dependent state', '81186/union territory'
+              hier_geo[:territory] = tgn_term
+            when '81115/county'
+              hier_geo[:county] = tgn_term
+            when '83002/inhabited place'
+              hier_geo[:city] = tgn_term
+            when '84251/neighborhood'
+              hier_geo[:city_section] = tgn_term
+            when '21471/island'
+              hier_geo[:island] = tgn_term
+            when '81101/area', '22101/general region', '83210/deserted settlement', '81501/historical region', '81126/national division'
+              hier_geo[:area] = tgn_term
+            else
+              non_hier_geo = tgn_term
+          end
+        end
+
+        # parent data for <mods:hierarchicalGeographic>
+        if tgnrec.at_xpath("//Parent_String")
+          parents = tgnrec.at_xpath("//Parent_String").children.to_s.split('], ')
+          parents.each do |parent|
+            if parent.include? '(continent)'
+              hier_geo[:continent] = parent
+            elsif parent.include? '(nation)'
+              hier_geo[:country] = parent
+            elsif parent.include? '(province)'
+              hier_geo[:province] = parent
+            elsif (parent.include? '(region)') || (parent.include? '(union)') || (parent.include? '(semi-independent political entity)')
+              hier_geo[:region] = parent
+            elsif (parent.include? '(state)') || (parent.include? '(department)') || (parent.include? '(governorate)')
+              hier_geo[:state] = parent
+            elsif (parent.include? '(territory)') || (parent.include? '(dependent state)') || (parent.include? '(union territory)')
+              hier_geo[:territory] = parent
+            elsif parent.include? '(county)'
+              hier_geo[:county] = parent
+            elsif parent.include? '(inhabited place)'
+              hier_geo[:city] = parent
+            elsif parent.include? '(neighborhood)'
+              hier_geo[:city_section] = parent
+            elsif parent.include? '(island)'
+              hier_geo[:island] = parent
+            elsif (parent.include? '(area)') || (parent.include? '(general region)') || (parent.include? '(deserted settlement)') || (parent.include? '(historical region)') || (parent.include? '(national division)')
+              hier_geo[:area] = parent
+            end
+          end
+          hier_geo.each do |k,v|
+            hier_geo[k] = v.gsub(/ \(.*/,'')
+          end
+        end
+
+        tgn_data = {}
+        tgn_data[:coords] = coords
+        tgn_data[:hier_geo] = hier_geo.length > 0 ? hier_geo : nil
+        tgn_data[:non_hier_geo] = non_hier_geo ? non_hier_geo : nil
+
+      else
+
+        tgn_data = nil
+
+      end
+
+      return tgn_data
+
+    end
+
+    #http://vocabsservices.getty.edu/Schemas/TGN/tgn_nationality.xsd
+    #http://vocabsservices.getty.edu/Schemas/TGN/tgn_place_type.xsd
+    #Limited to Inhabited Place currently... should this be so?
+    def self.tgn_id_from_term(term)
+      split_parts = term.split(',')
+      if split_parts.length == 2
+        city_part = split_parts[0].downcase.strip
+        state_part = split_parts[1].downcase.strip
+        if state_part == 'ma' || state_part == 'mass' || state_part == 'massachusetts'
+          tgn_response = Typhoeus::Request.get('http://vocabsservices.getty.edu/TGNService.asmx/TGNGetSubject?placetypeid=83002&nationid=7012149&name=' + city_part, userpwd: BPL_CONFIG_GLOBAL['getty_un'] + ':' + BPL_CONFIG_GLOBAL['getty_pw'])
+
+          unless tgn_response.code == 500
+            tgnrec = Nokogiri::XML(tgn_response.body)
+            parsed_xml = Nokogiri::Slop(tgn_response.body)
+
+            parsed_xml.Vocabulary.Subject.each do |subject|
+              term = subject.Preferred_Term.text.gsub(' (inhabited place)', '')
+
+
+              if term == city_part && subject.Preferred_Parent.text.include?('Massachusetts (state) [7007517]')
+                return subject.Subject_ID.text
+              end
+
+            end
+
+          end
+        end
+
+      end
+      return nil
+
+    end
 
   end
 end
