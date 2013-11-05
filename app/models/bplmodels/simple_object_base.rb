@@ -242,6 +242,8 @@ module Bplmodels
       doc['name_personal_role_tsim'] = []
       doc['name_corporate_tsim'] = []
       doc['name_corporate_role_tsim'] = []
+      doc['name_generic_tsim'] = []
+      doc['name_generic_role_tsim'] = []
 
       0.upto self.descMetadata.mods(0).name.length-1 do |index|
         if self.descMetadata.mods(0).name(index).type[0] == "personal"
@@ -258,8 +260,17 @@ module Bplmodels
             doc['name_corporate_tsim'].append(self.descMetadata.mods(0).name(index).namePart[0])
           end
           doc['name_corporate_role_tsim'].append(self.descMetadata.mods(0).name(index).role.text[0])
+        else
+          if self.descMetadata.mods(0).name(index).date.length > 0
+            doc['name_generic_tsim'].append(self.descMetadata.mods(0).name(index).namePart[0] + ", " + self.descMetadata.mods(0).name(index).date[0])
+          else
+            doc['name_generic_tsim'].append(self.descMetadata.mods(0).name(index).namePart[0])
+          end
+          doc['name_generic_role_tsim'].append(self.descMetadata.mods(0).name(index).role.text[0])
         end
       end
+
+      doc['name_facet_ssim'] = doc['name_personal_tsim'] + doc['name_corporate_tsim'] + doc['name_generic_tsim']
 
 
       doc['type_of_resource_ssim'] = self.descMetadata.type_of_resource
