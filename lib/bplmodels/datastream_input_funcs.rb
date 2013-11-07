@@ -417,16 +417,16 @@ module Bplmodels
       if split_parts.length == 2
         city_part = split_parts[0].downcase.strip
         state_part = split_parts[1].downcase.strip
+        puts state_part
         if state_part == 'ma' || state_part == 'mass' || state_part == 'massachusetts'
-          tgn_response = Typhoeus::Request.get('http://vocabsservices.getty.edu/TGNService.asmx/TGNGetSubject?placetypeid=83002&nationid=7012149&name=' + city_part, userpwd: BPL_CONFIG_GLOBAL['getty_un'] + ':' + BPL_CONFIG_GLOBAL['getty_pw'])
+          tgn_response = Typhoeus::Request.get('http://vocabsservices.getty.edu/TGNService.asmx/TGNGetTermMatch?placetypeid=83002&nationid=7012149&name=' + city_part, userpwd: BPL_CONFIG_GLOBAL['getty_un'] + ':' + BPL_CONFIG_GLOBAL['getty_pw'])
+
 
           unless tgn_response.code == 500
-            tgnrec = Nokogiri::XML(tgn_response.body)
             parsed_xml = Nokogiri::Slop(tgn_response.body)
 
             parsed_xml.Vocabulary.Subject.each do |subject|
-              term = subject.Preferred_Term.text.gsub(' (inhabited place)', '')
-
+              term = subject.Preferred_Term.text.gsub(' (inhabited place)', '').downcase.strip
 
               if term == city_part && subject.Preferred_Parent.text.include?('Massachusetts (state) [7007517]')
                 return subject.Subject_ID.text

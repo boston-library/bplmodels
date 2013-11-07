@@ -400,6 +400,9 @@ module Bplmodels
           t.scale
           t.projection
         }
+        t.temporal(:path=>'temporal', :attributes=>{:type => "w3cdtf"}) {
+          t.point(:path=>{:attribute=>"point"})
+        }
 
       end
 
@@ -568,6 +571,12 @@ module Bplmodels
       self.find_by_terms(:physical_description).slice(index.to_i).remove
     end
 
+    def insert_media_type(media_type=nil)
+      physical_description_index = 0
+      media_type_index = self.mods(0).physical_description(physical_description_index).internet_media_type.count
+      self.mods(0).physical_description(physical_description_index).internet_media_type(media_type_index, media_type)
+    end
+
 
 
     define_template :language do |xml, value, code|
@@ -681,6 +690,32 @@ module Bplmodels
 
     def remove_access_links(index)
       self.find_by_terms(:access_links).slice(index.to_i).remove
+    end
+
+    def insert_tgn(tgn_id)
+      subject_index = self.mods(0).subject.count
+      api_result = Bplmodels::DatastreamInputFuncs.get_tgn_data(tgn_id)
+
+      self.mods(0).subject(subject_index).authority = "tgn"
+      self.mods(0).subject(subject_index).valueURI = tgn_id
+
+      #Insert geographic text
+      if api_result[:non_hier_geo] != nil
+        self.mods(0).subject(subject_index).geographic = api_result[:non_hier_geo]
+      end
+
+      #Insert hierarchicalGeographic text
+      if api_result[:hier_geo] != nil
+        api_result[:hier_geo].keys.reverse.each do |key|
+          key_with_equal = key.to_s + "="
+          self.mods(0).subject(subject_index).hierarchical_geographic.send(key_with_equal.to_sym, utf8Encode(api_result[:hier_geo][key]))
+        end
+      end
+
+      #Insert Coordinates
+      if api_result[:coords] != nil
+        self.mods(0).subject(subject_index).cartographics.coordinates = api_result[:coords][:latitude] + "," + api_result[:coords][:longitude]
+      end
     end
 
     #usage=nil,  supplied=nil, subtitle=nil, language=nil, type=nil, authority=nil, authorityURI=nil, valueURI=nil
@@ -1052,6 +1087,7 @@ module Bplmodels
 
 
 
+=begin
     define_template :internet_media do |xml, value|
       xml.internetMediaType(value)
     end
@@ -1066,6 +1102,7 @@ module Bplmodels
     def remove_value(index)
       self.find_by_terms(:internet_media).slice(index.to_i).remove
     end
+=end
 
 
     define_template :extent do |xml, extent|
@@ -1106,46 +1143,41 @@ module Bplmodels
       self.find_by_terms(:note).slice(index.to_i).remove
     end
 
-    define_template :subject_topic do |xml, topic, uri, authority|
-      if(authority != nil && authority.length > 1 && uri != nil && uri.length > 1)
-      xml.subject(:authority=>authority, :authorityURI=>"http://id.loc.gov/vocabulary/graphicMaterials", :valueURI=>uri) {
-        xml.topic(topic)
-      }
-      elsif(authority != nil && authority.length > 1 && authority == 'lctgm')
-        xml.subject(:authority=>authority, :authorityURI=>"http://id.loc.gov/vocabulary/graphicMaterials") {
-          xml.topic(topic)
-        }
-      elsif(authority != nil && authority.length > 1)
-        xml.subject(:authority=>authority) {
-          xml.topic(topic)
-        }
-      else
-        xml.subject {
-          xml.topic(topic)
-        }
-      end
 
-    end
+    def insert_subject_topic(topic=nil, valueURI=nil, authority=nil)
+      if topic.present?
+        subject_index = self.mods(0).subject.count
+        self.mods(0).subject(subject_index).topic = topic unless topic.blank?
+        self.mods(0).subject(subject_index).valueURI = valueURI unless valueURI.blank?
+        self.mods(0).subject(subject_index).authority = authority unless authority.blank?
+        if authority == 'lctgm'
+          self.mods(0).subject(subject_index).authorityURI = 'http://id.loc.gov/vocabulary/graphicMaterials'
+        end
 
-
-    define_template :topic do |xml, topic|
-      xml.topic(topic)
-    end
-
-    def insert_subject_topic(topic=nil, uri=nil, authority=nil)
-      if(topic != nil && topic.length > 1)
-        #if self.find_by_terms(:subject) != nil && self.find_by_terms(:subject).slice(0) != nil && authority == nil && type == nil
-          #add_child_node(self.find_by_terms(:subject).slice(0), :topic, topic, type, authority)
-        #elsif self.find_by_terms(:subject).slice(1) != nil && authority != nil && type != nil
-          #add_child_node(self.find_by_terms(:subject).slice(1), :topic, topic, type, authority)
-        #else
-          add_child_node(ng_xml.root, :subject_topic, topic, uri, authority)
-        #end
       end
     end
 
     def remove_subject_topic(index)
-      self.find_by_terms(:subject_topic).slice(index.to_i).remove
+      self.find_by_terms(:mods, :subject_topic).slice(index.to_i).remove
+    end
+
+    def insert_subject_temporal(date)
+      converted = Bplmodels::DatastreamInputFuncs.convert_to_mods_date(date)
+      subject_index = self.mods(0).subject.count
+
+      if converted.has_key?(:single_date)
+        temporal_index = self.mods(0).subject(subject_index).temporal.length
+        self.mods(0).subject(subject_index).temporal(temporal_index, converted[:single_date]) unless converted[:single_date].blank?
+      elsif converted.has_key?(:date_range)
+        temporal_index = self.mods(0).subject(subject_index).temporal.length
+        self.mods(0).subject(subject_index).temporal(temporal_index, converted[:date_range][:start]) unless converted[:date_range][:start].blank?
+        self.mods(0).subject(subject_index).temporal(temporal_index).point = 'start' unless converted[:date_range][:start].blank?
+
+        temporal_index = self.mods(0).subject(subject_index).temporal.length
+        self.mods(0).subject(subject_index).temporal(temporal_index, converted[:date_range][:end]) unless converted[:date_range][:end].blank?
+        self.mods(0).subject(subject_index).temporal(temporal_index).point = 'end' unless converted[:date_range][:end].blank?
+      end
+
     end
 
     #FIXME: doesn't support multiple!
