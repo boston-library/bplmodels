@@ -342,6 +342,7 @@ module Bplmodels
       # add all subject-geo values to subject-geo facet field (remove dupes)
       doc['subject_geographic_ssim'] = (country + province + region + state + territory + area + island + county_facet + city + city_section + subject_geo).uniq
 
+      # name subjects
       doc['subject_name_personal_tsim'] = []
       doc['subject_name_corporate_tsim'] = []
       doc['subject_name_conference_tsim'] = []
@@ -376,6 +377,42 @@ module Bplmodels
       #doc['subject_facet_ssim'] = self.descMetadata.subject.topic  +  self.descMetadata.subject.corporate_name.name_part + self.descMetadata.subject.personal_name.name_part
 
       doc['subject_facet_ssim'].concat(self.descMetadata.subject.topic)
+
+      # temporal subjects
+      if self.descMetadata.subject.temporal.length > 0
+        doc['subject_temporal_start_tsim'] = []
+        doc['subject_temporal_start_dtsi'] = []
+        doc['subject_temporal_facet_ssim'] = []
+        self.descMetadata.subject.temporal.each_with_index do |index|
+          if self.descMetadata.subject.temporal.point[index] != 'end'
+            subject_temporal_start = self.descMetadata.subject.temporal[index]
+            doc['subject_temporal_start_tsim'].append(subject_temporal_start)
+            subject_temporal_start.length > 4 ? subject_date_range_start = subject_temporal_start[0..3] : subject_date_range_start = subject_temporal_start
+            if subject_temporal_start.length == 4
+              doc['subject_temporal_start_dtsi'].append(subject_temporal_start + '-01-01T00:00:00.000Z')
+            elsif subject_temporal_start.length == 7
+              doc['subject_temporal_start_dtsi'].append(subject_temporal_start + '-01T01:00:00.000Z')
+            else
+              doc['subject_temporal_start_dtsi'].append(subject_temporal_start + 'T00:00:00.000Z')
+            end
+          else
+            doc['subject_temporal_end_tsim'] = []
+            doc['subject_temporal_end_dtsi'] = []
+            subject_temporal_end = self.descMetadata.subject.temporal[index]
+            doc['subject_temporal_end_tsim'].append(subject_temporal_end)
+            subject_temporal_end.length > 4 ? subject_date_range_start = subject_temporal_end[0..3] : subject_date_range_start = subject_temporal_end
+            if subject_temporal_end.length == 4
+              doc['subject_temporal_end_dtsi'].append(subject_temporal_end + '-01-01T00:00:00.000Z')
+            elsif subject_temporal_end.length == 7
+              doc['subject_temporal_end_dtsi'].append(subject_temporal_end + '-01T01:00:00.000Z')
+            else
+              doc['subject_temporal_end_dtsi'].append(subject_temporal_end + 'T00:00:00.000Z')
+            end
+          end
+
+        end
+      end
+
 
       doc['active_fedora_model_suffix_ssi'] = self.rels_ext.model.class.to_s.gsub(/\A[\w]*::/,'')
 
