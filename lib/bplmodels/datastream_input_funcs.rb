@@ -442,5 +442,35 @@ module Bplmodels
 
     end
 
+    def self.strip_value(value)
+      if(value.blank?)
+        return nil
+      else
+        if value.class == Float || value.class == Fixnum
+          value = value.to_i.to_s
+        end
+
+        # Make sure it is all UTF-8 and not character encodings or HTML tags and remove any cariage returns
+        return utf8Encode(value)
+      end
+    end
+
+    def self.utf8Encode(value)
+      return HTMLEntities.new.decode(ActionView::Base.full_sanitizer.sanitize(value.to_s.gsub(/\r?\n?\t/, ' ').gsub(/\r?\n/, ' '))).strip
+    end
+
+    def self.split_with_nils(value)
+      if(value == nil)
+        return ""
+      else
+        split_value = value.split("||")
+        0.upto split_value.length-1 do |pos|
+          split_value[pos] = strip_value(split_value[pos])
+        end
+
+        return split_value
+      end
+    end
+
   end
 end

@@ -400,7 +400,7 @@ module Bplmodels
           t.scale
           t.projection
         }
-        t.temporal(:path=>'temporal', :attributes=>{:type => "w3cdtf"}) {
+        t.temporal(:path=>'temporal', :attributes=>{:encoding => "w3cdtf"}) {
           t.point(:path=>{:attribute=>"point"})
         }
 
@@ -708,7 +708,7 @@ module Bplmodels
       if api_result[:hier_geo] != nil
         api_result[:hier_geo].keys.reverse.each do |key|
           key_with_equal = key.to_s + "="
-          self.mods(0).subject(subject_index).hierarchical_geographic.send(key_with_equal.to_sym, utf8Encode(api_result[:hier_geo][key]))
+          self.mods(0).subject(subject_index).hierarchical_geographic.send(key_with_equal.to_sym, Bplmodels::DatastreamInputFuncs.utf8Encode(api_result[:hier_geo][key]))
         end
       end
 
@@ -728,7 +728,7 @@ module Bplmodels
       self.mods(0).title_info(title_index).supplied = 'yes' unless supplied.blank? || supplied == 'no'
 
       args.each do |key, value|
-        self.mods(0).title_info(title_index).send(key, utf8Encode(value)) unless value.blank?
+        self.mods(0).title_info(title_index).send(key, Bplmodels::DatastreamInputFuncs.utf8Encode(value)) unless value.blank?
       end
     end
 
@@ -768,7 +768,7 @@ module Bplmodels
       end
 
       args.each do |key, value|
-        self.mods(0).name(name_index).send(key, utf8Encode(value)) unless value.blank?
+        self.mods(0).name(name_index).send(key, Bplmodels::DatastreamInputFuncs.utf8Encode(value)) unless value.blank?
       end
     end
 
@@ -1366,7 +1366,7 @@ module Bplmodels
       self.mods(0).related_item(related_index).identifier = identifier unless identifier.blank?
 
       args.each do |key, value|
-        self.mods(0).related_item(related_index).send(key, utf8Encode(value)) unless value.blank?
+        self.mods(0).related_item(related_index).send(key, Bplmodels::DatastreamInputFuncs.utf8Encode(value)) unless value.blank?
       end
     end
 
@@ -1506,10 +1506,6 @@ module Bplmodels
         node.remove
         self.dirty = true
       end
-    end
-
-    def utf8Encode(value)
-      return HTMLEntities.new.decode(ActionView::Base.full_sanitizer.sanitize(value.to_s.gsub(/\r?\n?\t/, ' ').gsub(/\r?\n/, ' '))).strip
     end
 
   end
