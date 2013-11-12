@@ -1161,6 +1161,12 @@ module Bplmodels
       self.find_by_terms(:mods, :subject_topic).slice(index.to_i).remove
     end
 
+    def insert_series(series)
+      insert_position = self.related_item.length
+      self.related_item(insert_position).type = 'series'
+      self.related_item(insert_position).title_info.title = series
+    end
+
     def insert_subject_temporal(date)
       converted = Bplmodels::DatastreamInputFuncs.convert_to_mods_date(date)
       subject_index = self.mods(0).subject.count
