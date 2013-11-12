@@ -381,36 +381,50 @@ module Bplmodels
       # temporal subjects
       if self.descMetadata.subject.temporal.length > 0
         doc['subject_temporal_start_tsim'] = []
-        doc['subject_temporal_start_dtsi'] = []
+        doc['subject_temporal_start_dtsim'] = []
         doc['subject_temporal_facet_ssim'] = []
-        self.descMetadata.subject.temporal.each_with_index do |index|
+        subject_date_range_start = []
+        subject_date_range_end = []
+        self.descMetadata.subject.temporal.each_with_index do |value,index|
           if self.descMetadata.subject.temporal.point[index] != 'end'
-            subject_temporal_start = self.descMetadata.subject.temporal[index]
+            subject_temporal_start = value
             doc['subject_temporal_start_tsim'].append(subject_temporal_start)
-            subject_temporal_start.length > 4 ? subject_date_range_start = subject_temporal_start[0..3] : subject_date_range_start = subject_temporal_start
+            subject_temporal_start.length > 4 ? subject_date_range_start.append(subject_temporal_start[0..3]) : subject_date_range_start.append(subject_temporal_start)
             if subject_temporal_start.length == 4
-              doc['subject_temporal_start_dtsi'].append(subject_temporal_start + '-01-01T00:00:00.000Z')
+              doc['subject_temporal_start_dtsim'].append(subject_temporal_start + '-01-01T00:00:00.000Z')
             elsif subject_temporal_start.length == 7
-              doc['subject_temporal_start_dtsi'].append(subject_temporal_start + '-01T01:00:00.000Z')
+              doc['subject_temporal_start_dtsim'].append(subject_temporal_start + '-01T01:00:00.000Z')
             else
-              doc['subject_temporal_start_dtsi'].append(subject_temporal_start + 'T00:00:00.000Z')
+              doc['subject_temporal_start_dtsim'].append(subject_temporal_start + 'T00:00:00.000Z')
             end
           else
             doc['subject_temporal_end_tsim'] = []
-            doc['subject_temporal_end_dtsi'] = []
-            subject_temporal_end = self.descMetadata.subject.temporal[index]
+            doc['subject_temporal_end_dtsim'] = []
+            subject_temporal_end = value
             doc['subject_temporal_end_tsim'].append(subject_temporal_end)
-            subject_temporal_end.length > 4 ? subject_date_range_start = subject_temporal_end[0..3] : subject_date_range_start = subject_temporal_end
+            subject_temporal_end.length > 4 ? subject_date_range_end.append(subject_temporal_end[0..3]) : subject_date_range_end.append(subject_temporal_end)
             if subject_temporal_end.length == 4
-              doc['subject_temporal_end_dtsi'].append(subject_temporal_end + '-01-01T00:00:00.000Z')
+              doc['subject_temporal_end_dtsim'].append(subject_temporal_end + '-01-01T00:00:00.000Z')
             elsif subject_temporal_end.length == 7
-              doc['subject_temporal_end_dtsi'].append(subject_temporal_end + '-01T01:00:00.000Z')
+              doc['subject_temporal_end_dtsim'].append(subject_temporal_end + '-01T01:00:00.000Z')
             else
-              doc['subject_temporal_end_dtsi'].append(subject_temporal_end + 'T00:00:00.000Z')
+              doc['subject_temporal_end_dtsim'].append(subject_temporal_end + 'T00:00:00.000Z')
             end
           end
-
         end
+
+        if subject_date_range_start.length > 0
+          subject_date_range_start.each_with_index do |date_start,index|
+            if subject_date_range_end
+              doc['subject_temporal_facet_ssim'].append(date_start + '-' + subject_date_range_end[index])
+            else
+              doc['subject_temporal_facet_ssim'].append(date_start)
+            end
+          end
+        end
+
+        doc['subject_facet_ssim'].concat(doc['subject_temporal_facet_ssim'])
+
       end
 
 
