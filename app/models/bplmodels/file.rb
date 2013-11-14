@@ -8,7 +8,7 @@ module Bplmodels
 
     belongs_to :object, :class_name => "Bplmodels::ObjectBase", :property => :is_image_of
 
-    belongs_to :testing, :class_name => "Bplmodels::ObjectBase", :property => :is_exemplary_of
+    belongs_to :exemplary, :class_name => "Bplmodels::ObjectBase", :property => :is_exemplary_image_of
 
     # Uses the Hydra Rights Metadata Schema for tracking access permissions & copyright
     has_metadata :name => "rightsMetadata", :type => Hydra::Datastream::RightsMetadata
@@ -23,6 +23,15 @@ module Bplmodels
     def save
       self.add_relationship(:has_model, "info:fedora/afmodel:Bplmodels_File")
       super()
+    end
+
+    def to_solr(doc = {} )
+      doc = super(doc)
+      if self.workflowMetadata.marked_for_deletion.present?
+        doc['marked_for_deletion_bsi']  =  self.workflowMetadata.marked_for_deletion
+        doc['marked_for_deletion_reason_ssi']  =  self.workflowMetadata.marked_for_deletion.reason
+      end
+
     end
   end
 end

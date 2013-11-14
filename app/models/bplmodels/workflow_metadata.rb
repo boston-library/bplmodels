@@ -25,6 +25,10 @@ module Bplmodels
         t.ingest_filepath(:path=>"ingestFilepath")
       }
 
+      t.marked_for_deletion(:path=>'reason') {
+        t.reason(:path=>'reason')
+      }
+
     end
 
     def self.xml_template
