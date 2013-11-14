@@ -8,6 +8,8 @@ module Bplmodels
 
     belongs_to :object, :class_name => "Bplmodels::ObjectBase", :property => :is_image_of
 
+    belongs_to :testing, :class_name => "Bplmodels::ObjectBase", :property => :is_exemplary_of
+
     # Uses the Hydra Rights Metadata Schema for tracking access permissions & copyright
     has_metadata :name => "rightsMetadata", :type => Hydra::Datastream::RightsMetadata
 
