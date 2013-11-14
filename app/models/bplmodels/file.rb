@@ -15,6 +15,8 @@ module Bplmodels
 
     has_metadata :name => "ARCHV-EXIF", :type => ActiveFedora::Datastream, :label=>'Archive image EXIF metadata'
 
+    has_metadata :name => "workflowMetadata", :type => WorkflowMetadata
+
     def apply_default_permissions
       self.datastreams["rightsMetadata"].update_permissions( "group"=>{"Repository Administrators"=>"edit"} )
       self.save
@@ -28,9 +30,11 @@ module Bplmodels
     def to_solr(doc = {} )
       doc = super(doc)
       if self.workflowMetadata.marked_for_deletion.present?
-        doc['marked_for_deletion_bsi']  =  self.workflowMetadata.marked_for_deletion
-        doc['marked_for_deletion_reason_ssi']  =  self.workflowMetadata.marked_for_deletion.reason
+        doc['marked_for_deletion_bsi']  =  self.workflowMetadata.marked_for_deletion.first
+        doc['marked_for_deletion_reason_ssi']  =  self.workflowMetadata.marked_for_deletion.reason.first
       end
+
+      doc
 
     end
   end

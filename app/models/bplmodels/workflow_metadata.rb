@@ -25,7 +25,7 @@ module Bplmodels
         t.ingest_filepath(:path=>"ingestFilepath")
       }
 
-      t.marked_for_deletion(:path=>'reason') {
+      t.marked_for_deletion(:path=>'markedForDelation') {
         t.reason(:path=>'reason')
       }
 
@@ -34,16 +34,6 @@ module Bplmodels
     def self.xml_template
       Nokogiri::XML::Builder.new do |xml|
         xml.workflowMetadata(WORKFLOW_PARAMS) {
-
-          xml.itemStatus {
-            xml.state
-            xml.stateComment
-          }
-
-          xml.itemSource {
-            xml.ingestOrigin
-            xml.ingestFilepath
-          }
 
         }
       end.doc
