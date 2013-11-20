@@ -32,6 +32,11 @@ module Bplmodels
     delegate :creator_name, :to=>'descMetadata', :at => [:name, :namePart]
     delegate :creator_type, :to=>'descMetadata', :at => [:name, :type]
     delegate :creator_role, :to=>'descMetadata', :at => [:name, :role, :text]
+    delegate :resource_type, :to=>'descMetadata', :at => [:type_of_resource]
+    delegate :manuscript, :to=>'descMetadata', :at => [:type_of_resource, :manuscript]
+    delegate :genre, :to=>'descMetadata', :at => [:genre_basic]
+
+
 
 
     #has_file_datastream :name => "productionMaster", :type => FileContentDatastream

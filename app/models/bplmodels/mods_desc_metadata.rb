@@ -303,7 +303,9 @@ module Bplmodels
         t.date(:path=>"namePart", :attributes=>{:type=>"date"})
       }
 
-      t.type_of_resource(:path=>"typeOfResource")
+      t.type_of_resource(:path=>"typeOfResource")  {
+        t.manuscript(:path=>{:attribute=>"manuscript"})
+      }
 
 
       t.genre_basic(:path=>"genre", :attributes=>{:displayLabel => "general"})
