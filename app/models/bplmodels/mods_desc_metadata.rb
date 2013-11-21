@@ -58,7 +58,7 @@ module Bplmodels
       }
 
       # IDENTIIER ------------------------------------------------------------------------------
-      t.identifier(:path => 'mods/oxns:identifier') {
+      t.identifier(:path => 'identifier') {
         t.displayLabel :path=>{:attribute=>'displayLabel'}
         t.invalid :path=>{:attribute=>'invalid'}
         t.type_at :path=>{:attribute=>'type'}
@@ -331,7 +331,7 @@ module Bplmodels
       }
 
 
-
+      #t.identifier_nonURI(:path=>"identifier[not(@type=uri)]")
 
       t.identifier_accession :path => 'identifier', :attributes => { :type => "accession number" }
       t.identifier_barcode :path => 'identifier', :attributes => { :type => "barcode" }
@@ -350,7 +350,7 @@ module Bplmodels
         t.note(:path=>'note')
       }
 
-      t.note(:path=>"mods/oxns:note") {
+      t.note(:path=>"note") {
         t.type_at(:path=>{:attribute=>"type"})
       }
 

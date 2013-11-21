@@ -35,6 +35,14 @@ module Bplmodels
     delegate :resource_type, :to=>'descMetadata', :at => [:type_of_resource]
     delegate :manuscript, :to=>'descMetadata', :at => [:type_of_resource, :manuscript]
     delegate :genre, :to=>'descMetadata', :at => [:genre_basic]
+    delegate :identifier, :to=>'descMetadata', :at=>[:identifier]
+    delegate :identifier_type, :to=>'descMetadata', :at=>[:identifier, :type_at]
+    delegate :publisher_name, :to=>'descMetadata', :at=>[:origin_info, :publisher]
+    delegate :publisher_place, :to=>'descMetadata', :at=>[:origin_info, :place, :place_term]
+    delegate :extent, :to=>'descMetadata', :at=>[:physical_description, :extent]
+    delegate :digital_source, :to=>'descMetadata', :at=>[:physical_description, :digital_origin]
+    delegate :note, :to=>'descMetadata', :at=>[:note]
+    delegate :note_type, :to=>'descMetadata', :at=>[:note, :type_at]
 
 
 
