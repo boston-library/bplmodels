@@ -383,6 +383,11 @@ module Bplmodels
         t.conference_name(:path=>'name', :attributes=>{:type => "conference"}) {
           t.name_part(:path=>"namePart[not(@type)]")
         }
+        t.name(:path=>'name') {
+          t.name_part(:path=>"namePart[not(@type)]")
+          t.date(:path=>"namePart", :attributes=>{:type=>"date"})
+          t.type(:path=>{:attribute=>"type"})
+        }
         t.hierarchical_geographic(:path=>"hierarchicalGeographic") {
           t.continent
           t.country

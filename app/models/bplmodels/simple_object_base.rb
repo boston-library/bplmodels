@@ -24,25 +24,31 @@ module Bplmodels
     # Uses the Hydra Rights Metadata Schema for tracking access permissions & copyright
     has_metadata :name => "rightsMetadata", :type => Hydra::Datastream::RightsMetadata
 
-    delegate :abstract, :to=>'descMetadata', :at => [:abstract], :unique=>true
-    delegate :title, :to=>'descMetadata', :at => [:title]
-    delegate :supplied_title, :to=>'descMetadata', :at => [:title_info, :supplied]
-    delegate :note_value, :to=>'descMetadata', :at => [:note]
-    delegate :workflow_state, :to=>'workflowMetadata', :at => [:item_status, :state], :unique=>true
-    delegate :creator_name, :to=>'descMetadata', :at => [:name, :namePart]
-    delegate :creator_type, :to=>'descMetadata', :at => [:name, :type]
-    delegate :creator_role, :to=>'descMetadata', :at => [:name, :role, :text]
-    delegate :resource_type, :to=>'descMetadata', :at => [:type_of_resource]
-    delegate :manuscript, :to=>'descMetadata', :at => [:type_of_resource, :manuscript]
-    delegate :genre, :to=>'descMetadata', :at => [:genre_basic]
-    delegate :identifier, :to=>'descMetadata', :at=>[:identifier]
-    delegate :identifier_type, :to=>'descMetadata', :at=>[:identifier, :type_at]
-    delegate :publisher_name, :to=>'descMetadata', :at=>[:origin_info, :publisher]
-    delegate :publisher_place, :to=>'descMetadata', :at=>[:origin_info, :place, :place_term]
-    delegate :extent, :to=>'descMetadata', :at=>[:physical_description, :extent]
-    delegate :digital_source, :to=>'descMetadata', :at=>[:physical_description, :digital_origin]
-    delegate :note, :to=>'descMetadata', :at=>[:note]
-    delegate :note_type, :to=>'descMetadata', :at=>[:note, :type_at]
+    delegate :abstract, :to=>'descMetadata', :at => [:mods, :abstract], :unique=>true
+    delegate :title, :to=>'descMetadata', :at => [:mods, :title]
+    delegate :supplied_title, :to=>'descMetadata', :at => [:mods, :title_info, :supplied]
+    delegate :note_value, :to=>'descMetadata', :at => [:mods, :note]
+    delegate :workflow_state, :to=>'workflowMetadata', :at => [:item_status, :state]  #, :unique=>true
+    delegate :creator_name, :to=>'descMetadata', :at => [:mods, :name, :namePart]
+    delegate :creator_type, :to=>'descMetadata', :at => [:mods, :name, :type]
+    delegate :creator_role, :to=>'descMetadata', :at => [:mods, :name, :role, :text]
+    delegate :resource_type, :to=>'descMetadata', :at => [:mods, :type_of_resource]
+    delegate :manuscript, :to=>'descMetadata', :at => [:mods, :type_of_resource, :manuscript]
+    delegate :genre, :to=>'descMetadata', :at => [:mods, :genre_basic]
+    delegate :identifier, :to=>'descMetadata', :at=>[:mods, :identifier]
+    delegate :identifier_type, :to=>'descMetadata', :at=>[:mods, :identifier, :type_at]
+    delegate :publisher_name, :to=>'descMetadata', :at=>[:mods, :origin_info, :publisher]
+    delegate :publisher_place, :to=>'descMetadata', :at=>[:mods, :origin_info, :place, :place_term]
+    delegate :extent, :to=>'descMetadata', :at=>[:mods, :physical_description, :extent]
+    delegate :digital_source, :to=>'descMetadata', :at=>[:mods, :physical_description, :digital_origin]
+    delegate :note, :to=>'descMetadata', :at=>[:mods, :note]
+    delegate :note_type, :to=>'descMetadata', :at=>[:mods, :note, :type_at]
+    delegate :subject_place_value, :to=>'descMetadata', :at=>[:mods, :subject, :geographic]
+    delegate :subject_name_value, :to=>'descMetadata', :at=>[:mods, :subject, :name, :name_part]
+    delegate :subject_name_type, :to=>'descMetadata', :at=>[:mods, :subject, :name, :type]
+    delegate :subject_topic_value, :to=>'descMetadata', :at=>[:mods, :subject, :topic]
+    delegate :subject_authority, :to=>'descMetadata', :at=>[:mods, :subject, :authority]
+    delegate :language, :to=>'descMetadata', :at=>[:mods, :language, :language_term]
 
 
 
