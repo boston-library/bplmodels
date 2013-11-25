@@ -423,6 +423,7 @@ module Bplmodels
 
 
           unless tgn_response.code == 500
+            puts 'match found!'
             parsed_xml = Nokogiri::Slop(tgn_response.body)
 
             parsed_xml.Vocabulary.Subject.each do |subject|

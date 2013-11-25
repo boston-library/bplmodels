@@ -515,66 +515,18 @@ module Bplmodels
       return builder.doc
     end
 
-    define_template :physical_description do |xml, media_type, digital_origin, media_type2, note|
-      if media_type2 != nil && note != nil && note.length > 0
-        xml.physicalDescription {
-          xml.internetMediaType {
-            xml.text media_type
-          }
-          xml.internetMediaType {
-            xml.text media_type2
-          }
-          xml.digitalOrigin {
-            xml.text digital_origin
-          }
-          xml.note {
-            xml.text note
-          }
+    #def insert_physical_description(media_type=nil, digital_origin=nil, media_type2=nil, note=nil)
 
-        }
-      elsif media_type2 != nil
-        xml.physicalDescription {
-          xml.internetMediaType {
-            xml.text media_type
-          }
-          xml.internetMediaType {
-            xml.text media_type2
-          }
-          xml.digitalOrigin {
-            xml.text digital_origin
-          }
-
-        }
-      elsif note != nil && note.length > 0
-        xml.physicalDescription {
-          xml.internetMediaType {
-            xml.text media_type
-          }
-          xml.digitalOrigin {
-            xml.text digital_origin
-          }
-          xml.note {
-            xml.text note
-          }
-        }
-      else
-        xml.physicalDescription {
-          xml.internetMediaType {
-            xml.text media_type
-          }
-          xml.digitalOrigin {
-            xml.text digital_origin
-          }
-
-        }
-      end
-
+    def insert_digital_origin(digital_origin=nil)
+      physical_description_index = 0
+      origin_index = self.mods(0).physical_description(physical_description_index).digital_origin.count
+      self.mods(0).physical_description(physical_description_index).digital_origin(origin_index, digital_origin) unless digital_origin.blank?
     end
 
-    #STEVEN: FIXME next
-
-    def insert_physical_description(media_type=nil, digital_origin=nil, media_type2=nil, note=nil)
-      add_child_node(ng_xml.root, :physical_description, media_type, digital_origin, media_type2, note)
+    def insert_physical_note(note=nil)
+      physical_description_index = 0
+      note_index = self.mods(0).physical_description(physical_description_index).note.count
+      self.mods(0).physical_description(physical_description_index).note(note_index, note) unless note.blank?
     end
 
     def remove_physical_description(index)
@@ -584,7 +536,7 @@ module Bplmodels
     def insert_media_type(media_type=nil)
       physical_description_index = 0
       media_type_index = self.mods(0).physical_description(physical_description_index).internet_media_type.count
-      self.mods(0).physical_description(physical_description_index).internet_media_type(media_type_index, media_type)
+      self.mods(0).physical_description(physical_description_index).internet_media_type(media_type_index, media_type) unless media_type.blank?
     end
 
 
@@ -1120,9 +1072,7 @@ module Bplmodels
     end
 
     def insert_extent(extent=nil)
-      if(extent != nil && extent.length > 1)
-        #self.mods(0).physical_description(0).extent(0, extent)
-      end
+      self.mods(0).physical_description(0).extent(0, extent) unless extent.blank?
     end
 
     def remove_extent(index)
