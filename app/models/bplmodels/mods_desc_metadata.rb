@@ -59,6 +59,7 @@ module Bplmodels
 
       # IDENTIIER ------------------------------------------------------------------------------
       t.identifier(:path => 'identifier') {
+      #t.identifier(:path=>"identifier[not(@type=uri)]")
         t.displayLabel :path=>{:attribute=>'displayLabel'}
         t.invalid :path=>{:attribute=>'invalid'}
         t.type_at :path=>{:attribute=>'type'}
@@ -331,7 +332,7 @@ module Bplmodels
       }
 
 
-      #t.identifier_nonURI(:path=>"identifier[not(@type=uri)]")
+
 
       t.identifier_accession :path => 'identifier', :attributes => { :type => "accession number" }
       t.identifier_barcode :path => 'identifier', :attributes => { :type => "barcode" }
@@ -570,6 +571,8 @@ module Bplmodels
 
     end
 
+    #STEVEN: FIXME next
+
     def insert_physical_description(media_type=nil, digital_origin=nil, media_type2=nil, note=nil)
       add_child_node(ng_xml.root, :physical_description, media_type, digital_origin, media_type2, note)
     end
@@ -641,12 +644,12 @@ module Bplmodels
     end
 
     def insert_publisher(publisher=nil, place=nil)
-      origin_index = self.origin_info.count
-      publisher_index = self.origin_info(origin_index).publisher.count
-      place_index =  self.origin_info(origin_index).place.count
+      origin_index = self.mods(0).origin_info.count
+      publisher_index = self.mods(0).origin_info(origin_index).publisher.count
+      place_index =  self.mods(0).origin_info(origin_index).place.count
 
-      self.origin_info(origin_index).publisher(publisher_index, publisher) unless publisher.blank?
-      self.origin_info(origin_index).place(place_index).place_term = place unless place.blank?
+      self.mods(0).origin_info(origin_index).publisher(publisher_index, publisher) unless publisher.blank?
+      self.mods(0).origin_info(origin_index).place(place_index).place_term = place unless place.blank?
     end
 
     def remove_publisher(index)
@@ -1116,10 +1119,9 @@ module Bplmodels
       xml.extent(extent)
     end
 
-
     def insert_extent(extent=nil)
       if(extent != nil && extent.length > 1)
-        add_child_node(self.find_by_terms(:physical_description).slice(0), :extent, extent)
+        #self.mods(0).physical_description(0).extent(0, extent)
       end
     end
 

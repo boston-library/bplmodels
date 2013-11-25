@@ -49,6 +49,7 @@ module Bplmodels
     delegate :subject_topic_value, :to=>'descMetadata', :at=>[:mods, :subject, :topic]
     delegate :subject_authority, :to=>'descMetadata', :at=>[:mods, :subject, :authority]
     delegate :language, :to=>'descMetadata', :at=>[:mods, :language, :language_term]
+    delegate :language_uri, :to=>'descMetadata', :at=>[:mods, :language, :language_term, :lang_val_uri]
 
 
 
