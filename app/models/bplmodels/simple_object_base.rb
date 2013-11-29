@@ -476,20 +476,23 @@ module Bplmodels
         end
       end
 
-      main_title = ''
-      if self.descMetadata.mods(0).title_info(0).nonSort[0] != nil
-        doc['title_info_primary_tsi'] =  self.descMetadata.mods(0).title_info(0).nonSort[0] + ' ' + self.descMetadata.mods(0).title_info(0).main_title[0]
-        doc['title_info_primary_ssort'] = self.descMetadata.mods(0).title_info(0).main_title[0]
-        main_title = self.descMetadata.mods(0).title_info(0).nonSort[0] + ' ' + self.descMetadata.mods(0).title_info(0).main_title[0]
-      else
-        doc['title_info_primary_tsi'] =  self.descMetadata.mods(0).title_info(0).main_title[0]
-        doc['title_info_primary_ssort'] = self.descMetadata.mods(0).title_info(0).main_title[0]
-        main_title = self.descMetadata.mods(0).title_info(0).main_title[0]
+      doc['title_info_alternative_tsim'] = []
+      self.descMetadata.title.each_with_index do |title_value,index|
+        main_title = title_value
+        title_prefix = self.descMetadata.title_info.nonSort[index] ? self.descMetadata.title_info.nonSort[index] + ' ' : ''
+        if self.descMetadata.title_info.usage[index] == 'primary'
+          doc['title_info_primary_tsi'] = title_prefix + main_title
+          doc['title_info_primary_ssort'] = main_title
+        else
+          doc['title_info_alternative_tsim'] << title_prefix + main_title
+          if self.descMetadata.title_info.supplied[index] == 'yes'
+            doc['supplied_alternative_title_bs'] = 'true'
+          end
+        end
       end
 
       if self.descMetadata.title_info(0).supplied[0] == 'yes'
-        doc['supplied_title_bs'] = []
-        doc['supplied_title_bs'] << 'true'
+        doc['supplied_title_bs'] = 'true'
       end
 
       doc['subtitle_tsim'] = self.descMetadata.title_info.subtitle
