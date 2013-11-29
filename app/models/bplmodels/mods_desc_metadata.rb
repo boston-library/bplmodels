@@ -1327,7 +1327,7 @@ module Bplmodels
     def insert_host(nonSort=nil, main_title=nil, identifier=nil, args={})
       related_index = self.mods(0).related_item.count
 
-      self.mods(0).related_item(related_index).type = 'host' unless value.blank? && identifier.blank?
+      self.mods(0).related_item(related_index).type = 'host' unless main_title.blank? && identifier.blank?
       self.mods(0).related_item(related_index).title_info(0).nonSort = nonSort unless nonSort.blank?
       self.mods(0).related_item(related_index).title_info(0).title = main_title unless main_title.blank?
       self.mods(0).related_item(related_index).identifier = identifier unless identifier.blank?
