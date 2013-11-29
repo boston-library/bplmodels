@@ -248,8 +248,9 @@ module Bplmodels
           else
             doc['related_item_' + related_item_type + '_tsim'] ||= []
             doc['related_item_' + related_item_type + '_ssim'] ||= []
-            doc['related_item_' + related_item_type + '_tsim'].append(self.descMetadata.related_item.title_info.title[index])
-            doc['related_item_' + related_item_type + '_ssim'].append(self.descMetadata.related_item.title_info.title[index])
+            related_title_prefix = self.descMetadata.related_item.title_info.nonSort[index] ? self.descMetadata.related_item.title_info.nonSort[index] + ' ' : ''
+            doc['related_item_' + related_item_type + '_tsim'].append(related_title_prefix + self.descMetadata.related_item.title_info.title[index])
+            doc['related_item_' + related_item_type + '_ssim'].append(related_title_prefix + self.descMetadata.related_item.title_info.title[index])
           end
         end
       end

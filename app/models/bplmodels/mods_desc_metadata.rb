@@ -420,6 +420,7 @@ module Bplmodels
         t.href(:path=>{:attribute=>'xlink:href'})
         t.title_info(:path=>"titleInfo") {
           t.title
+          t.nonSort(:path=>"nonSort")
         }
         t.identifier
       }
@@ -1323,11 +1324,12 @@ module Bplmodels
       self.find_by_terms(:subject_cartographic).slice(index.to_i).remove
     end
 
-    def insert_host(value=nil, identifier=nil, args={})
+    def insert_host(nonSort=nil, main_title=nil, identifier=nil, args={})
       related_index = self.mods(0).related_item.count
 
-      self.mods(0).related_item(related_index).type = 'host' unless value.blank? && identifier.blank?
-      self.mods(0).related_item(related_index).title_info(0).title = value unless value.blank?
+      self.mods(0).related_item(related_index).type = 'host' unless main_title.blank? && identifier.blank?
+      self.mods(0).related_item(related_index).title_info(0).nonSort = nonSort unless nonSort.blank?
+      self.mods(0).related_item(related_index).title_info(0).title = main_title unless main_title.blank?
       self.mods(0).related_item(related_index).identifier = identifier unless identifier.blank?
 
       args.each do |key, value|
