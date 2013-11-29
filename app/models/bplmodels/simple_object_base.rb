@@ -451,6 +451,7 @@ module Bplmodels
       doc['active_fedora_model_suffix_ssi'] = self.rels_ext.model.class.to_s.gsub(/\A[\w]*::/,'')
 
       doc['use_and_reproduction_ssm'] = self.descMetadata.use_and_reproduction
+      doc['restrictions_on_access_ssm'] = self.descMetadata.restriction_on_access
 
       doc['note_tsim'] = []
       doc['note_resp_tsim'] = []
