@@ -511,6 +511,11 @@ module Bplmodels
         doc['exemplary_image_ssi'] = self.exemplary_image.first.pid
       end
 
+      if self.workflowMetadata.marked_for_deletion.present?
+        doc['marked_for_deletion_bsi']  =  self.workflowMetadata.marked_for_deletion.first
+        doc['marked_for_deletion_reason_ssi']  =  self.workflowMetadata.marked_for_deletion.reason.first
+      end
+
 
 
 
