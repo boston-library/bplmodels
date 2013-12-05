@@ -1079,23 +1079,10 @@ module Bplmodels
       self.find_by_terms(:extent).slice(index.to_i).remove
     end
 
-    define_template :note do |xml, note, noteQualifier|
-      if noteQualifier != nil && noteQualifier.length > 1
-        xml.note(:type=>noteQualifier) {
-          xml.text note
-        }
-      else
-        xml.note {
-          xml.text note
-        }
-      end
-    end
-
-
     def insert_note(note=nil, noteQualifier=nil)
-      if(note != nil && note.length > 1)
-        add_child_node(ng_xml.root, :note, note, noteQualifier)
-      end
+      note_index = self.mods(0).note.count
+      self.mods(0).note(note_index, note) unless note.blank?
+      self.mods(0).note(note_index).type_at = noteQualifier unless noteQualifier.blank?
     end
 
     def remove_note(index)
