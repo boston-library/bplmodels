@@ -14,6 +14,8 @@ module Bplmodels
     GENRE_LOOKUP['Posters'] = {:id=>'tgm008104', :authority=>'gmgpc'}
     GENRE_LOOKUP['Prints'] = {:id=>'tgm008237', :authority=>'gmgpc'}
     GENRE_LOOKUP['Newspapers'] = {:id=>'tgm007068', :authority=>'lctgm'}
+    GENRE_LOOKUP['Sound recordings'] = {:id=>'tgm009874', :authority=>'lctgm'}
+    GENRE_LOOKUP['Motion pictures'] = {:id=>'tgm006804', :authority=>'lctgm'}
 
 
   end

@@ -459,8 +459,9 @@ module Bplmodels
       }
 
       t.role {
-        t.text(:path=>'roleTerm',:attributes=>{:type=>'text', :authority=>'marcrelator', :authorityURI=>'http://id.loc.gov/vocabulary/relators'})
-        t.valueURI(:path=>{:attribute=>'valueURI'})
+        t.text(:path=>'roleTerm',:attributes=>{:type=>'text', :authority=>'marcrelator', :authorityURI=>'http://id.loc.gov/vocabulary/relators'}) {
+          t.valueURI(:path=>{:attribute=>'valueURI'})
+        }
         t.code(:path=>'roleTerm',:attributes=>{:type=>'code'})
       }
 
@@ -702,6 +703,11 @@ module Bplmodels
 
 
     def insert_name(name=nil, type=nil, authority=nil, value_uri=nil, role=nil, role_uri=nil, args={})
+      puts 'look here'
+      puts name
+      puts role
+      puts role_uri
+
       name_index = self.mods(0).name.count
       self.mods(0).name(name_index).type = type unless type.blank?
       self.mods(0).name(name_index).authority = authority unless authority.blank?
@@ -709,7 +715,7 @@ module Bplmodels
 
       if role.present?
         self.mods(0).name(name_index).role.text = role unless role.blank?
-        self.mods(0).name(name_index).role.valueURI = role_uri unless role_uri.blank?
+        self.mods(0).name(name_index).role.text.valueURI = role_uri unless role_uri.blank?
       end
 
       if(authority == 'naf')
@@ -1286,24 +1292,13 @@ module Bplmodels
     end
 
 
-    define_template :subject_cartographic do |xml, coordinates, scale, projection|
-      xml.subject {
-        xml.cartographics {
-          if coordinates != nil && coordinates.length > 1
-            xml.coordinates(coordinates)
-          end
-          if scale != nil && scale.length > 1
-            xml.scale(scale)
-          end
-          if projection != nil && projection.length > 1
-            xml.projection(projection)
-          end
-        }
-      }
-    end
-
     def insert_subject_cartographic(coordinates=nil, scale=nil, projection=nil)
-      add_child_node(ng_xml.root, :subject_cartographic, coordinates, scale, projection)
+      subject_index =  self.mods(0).subject.count
+
+      self.mods(0).subject(subject_index).cartographics(0).coordinates = coordinates unless coordinates.blank?
+      self.mods(0).subject(subject_index).cartographics(0).scale = scale unless scale.blank?
+      self.mods(0).subject(subject_index).cartographics(0).projection = projection unless projection.blank?
+
     end
 
     def remove_subject_cartographic(index)
