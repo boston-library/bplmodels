@@ -81,7 +81,7 @@ module Bplmodels
             (value.include? 'entury') ||      # 20th century
             (value.match(/(\A\d\d\d\?|\A\d\d\?\?|\A\d\d\d-\?*|\d\d\d\d-\d\z|\d\d\d\d\/[\d]{1,2}\z)/)) ||
             (value.match(/([Ee]arly|[Ll]ate|[Mm]id|[Ww]inter|[Ss]pring|[Ss]ummer|[Ff]all)/)) ||
-            ((value.match(/\d\d\d\d-\d\d/)) && (value[-2..-1].to_i > 12)) # 1975-76 but NOT 1910-11
+            ((value.match(/\d\d\d\d-\d\d\z/)) && (value[-2..-1].to_i > 12)) # 1975-76 but NOT 1910-11
 
           # RANGES
           date_data[:date_range] = {}
@@ -236,7 +236,7 @@ module Bplmodels
           # try to automatically parse single dates with YYYY && MM && DD values
           if Timeliness.parse(value).nil?
             # start further processing
-            if value.match(/\A[12]\d\d\d-[01][1-9]\z/) # yyyy-mm
+            if value.match(/\A[12]\d\d\d-[01][0-9]\z/) # yyyy-mm
               date_data[:single_date] = value
             elsif value.match(/\A[01]?[1-9][-\/][12]\d\d\d\z/) # mm-yyyy || m-yyyy || mm/yyyy
               value = '0' + value if value.match(/\A[1-9][-\/][12]\d\d\d\z/) # m-yyyy || m/yyyy
@@ -269,7 +269,7 @@ module Bplmodels
       date_validation_array << date_data[:date_range][:end] if date_data[:date_range]
       date_validation_array.each do |date_to_val|
         if date_to_val.length == '7'
-          bad_date = true unless date_to_val[-2..-1].to_i < 13 && !date_to_val.nil?
+          bad_date = true unless date_to_val[-2..-1].to_i.between?(1,12) && !date_to_val.nil?
         elsif
         date_to_val.length == '10'
           bad_date = true unless Timeliness.parse(value) && !date_to_val.nil?
