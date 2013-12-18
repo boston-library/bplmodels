@@ -597,7 +597,7 @@ module Bplmodels
     end
 
     def insert_publisher(publisher=nil, place=nil)
-      origin_index = self.mods(0).origin_info.count
+      origin_index = 0
       publisher_index = self.mods(0).origin_info(origin_index).publisher.count
       place_index =  self.mods(0).origin_info(origin_index).place.count
 
