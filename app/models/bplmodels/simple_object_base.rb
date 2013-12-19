@@ -134,14 +134,16 @@ module Bplmodels
 
         #dateCreated
         if self.descMetadata.date(0).dates_created[0]
-          doc['date_type_ssm'] << 'dateCreated'
-          doc['date_start_qualifier_ssm'] = self.descMetadata.date(0).dates_created.qualifier[0]
           self.descMetadata.date(0).dates_created.each_with_index do |date,index|
             case object.descMetadata.date(0).dates_created(index).point[0]
               when nil
                 dates_static << date
+                doc['date_type_ssm'] << 'dateCreated'
+                doc['date_start_qualifier_ssm'] = self.descMetadata.date(0).dates_created(index).qualifier[0]
               when 'start'
                 dates_start << date
+                doc['date_type_ssm'] << 'dateCreated'
+                doc['date_start_qualifier_ssm'] = self.descMetadata.date(0).dates_created(index).qualifier[0]
               when 'end'
                 dates_end << date
             end
@@ -149,14 +151,16 @@ module Bplmodels
         end
         # dateIssued
         if self.descMetadata.date(0).dates_issued[0]
-          doc['date_type_ssm'] << 'dateIssued'
-          doc['date_start_qualifier_ssm'] = self.descMetadata.date(0).dates_issued.qualifier[0]
           self.descMetadata.date(0).dates_issued.each_with_index do |date,index|
             case object.descMetadata.date(0).dates_issued(index).point[0]
               when nil
                 dates_static << date
+                doc['date_type_ssm'] << 'dateIssued'
+                doc['date_start_qualifier_ssm'] = self.descMetadata.date(0).dates_issued(index).qualifier[0]
               when 'start'
                 dates_start << date
+                doc['date_type_ssm'] << 'dateIssued'
+                doc['date_start_qualifier_ssm'] = self.descMetadata.date(0).dates_issued(index).qualifier[0]
               when 'end'
                 dates_end << date
             end
@@ -164,14 +168,16 @@ module Bplmodels
         end
         # dateCopyright
         if self.descMetadata.date(0).dates_copyright[0]
-          doc['date_type_ssm'] << 'copyrightDate'
-          doc['date_start_qualifier_ssm'] = self.descMetadata.date(0).dates_copyright.qualifier[0]
           self.descMetadata.date(0).dates_copyright.each_with_index do |date,index|
             case object.descMetadata.date(0).dates_copyright(index).point[0]
               when nil
                 dates_static << date
+                doc['date_type_ssm'] << 'copyrightDate'
+                doc['date_start_qualifier_ssm'] = self.descMetadata.date(0).dates_copyright(index).qualifier[0]
               when 'start'
                 dates_start << date
+                doc['date_type_ssm'] << 'copyrightDate'
+                doc['date_start_qualifier_ssm'] = self.descMetadata.date(0).dates_copyright(index).qualifier[0]
               when 'end'
                 dates_end << date
             end
@@ -208,13 +214,15 @@ module Bplmodels
           latest_date = dates_end.reverse[0]
           date_facet_end = latest_date[0..3].to_i
           if latest_date.length == 4
-            doc['date_end_dtsi'].append(latest_date + '-01-01T00:00:00.000Z')
+            doc['date_end_dtsi'].append(latest_date + '-12-31T23:59:59.999Z')
           elsif latest_date.length == 7
-            doc['date_end_dtsi'].append(latest_date + '-01T00:00:00.000Z')
+            # TODO: DD value should be dependent on MM value
+            # e.g., '31' for January, but '28' for February, etc.
+            doc['date_end_dtsi'].append(latest_date + '-28T23:59:59.999Z')
           elsif latest_date.length > 11
             doc['date_end_dtsi'].append(latest_date)
           else
-            doc['date_end_dtsi'].append(latest_date + 'T00:00:00.000Z')
+            doc['date_end_dtsi'].append(latest_date + 'T23:59:59.999Z')
           end
         else
           date_facet_end = 0
