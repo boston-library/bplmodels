@@ -469,8 +469,8 @@ module Bplmodels
         retry_count = retry_count + 1
 
         tgn_response = Typhoeus::Request.get("http://vocabsservices.getty.edu/TGNService.asmx/TGNGetTermMatch?placetypeid=#{place_type}&nationid=#{country_code}&name=" + CGI.escape(match_term), userpwd: BPL_CONFIG_GLOBAL['getty_un'] + ':' + BPL_CONFIG_GLOBAL['getty_pw'])
-        retry if tgn_response.code == 500 && retry_count <= max_retry
-      end
+
+      end until (tgn_response.code != 500 || retry_count == max_retry)
 
       unless tgn_response.code == 500
         puts 'match found!'
