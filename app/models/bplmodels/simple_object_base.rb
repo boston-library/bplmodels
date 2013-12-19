@@ -116,79 +116,117 @@ module Bplmodels
       doc['date_end_tsim'] = []
       doc['date_facet_ssim'] = []
       doc['date_type_ssm'] = []
-      date_start = -1
-      date_end = -1
+      dates_static = []
+      dates_start = []
+      dates_end = []
 
+      # dateOther
       if self.descMetadata.date(0).date_other[0] != nil && self.descMetadata.date(0).date_other.length > 0
         if self.descMetadata.date(0).date_other[0] == 'undated'
           # do nothing -- don't want to index this
         else
           # TODO insert code for date_other values here
         end
-      else
-        # TODO refactor this date stuff for other date types
-        # date end
-        if self.descMetadata.date(0).dates_created[0] != nil || self.descMetadata.date(0).dates_issued[0] != nil || self.descMetadata.date(0).dates_copyright[0]
-          # if dateCreated
-          if self.descMetadata.date(0).dates_created[0] != nil
-            date_start = self.descMetadata.date(0).dates_created[0]
-            doc['date_start_qualifier_ssm'] = self.descMetadata.date(0).dates_created.qualifier[0]
-            doc['date_type_ssm'] << 'dateCreated'
-          # if dateIssued
-          elsif self.descMetadata.date(0).dates_issued[0] != nil
-            date_start = self.descMetadata.date(0).dates_issued[0]
-            doc['date_start_qualifier_ssm'] = self.descMetadata.date(0).dates_issued.qualifier[0]
-            doc['date_type_ssm'] << 'dateIssued'
-          # if copyrightDate
-          elsif self.descMetadata.date(0).dates_copyright[0] != nil
-            date_start = self.descMetadata.date(0).dates_copyright[0]
-            doc['date_start_qualifier_ssm'] = self.descMetadata.date(0).dates_copyright.qualifier[0]
-            doc['date_type_ssm'] << 'copyrightDate'
-          end
-          date_start.length > 4 ? date_range_start = date_start[0..3] : date_range_start = date_start
-          doc['date_start_tsim'].append(date_start)
-          if date_start.length == 4
-            doc['date_start_dtsi'].append(date_start + '-01-01T00:00:00.000Z')
-          elsif date_start.length == 7
-            doc['date_start_dtsi'].append(date_start + '-01T01:00:00.000Z')
-          elsif date_start.length > 11
-            doc['date_start_dtsi'].append(date_start)
-          else
-            doc['date_start_dtsi'].append(date_start + 'T00:00:00.000Z')
-          end
-        end
-        # date end
-        if self.descMetadata.date(0).dates_created[1] != nil || self.descMetadata.date(0).dates_issued[1] != nil || self.descMetadata.date(0).dates_copyright[1]
-          # if dateCreated
-          if self.descMetadata.date(0).dates_created[1] != nil
-            date_end = self.descMetadata.date(0).dates_created[1]
-            doc['date_end_qualifier_ssm'] = self.descMetadata.date(0).dates_created.qualifier[1]
-          # if dateIssued
-          elsif self.descMetadata.date(0).dates_issued[1] != nil
-            date_end = self.descMetadata.date(0).dates_issued[1]
-            doc['date_end_qualifier_ssm'] = self.descMetadata.date(0).dates_issued.qualifier[1]
-          elsif self.descMetadata.date(0).dates_copyright[1] != nil
-            date_end = self.descMetadata.date(0).dates_copyright[1]
-            doc['date_end_qualifier_ssm'] = self.descMetadata.date(0).dates_copyright.qualifier[1]
-          end
-          date_end.length > 4 ? date_range_end = date_end[0..3] : date_range_end = date_end
-          doc['date_end_tsim'].append(date_end)
-          if date_end.length == 4
-            doc['date_end_dtsi'].append(date_end + '-01-01T00:00:00.000Z')
-          elsif date_end.length == 7
-            doc['date_end_dtsi'].append(date_end + '-01T00:00:00.000Z')
-          elsif date_end.length > 11
-            doc['date_end_dtsi'].append(date_end)
-          else
-            doc['date_end_dtsi'].append(date_end + 'T00:00:00.000Z')
-          end
-        end
       end
 
-      (1800..2000).step(10) do |index|
-        if ((date_range_start.to_i >= index && date_range_start.to_i < index+10) || (date_range_end.to_i != -1 && index > date_range_start.to_i && date_range_end.to_i >= index))
-          doc['date_facet_ssim'].append(index.to_s + "s")
+      # dateCreated, dateIssued, copyrightDate
+      if self.descMetadata.date(0).dates_created[0] || self.descMetadata.date(0).dates_issued[0] || self.descMetadata.date(0).dates_copyright[0]
+
+        #dateCreated
+        if self.descMetadata.date(0).dates_created[0]
+          doc['date_type_ssm'] << 'dateCreated'
+          doc['date_start_qualifier_ssm'] = self.descMetadata.date(0).dates_created.qualifier[0]
+          self.descMetadata.date(0).dates_created.each_with_index do |date,index|
+            case object.descMetadata.date(0).dates_created(index).point[0]
+              when nil
+                dates_static << date
+              when 'start'
+                dates_start << date
+              when 'end'
+                dates_end << date
+            end
+          end
         end
+        # dateIssued
+        if self.descMetadata.date(0).dates_issued[0]
+          doc['date_type_ssm'] << 'dateIssued'
+          doc['date_start_qualifier_ssm'] = self.descMetadata.date(0).dates_issued.qualifier[0]
+          self.descMetadata.date(0).dates_issued.each_with_index do |date,index|
+            case object.descMetadata.date(0).dates_issued(index).point[0]
+              when nil
+                dates_static << date
+              when 'start'
+                dates_start << date
+              when 'end'
+                dates_end << date
+            end
+          end
+        end
+        # dateCopyright
+        if self.descMetadata.date(0).dates_copyright[0]
+          doc['date_type_ssm'] << 'copyrightDate'
+          doc['date_start_qualifier_ssm'] = self.descMetadata.date(0).dates_copyright.qualifier[0]
+          self.descMetadata.date(0).dates_copyright.each_with_index do |date,index|
+            case object.descMetadata.date(0).dates_copyright(index).point[0]
+              when nil
+                dates_static << date
+              when 'start'
+                dates_start << date
+              when 'end'
+                dates_end << date
+            end
+          end
+        end
+
+        # push the date values as-is into text fields
+        dates_static.each do |static_date|
+          doc['date_start_tsim'] << static_date
+          doc['date_end_tsim'] << 'nil' # hacky, but can't assign null in Solr
+        end
+        dates_start.each do |start_date|
+          doc['date_start_tsim'] << start_date
+        end
+        dates_end.each do |end_date|
+          doc['date_end_tsim'] << end_date
+        end
+
+        # set the date ranges for date-time fields and decade faceting
+        earliest_date = (dates_static + dates_start).sort[0]
+        date_facet_start = earliest_date[0..3].to_i
+
+        if earliest_date.length == 4
+          doc['date_start_dtsi'].append(earliest_date + '-01-01T00:00:00.000Z')
+        elsif earliest_date.length == 7
+          doc['date_start_dtsi'].append(earliest_date + '-01T01:00:00.000Z')
+        elsif earliest_date.length > 11
+          doc['date_start_dtsi'].append(earliest_date)
+        else
+          doc['date_start_dtsi'].append(earliest_date + 'T00:00:00.000Z')
+        end
+
+        if dates_end[0]
+          latest_date = dates_end.reverse[0]
+          date_facet_end = latest_date[0..3].to_i
+          if latest_date.length == 4
+            doc['date_end_dtsi'].append(latest_date + '-01-01T00:00:00.000Z')
+          elsif latest_date.length == 7
+            doc['date_end_dtsi'].append(latest_date + '-01T00:00:00.000Z')
+          elsif latest_date.length > 11
+            doc['date_end_dtsi'].append(latest_date)
+          else
+            doc['date_end_dtsi'].append(latest_date + 'T00:00:00.000Z')
+          end
+        else
+          date_facet_end = 0
+        end
+
+        # decade faceting
+        (1800..2000).step(10) do |index|
+          if ((date_facet_start >= index && date_facet_start < index+10) || (date_facet_end != -1 && index > date_facet_start && date_facet_end >= index))
+            doc['date_facet_ssim'].append(index.to_s + 's')
+          end
+        end
+
       end
 
       doc['abstract_tsim'] = self.descMetadata.abstract
