@@ -135,7 +135,7 @@ module Bplmodels
         #dateCreated
         if self.descMetadata.date(0).dates_created[0]
           self.descMetadata.date(0).dates_created.each_with_index do |date,index|
-            case object.descMetadata.date(0).dates_created(index).point[0]
+            case self.descMetadata.date(0).dates_created(index).point[0]
               when nil
                 dates_static << date
                 doc['date_type_ssm'] << 'dateCreated'
@@ -152,7 +152,7 @@ module Bplmodels
         # dateIssued
         if self.descMetadata.date(0).dates_issued[0]
           self.descMetadata.date(0).dates_issued.each_with_index do |date,index|
-            case object.descMetadata.date(0).dates_issued(index).point[0]
+            case self.descMetadata.date(0).dates_issued(index).point[0]
               when nil
                 dates_static << date
                 doc['date_type_ssm'] << 'dateIssued'
@@ -169,7 +169,7 @@ module Bplmodels
         # dateCopyright
         if self.descMetadata.date(0).dates_copyright[0]
           self.descMetadata.date(0).dates_copyright.each_with_index do |date,index|
-            case object.descMetadata.date(0).dates_copyright(index).point[0]
+            case self.descMetadata.date(0).dates_copyright(index).point[0]
               when nil
                 dates_static << date
                 doc['date_type_ssm'] << 'copyrightDate'
