@@ -55,8 +55,9 @@ module Bplmodels
       doc = super(doc)
 
       # title fields
-      main_title = self.descMetadata.title_info(0).main_title[0]
-      doc['title_info_primary_tsi'] = main_title
+      title_prefix = self.descMetadata.mods(0).title_info(0).nonSort[0] ? self.descMetadata.mods(0).title_info(0).nonSort[0] + ' ' : ''
+      main_title = self.descMetadata.mods(0).title_info(0).main_title[0]
+      doc['title_info_primary_tsi'] = title_prefix + main_title
       doc['title_info_primary_ssort'] = main_title
 
       # description
