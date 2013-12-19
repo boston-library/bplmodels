@@ -409,146 +409,107 @@ module Bplmodels
 
     end
 
-    #http://vocabsservices.getty.edu/Schemas/TGN/tgn_nationality.xsd
-    #http://vocabsservices.getty.edu/Schemas/TGN/tgn_place_type.xsd
-    #Limited to Inhabited Place currently... should this be so?
-    #string.gsub(/\(.*\)/, '').strip
     def self.tgn_id_from_term(term)
-
-      #Limited to only inhabited places at the moment...
-      place_type = 83002
-
-      #Check for Mass City, State locations first as most common case
-      split_parts = term.split(',')
-
-      if split_parts.length == 2 && (split_parts[1].downcase.strip == 'ma' || split_parts[1].downcase.strip == 'mass' || split_parts[1].downcase.strip == 'massachusetts')
-        city_part = split_parts[0].downcase.strip
-        state_part = split_parts[1].downcase.strip
-        country_code = 7012149
-        state_part = 'Massachusetts'
-        puts state_part
-      else
-
-        mapquest_api_result = Geocoder.search(term)
-        country_code = Bplmodels::Constants::COUNTRY_TGN_LOOKUP[mapquest_api_result.first.data["adminArea1"]]
-        state_part = Bplmodels::Constants::STATE_ABBR[mapquest_api_result.first.data["adminArea3"]]
-        city_part = mapquest_api_result.first.data["adminArea5"]
+      mapquest_api_result = Geocoder.search(term)
+      max_retry = 3
+      sleep_time = 60 # In seconds
+      retry_count = 0
 
 
+      if mapquest_api_result.blank?
+        return nil
       end
+
+      country_code = Bplmodels::Constants::COUNTRY_TGN_LOOKUP[mapquest_api_result.first.data["adminArea1"]]
+      country_part = Country.new(mapquest_api_result.first.data["adminArea1"]).name
+
+      if country_code == 7012149
+        state_part = Bplmodels::Constants::STATE_ABBR[mapquest_api_result.first.data["adminArea3"]]
+      else
+        state_part = mapquest_api_result.first.data["adminArea3"]
+      end
+
+      city_part = mapquest_api_result.first.data["adminArea5"]
+
+      top_match_term = ''
+      match_term = nil
 
       if city_part.blank? && state_part.blank?
-        #Nation lookup only?
+        # Limit to nations
         place_type = 81010
-        tgn_response = Typhoeus::Request.get("http://vocabsservices.getty.edu/TGNService.asmx/TGNGetTermMatch?placetypeid=#{place_type}&nationid=#{country_code}&name=#{term}", userpwd: BPL_CONFIG_GLOBAL['getty_un'] + ':' + BPL_CONFIG_GLOBAL['getty_pw'])
-        #tgn_response = Typhoeus::Request.get('http://vocabsservices.getty.edu/TGNService.asmx/TGNGetTermMatch?placetypeid=81010&nationid=1000070&name=' + 'France', userpwd: 'bplib:8{83N78kO;B)2')
-
-        unless tgn_response.code == 500
-          puts 'match found!'
-          parsed_xml = Nokogiri::Slop(tgn_response.body)
-
-          if parsed_xml.Vocabulary.Subject.first.blank?
-
-
-              if parsed_xml.Vocabulary.Subject.Preferred_Term.text.gsub(' (nation)', '').downcase.strip == term.downcase
-                return parsed_xml.Vocabulary.Subject.Subject_ID.text
-              end
-
-          else
-            parsed_xml.Vocabulary.Subject.each do |subject|
-
-              if subject.Preferred_Term.text.gsub(' (nation)', '').downcase.strip == term
-                return subject.Subject_ID.text
-              end
-
-            end
-          end
-
-
-
-        end
-      #Only works for US states?
-      elsif state_part.present? && city_part.blank? && mapquest_api_result.first.data["adminArea1"] == 'US'
-
+        #tgn_response = Typhoeus::Request.get("http://vocabsservices.getty.edu/TGNService.asmx/TGNGetTermMatch?placetypeid=#{place_type}&nationid=#{country_code}&name="  + CGI.escape(term), userpwd: BPL_CONFIG_GLOBAL['getty_un'] + ':' + BPL_CONFIG_GLOBAL['getty_pw'])
+        top_match_term = ''
+        match_term = term.downcase
+      elsif state_part.present? && city_part.blank? && country_code == 7012149
+        #Limit to states
         place_type = 81175
-        state_part = state_part.downcase
-        tgn_response = Typhoeus::Request.get("http://vocabsservices.getty.edu/TGNService.asmx/TGNGetTermMatch?placetypeid=#{place_type}&nationid=#{country_code}&name=#{state_part}", userpwd: BPL_CONFIG_GLOBAL['getty_un'] + ':' + BPL_CONFIG_GLOBAL['getty_pw'])
-        #tgn_response = Typhoeus::Request.get('http://vocabsservices.getty.edu/TGNService.asmx/TGNGetTermMatch?placetypeid=81175&nationid=7012149&name=' + 'South Carolina', userpwd: 'bplib:8{83N78kO;B)2')
-
-        unless tgn_response.code == 500
-          puts 'match found!'
-
-          parsed_xml = Nokogiri::Slop(tgn_response.body)
-
-          if parsed_xml.Vocabulary.Subject.first.blank?
-            subject = parsed_xml.Vocabulary.Subject
-
-              term = subject.Preferred_Term.text.gsub(' (state)', '').downcase.strip
-
-              if term == state_part
-                return subject.Subject_ID.text
-              end
-
-          else
-            parsed_xml.Vocabulary.Subject.each do |subject|
-              term = subject.Preferred_Term.text.gsub(' (state)', '').downcase.strip
-
-              if term == state_part
-                return subject.Subject_ID.text
-              end
-
-            end
-          end
-
-
-        end
-
+        #tgn_response = Typhoeus::Request.get("http://vocabsservices.getty.edu/TGNService.asmx/TGNGetTermMatch?placetypeid=#{place_type}&nationid=#{country_code}&name=" + CGI.escape(state_part), userpwd: BPL_CONFIG_GLOBAL['getty_un'] + ':' + BPL_CONFIG_GLOBAL['getty_pw'])
+        top_match_term = country_part
+        match_term = state_part.downcase
+      elsif state_part.present? && city_part.blank?
+        #Limit to regions
+        place_type = 81165
+        #tgn_response = Typhoeus::Request.get("http://vocabsservices.getty.edu/TGNService.asmx/TGNGetTermMatch?placetypeid=#{place_type}&nationid=#{country_code}&name=" + CGI.escape(state_part), userpwd: BPL_CONFIG_GLOBAL['getty_un'] + ':' + BPL_CONFIG_GLOBAL['getty_pw'])
+        top_match_term = country_part
+        match_term = state_part.downcase
+      elsif state_part.present? && city_part.present?
+        #Limited to only inhabited places at the moment...
+        place_type = 83002
+        #tgn_response = Typhoeus::Request.get("http://vocabsservices.getty.edu/TGNService.asmx/TGNGetTermMatch?placetypeid=#{place_type}&nationid=#{country_code}&name=" + CGI.escape(city_part), userpwd: BPL_CONFIG_GLOBAL['getty_un'] + ':' + BPL_CONFIG_GLOBAL['getty_pw'])
+        top_match_term = state_part.downcase
+        match_term = city_part.downcase
       else
-
-        state_part = state_part.downcase
-        city_part = city_part.downcase
-
-        tgn_response = Typhoeus::Request.get("http://vocabsservices.getty.edu/TGNService.asmx/TGNGetTermMatch?placetypeid=#{place_type}&nationid=#{country_code}&name=#{city_part}", userpwd: BPL_CONFIG_GLOBAL['getty_un'] + ':' + BPL_CONFIG_GLOBAL['getty_pw'])
-        #tgn_response = Typhoeus::Request.get('http://vocabsservices.getty.edu/TGNService.asmx/TGNGetTermMatch?placetypeid=83002&nationid=7012149&name=' + 'Springfield', userpwd: 'bplib:8{83N78kO;B)2')
-
-        unless tgn_response.code == 500
-          puts 'match found!'
-          puts place_type
-          puts country_code
-          puts city_part
-          puts state_part
-
-          parsed_xml = Nokogiri::Slop(tgn_response.body)
-
-          if parsed_xml.Vocabulary.Subject.first.blank?
-            subject = parsed_xml.Vocabulary.Subject
-              term = subject.Preferred_Term.text.gsub(' (inhabited place)', '').downcase.strip
-
-              if term == city_part && subject.Preferred_Parent.text.to_ascii.downcase.include?("#{state_part}")   # (state)
-                return subject.Subject_ID.text
-              end
-
-          else
-            parsed_xml.Vocabulary.Subject.each do |subject|
-              term = subject.Preferred_Term.text.gsub(' (inhabited place)', '').downcase.strip
-
-              if term == city_part && subject.Preferred_Parent.text.to_ascii.downcase.include?("#{state_part}")   # (state)
-                return subject.Subject_ID.text
-              end
-
-            end
-          end
-
-
-
-        end
+        return nil
       end
 
+      begin
+        if retry_count > 0
+          sleep(sleep_time)
+        end
+        retry_count = retry_count + 1
+
+        tgn_response = Typhoeus::Request.get("http://vocabsservices.getty.edu/TGNService.asmx/TGNGetTermMatch?placetypeid=#{place_type}&nationid=#{country_code}&name=" + CGI.escape(match_term), userpwd: BPL_CONFIG_GLOBAL['getty_un'] + ':' + BPL_CONFIG_GLOBAL['getty_pw'])
+        retry if tgn_response.code == 500 && retry_count <= max_retry
+      end
+
+      unless tgn_response.code == 500
+        puts 'match found!'
+        parsed_xml = Nokogiri::Slop(tgn_response.body)
+
+        if parsed_xml.Vocabulary.Count.text == '0'
+          return nil
+        end
+
+        #If only one result, then not array. Otherwise array....
+        if parsed_xml.Vocabulary.Subject.first.blank?
+          subject = parsed_xml.Vocabulary.Subject
+
+          current_term = subject.Preferred_Term.text.gsub(/\(.*\)/, '').downcase.strip
+
+          if current_term == match_term && subject.Preferred_Parent.text.to_ascii.downcase.include?("#{top_match_term}")
+            return subject.Subject_ID.text
+          end
+        else
+          parsed_xml.Vocabulary.Subject.each do |subject|
+            current_term = subject.Preferred_Term.text.gsub(/\(.*\)/, '').downcase.strip
+
+            if current_term == match_term && subject.Preferred_Parent.text.to_ascii.downcase.include?("#{top_match_term}")
+              return subject.Subject_ID.text
+            end
+          end
+        end
+
+      end
+
+      if tgn_response.code == 500
+        raise 'TGN Server appears to not be responding for Geographic query: ' + term
+      end
 
 
       return nil
 
     end
+
 
     def self.strip_value(value)
       if(value.blank?)

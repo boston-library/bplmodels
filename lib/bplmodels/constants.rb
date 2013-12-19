@@ -16,6 +16,7 @@ module Bplmodels
     GENRE_LOOKUP['Newspapers'] = {:id=>'tgm007068', :authority=>'lctgm'}
     GENRE_LOOKUP['Sound recordings'] = {:id=>'tgm009874', :authority=>'lctgm'}
     GENRE_LOOKUP['Motion pictures'] = {:id=>'tgm006804', :authority=>'lctgm'}
+    GENRE_LOOKUP['Periodicals'] = {:id=>'tgm007641', :authority=>'gmgpc'}
 
 
     COUNTRY_TGN_LOOKUP = {
