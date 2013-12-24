@@ -45,7 +45,7 @@ module Bplmodels
       }
 
       # GENRE ----------------------------------------------------------------------------------
-      t.genre(:path => 'mods/oxns:genre') {
+      t.genre(:path => 'genre') {
         t.displayLabel :path => {:attribute=>'displayLabel'}
         t.type_at :path=>{:attribute=>"type"}
         t.usage :path=>{:attribute=>'usage'}
@@ -477,6 +477,9 @@ module Bplmodels
         t.record_origin(:path=>'recordOrigin')
       }
 
+      t.table_of_contents(:path=>'tableOfContents')
+
+
     end
 
     # Blocks to pass into Nokogiri::XML::Builder.new()
@@ -610,24 +613,20 @@ module Bplmodels
     end
 
 
-    define_template :genre do |xml, value, value_uri, authority, is_general|
+    def insert_genre(value=nil, value_uri=nil, authority=nil, display_label='specific')
+      genre_index = self.mods(0).genre.count
 
-      if is_general
-        xml.genre(:authority=>authority, :authorityURI=>"http://id.loc.gov/vocabulary/graphicMaterials", :valueURI=>value_uri, :displayLabel=>"general") {
-          xml.text value
-        }
-      else
-        xml.genre(:authority=>authority, :authorityURI=>"http://id.loc.gov/vocabulary/graphicMaterials", :valueURI=>value_uri, :displayLabel=>"specific") {
-          xml.text value
-        }
+      self.mods(0).genre(genre_index, value) unless value.blank?
+
+      self.mods(0).genre(genre_index).authority unless authority.blank?
+      if authority == 'gmgpc'
+        self.mods(0).genre(genre_index).authorityURI = 'http://id.loc.gov/vocabulary/graphicMaterials'
       end
 
-    end
+      self.mods(0).genre(genre_index).valueURI = value_uri unless value_uri.blank?
 
-    def insert_genre(value=nil, value_uri=nil, authority=nil, is_general=false)
-      if value != nil && value.length > 1
-        add_child_node(ng_xml.root, :genre, value, value_uri, authority, is_general)
-      end
+      self.mods(0).genre(genre_index).displayLabel = display_label unless display_label.blank?
+
     end
 
     def remove_genre(index)
@@ -1303,6 +1302,15 @@ module Bplmodels
 
     def remove_subject_cartographic(index)
       self.find_by_terms(:subject_cartographic).slice(index.to_i).remove
+    end
+
+    def insert_table_of_contents(value)
+      contents_index = self.mods(0).table_of_contents.count
+      self.mods(0).table_of_contents(contents_index, value) unless value.blank?
+    end
+
+    def remove_table_of_contents(index)
+      self.find_by_terms(:table_of_contents).slice(index.to_i).remove
     end
 
     def insert_host(value=nil, identifier=nil, args={})

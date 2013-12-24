@@ -510,6 +510,26 @@ module Bplmodels
 
     end
 
+    def self.LCSHize(value)
+
+      #Remove ending periods ... except when an initial
+      if value.last == '.' && value[-2].match(/[^A-Z]/)
+        value = value.slice(0..-2)
+      end
+
+      #Remove white space after and vefore  '--'
+      value = value.gsub(/\s--/,'--')
+      value = value.gsub(/--\s/,'--')
+
+      #Ensure first work is capitalized
+      value[0] = value.first.capitalize[0]
+
+      #Strip an white space
+      value = Bplmodels::DatastreamInputFuncs.strip_value(value)
+
+      return value
+    end
+
 
     def self.strip_value(value)
       if(value.blank?)
@@ -540,6 +560,8 @@ module Bplmodels
         return split_value
       end
     end
+
+
 
   end
 end
