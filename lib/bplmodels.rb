@@ -1,5 +1,6 @@
 require "bplmodels/engine"
 require "bplmodels/datastream_input_funcs"
+require "bplmodels/constants"
 require "timeliness"
 
 # add some formats to Timeliness gem for better parsing

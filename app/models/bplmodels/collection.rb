@@ -10,6 +10,8 @@ module Bplmodels
 
     has_many :image_files, :class_name => "Bplmodels::ImageFile", :property=> :is_exemplary_image_of
 
+    has_many :image_object, :class_name => "Bplmodels::OAIObject", :property=> :is_exemplary_image_of
+
     # Uses the Hydra modsCollection profile for collection list
     #has_metadata :name => "members", :type => Hydra::ModsCollectionMembers
 
@@ -53,8 +55,9 @@ module Bplmodels
       doc = super(doc)
 
       # title fields
-      main_title = self.descMetadata.title_info(0).main_title[0]
-      doc['title_info_primary_tsi'] = main_title
+      title_prefix = self.descMetadata.mods(0).title_info(0).nonSort[0] ? self.descMetadata.mods(0).title_info(0).nonSort[0] + ' ' : ''
+      main_title = self.descMetadata.mods(0).title_info(0).main_title[0]
+      doc['title_info_primary_tsi'] = title_prefix + main_title
       doc['title_info_primary_ssort'] = main_title
 
       # description
@@ -76,6 +79,11 @@ module Bplmodels
       if self.image_files.first != nil
         doc['exemplary_image_ss'] = self.image_files.first.pid
         doc['exemplary_image_ssi'] = self.image_files.first.pid
+      end
+
+      if self.image_object.first != nil
+        doc['exemplary_image_ss'] = self.image_object.first.pid
+        doc['exemplary_image_ssi'] = self.image_object.first.pid
       end
 
       doc

@@ -45,7 +45,7 @@ module Bplmodels
       }
 
       # GENRE ----------------------------------------------------------------------------------
-      t.genre(:path => 'mods/oxns:genre') {
+      t.genre(:path => 'genre') {
         t.displayLabel :path => {:attribute=>'displayLabel'}
         t.type_at :path=>{:attribute=>"type"}
         t.usage :path=>{:attribute=>'usage'}
@@ -460,8 +460,9 @@ module Bplmodels
       }
 
       t.role {
-        t.text(:path=>'roleTerm',:attributes=>{:type=>'text', :authority=>'marcrelator', :authorityURI=>'http://id.loc.gov/vocabulary/relators'})
-        t.valueURI(:path=>{:attribute=>'valueURI'})
+        t.text(:path=>'roleTerm',:attributes=>{:type=>'text', :authority=>'marcrelator', :authorityURI=>'http://id.loc.gov/vocabulary/relators'}) {
+          t.valueURI(:path=>{:attribute=>'valueURI'})
+        }
         t.code(:path=>'roleTerm',:attributes=>{:type=>'code'})
       }
 
@@ -476,6 +477,9 @@ module Bplmodels
         t.record_content_source(:path=>'recordContentSource')
         t.record_origin(:path=>'recordOrigin')
       }
+
+      t.table_of_contents(:path=>'tableOfContents')
+
 
     end
 
@@ -597,7 +601,7 @@ module Bplmodels
     end
 
     def insert_publisher(publisher=nil, place=nil)
-      origin_index = self.mods(0).origin_info.count
+      origin_index = 0
       publisher_index = self.mods(0).origin_info(origin_index).publisher.count
       place_index =  self.mods(0).origin_info(origin_index).place.count
 
@@ -610,24 +614,20 @@ module Bplmodels
     end
 
 
-    define_template :genre do |xml, value, value_uri, authority, is_general|
+    def insert_genre(value=nil, value_uri=nil, authority=nil, display_label='specific')
+      genre_index = self.mods(0).genre.count
 
-      if is_general
-        xml.genre(:authority=>authority, :authorityURI=>"http://id.loc.gov/vocabulary/graphicMaterials", :valueURI=>value_uri, :displayLabel=>"general") {
-          xml.text value
-        }
-      else
-        xml.genre(:authority=>authority, :authorityURI=>"http://id.loc.gov/vocabulary/graphicMaterials", :valueURI=>value_uri, :displayLabel=>"specific") {
-          xml.text value
-        }
+      self.mods(0).genre(genre_index, value) unless value.blank?
+
+      self.mods(0).genre(genre_index).authority unless authority.blank?
+      if authority == 'gmgpc'
+        self.mods(0).genre(genre_index).authorityURI = 'http://id.loc.gov/vocabulary/graphicMaterials'
       end
 
-    end
+      self.mods(0).genre(genre_index).valueURI = value_uri unless value_uri.blank?
 
-    def insert_genre(value=nil, value_uri=nil, authority=nil, is_general=false)
-      if value != nil && value.length > 1
-        add_child_node(ng_xml.root, :genre, value, value_uri, authority, is_general)
-      end
+      self.mods(0).genre(genre_index).displayLabel = display_label unless display_label.blank?
+
     end
 
     def remove_genre(index)
@@ -703,6 +703,11 @@ module Bplmodels
 
 
     def insert_name(name=nil, type=nil, authority=nil, value_uri=nil, role=nil, role_uri=nil, args={})
+      puts 'look here'
+      puts name
+      puts role
+      puts role_uri
+
       name_index = self.mods(0).name.count
       self.mods(0).name(name_index).type = type unless type.blank?
       self.mods(0).name(name_index).authority = authority unless authority.blank?
@@ -710,7 +715,7 @@ module Bplmodels
 
       if role.present?
         self.mods(0).name(name_index).role.text = role unless role.blank?
-        self.mods(0).name(name_index).role.valueURI = role_uri unless role_uri.blank?
+        self.mods(0).name(name_index).role.text.valueURI = role_uri unless role_uri.blank?
       end
 
       if(authority == 'naf')
@@ -1080,23 +1085,10 @@ module Bplmodels
       self.find_by_terms(:extent).slice(index.to_i).remove
     end
 
-    define_template :note do |xml, note, noteQualifier|
-      if noteQualifier != nil && noteQualifier.length > 1
-        xml.note(:type=>noteQualifier) {
-          xml.text note
-        }
-      else
-        xml.note {
-          xml.text note
-        }
-      end
-    end
-
-
     def insert_note(note=nil, noteQualifier=nil)
-      if(note != nil && note.length > 1)
-        add_child_node(ng_xml.root, :note, note, noteQualifier)
-      end
+      note_index = self.mods(0).note.count
+      self.mods(0).note(note_index, note) unless note.blank?
+      self.mods(0).note(note_index).type_at = noteQualifier unless noteQualifier.blank?
     end
 
     def remove_note(index)
@@ -1300,31 +1292,30 @@ module Bplmodels
     end
 
 
-    define_template :subject_cartographic do |xml, coordinates, scale, projection|
-      xml.subject {
-        xml.cartographics {
-          if coordinates != nil && coordinates.length > 1
-            xml.coordinates(coordinates)
-          end
-          if scale != nil && scale.length > 1
-            xml.scale(scale)
-          end
-          if projection != nil && projection.length > 1
-            xml.projection(projection)
-          end
-        }
-      }
-    end
-
     def insert_subject_cartographic(coordinates=nil, scale=nil, projection=nil)
-      add_child_node(ng_xml.root, :subject_cartographic, coordinates, scale, projection)
+      subject_index =  self.mods(0).subject.count
+
+      self.mods(0).subject(subject_index).cartographics(0).coordinates = coordinates unless coordinates.blank?
+      self.mods(0).subject(subject_index).cartographics(0).scale = scale unless scale.blank?
+      self.mods(0).subject(subject_index).cartographics(0).projection = projection unless projection.blank?
+
     end
 
     def remove_subject_cartographic(index)
       self.find_by_terms(:subject_cartographic).slice(index.to_i).remove
     end
 
+    def insert_table_of_contents(value)
+      contents_index = self.mods(0).table_of_contents.count
+      self.mods(0).table_of_contents(contents_index, value) unless value.blank?
+    end
+
+    def remove_table_of_contents(index)
+      self.find_by_terms(:table_of_contents).slice(index.to_i).remove
+    end
+
     def insert_host(nonSort=nil, main_title=nil, identifier=nil, args={})
+
       related_index = self.mods(0).related_item.count
 
       self.mods(0).related_item(related_index).type = 'host' unless main_title.blank? && identifier.blank?
