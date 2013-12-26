@@ -871,6 +871,7 @@ module Bplmodels
 
     def insert_date(dateStarted=nil, dateEnding=nil, dateQualifier=nil, dateOther=nil)
       #begin
+
         if self.find_by_terms(:origin_info) != nil && self.find_by_terms(:origin_info).slice(0) != nil
           add_child_node(self.find_by_terms(:origin_info).slice(0), :date_partial, dateStarted, dateEnding, dateQualifier, dateOther)
         else
@@ -1104,6 +1105,8 @@ module Bplmodels
         self.mods(0).subject(subject_index).authority = authority unless authority.blank?
         if authority == 'lctgm'
           self.mods(0).subject(subject_index).authorityURI = 'http://id.loc.gov/vocabulary/graphicMaterials'
+        elsif authority == 'lcsh'
+          self.mods(0).subject(subject_index).authorityURI = 'http://id.loc.gov/authorities/subjects'
         end
 
       end
@@ -1114,9 +1117,12 @@ module Bplmodels
     end
 
     def insert_series(series)
-      insert_position = self.related_item.length
-      self.related_item(insert_position).type = 'series'
-      self.related_item(insert_position).title_info.title = series
+      if series.present?
+        insert_position = self.related_item.length
+        self.related_item(insert_position).type = 'series'
+        self.related_item(insert_position).title_info.title = series
+      end
+
     end
 
     def insert_subject_temporal(date)
@@ -1271,18 +1277,18 @@ module Bplmodels
     end
 
 
+    def insert_subject_geographic(geographic=nil, valueURI=nil, authority=nil)
+      if geographic.present?
+        subject_index = self.mods(0).subject.count
+        self.mods(0).subject(subject_index).geographic = geographic unless geographic.blank?
+        self.mods(0).subject(subject_index).valueURI = valueURI unless valueURI.blank?
+        self.mods(0).subject(subject_index).authority = authority unless authority.blank?
+        if authority == 'lctgm'
+          self.mods(0).subject(subject_index).authorityURI = 'http://id.loc.gov/vocabulary/graphicMaterials'
+        elsif authority == 'lcsh'
+          self.mods(0).subject(subject_index).authorityURI = 'http://id.loc.gov/authorities/subjects'
+        end
 
-    define_template :geographic do |xml, topic|
-        xml.geographic(topic)
-    end
-
-    def insert_subject_geographic(geographic=nil, authority=nil)
-      if geographic != nil && geographic.length > 1
-      #  if self.find_by_terms(:subject) != nil && self.find_by_terms(:subject).slice(0) != nil
-      #    add_child_node(self.find_by_terms(:subject).slice(0), :geographic, geographic, authority)
-      #  else
-          add_child_node(ng_xml.root, :subject_geographic, geographic, authority)
-      #  end
       end
 
     end
