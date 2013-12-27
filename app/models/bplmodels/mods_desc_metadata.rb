@@ -683,6 +683,7 @@ module Bplmodels
 
     #usage=nil,  supplied=nil, subtitle=nil, language=nil, type=nil, authority=nil, authorityURI=nil, valueURI=nil
     def insert_title(nonSort=nil, main_title=nil, usage=nil, supplied=nil, args={})
+      puts args
       title_index = self.mods(0).title_info.count
       self.mods(0).title_info(title_index).nonSort = nonSort unless nonSort.blank?
       self.mods(0).title_info(title_index).main_title = main_title unless main_title.blank?
