@@ -238,6 +238,7 @@ module Bplmodels
       end
 
       doc['abstract_tsim'] = self.descMetadata.abstract
+      doc['table_of_contents_tsi'] = self.descMetadata.table_of_contents[0]
 
       doc['genre_basic_tsim'] = self.descMetadata.genre_basic
       doc['genre_specific_tsim'] = self.descMetadata.genre_specific
