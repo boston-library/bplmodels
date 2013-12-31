@@ -577,23 +577,11 @@ module Bplmodels
     end
 
 
-    define_template :type_of_resource do |xml, value, manuscript|
-      if(manuscript == "x")
-        xml.typeOfResource(:manuscript=>"yes") {
-          xml.text value
-        }
-      else
-        xml.typeOfResource {
-          xml.text value
-        }
-      end
-
-    end
-
     def insert_type_of_resource(value=nil, manuscript=nil)
-      if value != nil && value.length > 0
-        add_child_node(ng_xml.root, :type_of_resource, value, manuscript)
-      end
+      resource_index = self.mods(0).type_of_resource.count
+
+      self.mods(0).type_of_resource(resource_index, value) unless value.blank? || self.mods(0).type_of_resource.include?(value)
+      self.mods(0).type_of_resource(resource_index).manuscript = 'yes' unless manuscript.blank? || self.mods(0).type_of_resource.include?(value)
     end
 
     def remove_type_of_resource(index)
@@ -1377,6 +1365,12 @@ module Bplmodels
 
     def related_item_xref(index)
       self.find_by_terms(:related_item_xref).slice(index.to_i).remove
+    end
+
+    def insert_related_item_url(value=nil)
+      related_index = self.mods(0).related_item.count
+
+      self.mods(0).related_item(related_index).location(0).url = value unless value.blank?
     end
 
     define_template :physical_location do |xml, location, sublocation, shelf_locator|
