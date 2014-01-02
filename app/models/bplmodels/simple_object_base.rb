@@ -229,7 +229,7 @@ module Bplmodels
         end
 
         # decade faceting
-        (1800..2000).step(10) do |index|
+        (1500..2020).step(10) do |index|
           if ((date_facet_start >= index && date_facet_start < index+10) || (date_facet_end != -1 && index > date_facet_start && date_facet_end >= index))
             doc['date_facet_ssim'].append(index.to_s + 's')
           end
