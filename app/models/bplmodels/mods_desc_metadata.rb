@@ -1266,7 +1266,7 @@ module Bplmodels
     end
 
 
-    def insert_subject_geographic(geographic=nil, valueURI=nil, authority=nil)
+    def insert_subject_geographic(geographic=nil, valueURI=nil, authority=nil, coordinates=nil)
       if geographic.present?
         subject_index = self.mods(0).subject.count
         self.mods(0).subject(subject_index).geographic = geographic unless geographic.blank?
@@ -1277,6 +1277,8 @@ module Bplmodels
         elsif authority == 'lcsh'
           self.mods(0).subject(subject_index).authorityURI = 'http://id.loc.gov/authorities/subjects'
         end
+
+        self.mods(0).subject(subject_index).cartographics(0).coordinates = coordinates unless coordinates.blank?
 
       end
 
@@ -1373,37 +1375,25 @@ module Bplmodels
       self.mods(0).related_item(related_index).location(0).url = value unless value.blank?
     end
 
-    define_template :physical_location do |xml, location, sublocation, shelf_locator|
-
-      xml.location {
-        xml.physicalLocation {
-          xml.text location
-        }
-        if sublocation != nil || shelf_locator != nil
-          xml.holdingSimple {
-            xml.copyInformation {
-              if sublocation != nil
-                xml.subLocation {
-                  xml.text sublocation
-                }
-              end
-              if shelf_locator != nil
-                xml.shelfLocator {
-                  xml.text shelf_locator
-                }
-              end
-            }
-          }
-        end
-      }
-    end
-
-    def insert_physical_location(location=nil, sublocation=nil, shelf_locator=nil)
-      add_child_node(ng_xml.root, :physical_location, location, sublocation, shelf_locator)
-    end
-
     def remove_physical_location(index)
       self.find_by_terms(:physical_location).slice(index.to_i).remove
+    end
+
+    def insert_physical_location(location=nil, sublocation=nil,shelf_locator=nil)
+      #Create a new tag unless there is a non-url tag already...
+      location_index = self.mods(0).item_location.count
+
+      for index in 0..self.mods(0).item_location.count-1
+        if self.mods(0).item_location(index).url.blank?
+          location_index = index
+        end
+      end
+
+      physical_location_index = 0
+
+      self.mods(0).item_location(location_index).physical_location(physical_location_index, location) unless location.blank?
+      self.mods(0).item_location(location_index).holding_simple(0).copy_information(0).sub_location = sublocation unless sublocation.blank?
+      self.mods(0).item_location(location_index).holding_simple(0).copy_information(0).shelf_locator = shelf_locator unless shelf_locator.blank?
     end
 
 

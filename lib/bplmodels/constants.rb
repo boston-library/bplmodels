@@ -23,7 +23,10 @@ module Bplmodels
     COUNTRY_TGN_LOOKUP = {
         'US' => 7012149,
         'CA' => 7005685,
-        'FR' => 1000070
+        'FR' => 1000070,
+        'United States' => 7012149,
+        'Canada' => 7005685,
+        'France' => 1000070,
     }
 
     STATE_ABBR = {
