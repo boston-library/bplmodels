@@ -409,23 +409,9 @@ module Bplmodels
 
     end
 
-    def parse_bing_api
+    #Note: Limited to only looking at United States places...
+    def self.parse_bing_api(term)
       return_hash = {}
-
-    end
-
-
-
-    def self.tgn_id_from_term(term)
-      return_hash = {}
-      max_retry = 3
-      sleep_time = 60 # In seconds
-      retry_count = 0
-      state_part = nil
-      country_code = nil
-      country_part = nil
-      city_part = nil
-
       Geocoder.configure(:lookup => :bing,:api_key => 'Avmp8UMpfYiAJOYa2D-6_cykJoprZsvvN5YLv6SDalvN-BZnW9KMlCzjIV7Zrtmn',:timeout => 5)
       bing_api_result = Geocoder.search(term)
 
@@ -436,182 +422,103 @@ module Bplmodels
           return_hash[:coordinates] = bing_api_result.first.data["geocodePoints"].first["coordinates"].first.to_s + ',' + bing_api_result.first.data["geocodePoints"].first["coordinates"].last.to_s
         end
 
-        country_code = Bplmodels::Constants::COUNTRY_TGN_LOOKUP[bing_api_result.first.data["address"]["countryRegion"]]
-        #country_part = Country.new(bing_api_result.first.data["adminArea1"]).name
-        country_part = bing_api_result.first.data["address"]["countryRegion"]
+        return_hash[:country_code] = Bplmodels::Constants::COUNTRY_TGN_LOOKUP[bing_api_result.first.data["address"]["countryRegion"]]
+        return_hash[:country_part] = bing_api_result.first.data["address"]["countryRegion"]
 
-        if country_code == 7012149
-          state_part = Bplmodels::Constants::STATE_ABBR[bing_api_result.first.data["address"]["adminDistrict"]]
+        if return_hash[:country_code] == 7012149
+          return_hash[:state_part] = Bplmodels::Constants::STATE_ABBR[bing_api_result.first.data["address"]["adminDistrict"]]
         else
-          state_part = bing_api_result.first.data["address"]["adminDistrict"]
+          return_hash[:state_part] = bing_api_result.first.data["address"]["adminDistrict"]
         end
 
-        city_part = bing_api_result.first.data["address"]["locality"]
-
-      #Use mapquest as a backup solution for non-found results or non-USA results
-      else
-        Geocoder.configure(:lookup => :mapquest,:api_key => 'Fmjtd%7Cluubn1utn0%2Ca2%3Do5-90b00a',:timeout => 5)
-        mapquest_api_result = Geocoder.search(term)
-
-        #If this call returned a result...
-        if mapquest_api_result.present?
-
-          if mapquest_api_result.first.data["street"].present?
-            return_hash[:keep_original_string] = true
-            return_hash[:coordinates] = mapquest_api_result.first.data['latLng']['lat'].to_s + ',' + mapquest_api_result.first.data['latLng']['lng'].to_s
-          end
-
-          country_code = Bplmodels::Constants::COUNTRY_TGN_LOOKUP[mapquest_api_result.first.data["adminArea1"]]
-          country_part = Country.new(mapquest_api_result.first.data["adminArea1"]).name
-
-          if country_code == 7012149
-            state_part = Bplmodels::Constants::STATE_ABBR[mapquest_api_result.first.data["adminArea3"]]
-          else
-            state_part = mapquest_api_result.first.data["adminArea3"]
-          end
-
-          city_part = mapquest_api_result.first.data["adminArea5"]
-
-        #Final fallback is google API. The best but we are limited to 2500 requests per day unless we pay the $10k a year premium account...
-        #Note: If google cannot find street, it will return just city/state, like for "Salem Street and Paradise Road, Swampscott, MA, 01907"
-        #Seems like it sets a partial_match=>true in the data section...
-        else
-
-          Geocoder.configure(:lookup => :google,:api_key => nil,:timeout => 5)
-          google_api_result = Geocoder.search(term)
-
-          #If this call returned no results, address lookup failed...
-          if google_api_result.blank?
-            return nil
-          end
-
-          #Types: street number, route, neighborhood, establishment, transit_station, bus_station
-          google_api_result.first.data["address_components"].each do |result|
-            if (result['types'] & ['street number', 'route', 'neighborhood', 'establishment', 'transit_station', 'bus_station']).present?
-              return_hash[:keep_original_string] = google_api_result.first.data['partial_match'] unless google_api_result.first.data['partial_match'].blank?
-              return_hash[:coordinates] = google_api_result.first.data['geometry']['location']['lat'].to_s + ',' + google_api_result.first.data['geometry']['location']['lng'].to_s
-            elsif (result['types'] & ['country']).present?
-              country_code = Bplmodels::Constants::COUNTRY_TGN_LOOKUP[result['long_name']]
-              country_part = result['long_name']
-            elsif (result['types'] & ['administrative_area_level_1']).present?
-              state_part = result['long_name'].to_ascii
-            elsif (result['types'] & ['locality']).present?
-              city_part = result['long_name']
-            end
-          end
-
-
-          end
-
-
+        return_hash[:city_part] = bing_api_result.first.data["address"]["locality"]
       end
-
-
-
-      top_match_term = ''
-      match_term = nil
-
-      if city_part.blank? && state_part.blank?
-        # Limit to nations
-        place_type = 81010
-        #tgn_response = Typhoeus::Request.get("http://vocabsservices.getty.edu/TGNService.asmx/TGNGetTermMatch?placetypeid=#{place_type}&nationid=#{country_code}&name="  + CGI.escape(term), userpwd: BPL_CONFIG_GLOBAL['getty_un'] + ':' + BPL_CONFIG_GLOBAL['getty_pw'])
-        top_match_term = ''
-        match_term = term.downcase
-      elsif state_part.present? && city_part.blank? && country_code == 7012149
-        #Limit to states
-        place_type = 81175
-        #tgn_response = Typhoeus::Request.get("http://vocabsservices.getty.edu/TGNService.asmx/TGNGetTermMatch?placetypeid=#{place_type}&nationid=#{country_code}&name=" + CGI.escape(state_part), userpwd: BPL_CONFIG_GLOBAL['getty_un'] + ':' + BPL_CONFIG_GLOBAL['getty_pw'])
-        top_match_term = country_part
-        match_term = state_part.downcase
-      elsif state_part.present? && city_part.blank?
-        #Limit to regions
-        place_type = 81165
-        #tgn_response = Typhoeus::Request.get("http://vocabsservices.getty.edu/TGNService.asmx/TGNGetTermMatch?placetypeid=#{place_type}&nationid=#{country_code}&name=" + CGI.escape(state_part), userpwd: BPL_CONFIG_GLOBAL['getty_un'] + ':' + BPL_CONFIG_GLOBAL['getty_pw'])
-        top_match_term = country_part
-        match_term = state_part.downcase
-      elsif state_part.present? && city_part.present?
-        #Limited to only inhabited places at the moment...
-        place_type = 83002
-        #tgn_response = Typhoeus::Request.get("http://vocabsservices.getty.edu/TGNService.asmx/TGNGetTermMatch?placetypeid=#{place_type}&nationid=#{country_code}&name=" + CGI.escape(city_part), userpwd: BPL_CONFIG_GLOBAL['getty_un'] + ':' + BPL_CONFIG_GLOBAL['getty_pw'])
-        top_match_term = state_part.downcase
-        match_term = city_part.downcase
-      else
-        return nil
-      end
-
-      begin
-        if retry_count > 0
-          sleep(sleep_time)
-        end
-        retry_count = retry_count + 1
-
-        tgn_response = Typhoeus::Request.get("http://vocabsservices.getty.edu/TGNService.asmx/TGNGetTermMatch?placetypeid=#{place_type}&nationid=#{country_code}&name=" + CGI.escape(match_term), userpwd: BPL_CONFIG_GLOBAL['getty_un'] + ':' + BPL_CONFIG_GLOBAL['getty_pw'])
-
-      end until (tgn_response.code != 500 || retry_count == max_retry)
-
-      unless tgn_response.code == 500
-        puts 'match found!'
-        parsed_xml = Nokogiri::Slop(tgn_response.body)
-
-        if parsed_xml.Vocabulary.Count.text == '0'
-          return nil
-        end
-
-        #If only one result, then not array. Otherwise array....
-        if parsed_xml.Vocabulary.Subject.first.blank?
-          subject = parsed_xml.Vocabulary.Subject
-
-          current_term = subject.Preferred_Term.text.gsub(/\(.*\)/, '').downcase.strip
-
-          if current_term == match_term && subject.Preferred_Parent.text.to_ascii.downcase.include?("#{top_match_term}")
-            return_hash[:tgn_id] = subject.Subject_ID.text
-          end
-        else
-          parsed_xml.Vocabulary.Subject.each do |subject|
-            current_term = subject.Preferred_Term.text.gsub(/\(.*\)/, '').downcase.strip
-
-            if current_term == match_term && subject.Preferred_Parent.text.to_ascii.downcase.include?("#{top_match_term}")
-              return_hash[:tgn_id] = subject.Subject_ID.text
-            end
-          end
-        end
-
-      end
-
-      if tgn_response.code == 500
-        raise 'TGN Server appears to not be responding for Geographic query: ' + term
-      end
-
 
       return return_hash
-
     end
 
-    def self.tgn_id_from_term_mapquest(term)
+    #Mapquest allows unlimited requests - start here?
+    def self.parse_mapquest_api(term)
       return_hash = {}
+      Geocoder.configure(:lookup => :mapquest,:api_key => 'Fmjtd%7Cluubn1utn0%2Ca2%3Do5-90b00a',:timeout => 5)
       mapquest_api_result = Geocoder.search(term)
+
+      #If this call returned a result...
+      if mapquest_api_result.present?
+
+        if mapquest_api_result.first.data["street"].present?
+          return_hash[:keep_original_string] = true
+          return_hash[:coordinates] = mapquest_api_result.first.data['latLng']['lat'].to_s + ',' + mapquest_api_result.first.data['latLng']['lng'].to_s
+        end
+
+        return_hash[:country_code] = Bplmodels::Constants::COUNTRY_TGN_LOOKUP[mapquest_api_result.first.data["adminArea1"]]
+        return_hash[:country_part] = Country.new(mapquest_api_result.first.data["adminArea1"]).name
+
+        if return_hash[:country_code] == 7012149
+          return_hash[:state_part] = Bplmodels::Constants::STATE_ABBR[mapquest_api_result.first.data["adminArea3"]]
+        else
+          return_hash[:state_part] = mapquest_api_result.first.data["adminArea3"]
+        end
+
+        return_hash[:city_part] = mapquest_api_result.first.data["adminArea5"]
+      end
+
+      return return_hash
+    end
+
+    #Final fallback is google API. The best but we are limited to 2500 requests per day unless we pay the $10k a year premium account...
+    #Note: If google cannot find street, it will return just city/state, like for "Salem Street and Paradise Road, Swampscott, MA, 01907"
+    #Seems like it sets a partial_match=>true in the data section...
+    def self.parse_google_api(term)
+      return_hash = {}
+
+      Geocoder.configure(:lookup => :google,:api_key => nil,:timeout => 5)
+      google_api_result = Geocoder.search(term)
+
+      #Types: street number, route, neighborhood, establishment, transit_station, bus_station
+      google_api_result.first.data["address_components"].each do |result|
+        if (result['types'] & ['street number', 'route', 'neighborhood', 'establishment', 'transit_station', 'bus_station']).present?
+          return_hash[:keep_original_string] = google_api_result.first.data['partial_match'] unless google_api_result.first.data['partial_match'].blank?
+          return_hash[:coordinates] = google_api_result.first.data['geometry']['location']['lat'].to_s + ',' + google_api_result.first.data['geometry']['location']['lng'].to_s
+        elsif (result['types'] & ['country']).present?
+          return_hash[:country_code] = Bplmodels::Constants::COUNTRY_TGN_LOOKUP[result['long_name']]
+          return_hash[:country_part] = result['long_name']
+        elsif (result['types'] & ['administrative_area_level_1']).present?
+          return_hash[:state_part] = result['long_name'].to_ascii
+        elsif (result['types'] & ['locality']).present?
+          return_hash[:city_part] = result['long_name']
+        end
+      end
+
+      return return_hash
+    end
+
+
+
+    def self.tgn_id_from_term(term)
+      return_hash = {}
       max_retry = 3
       sleep_time = 60 # In seconds
       retry_count = 0
 
+      return_hash = parse_mapquest_api(term)
 
-      if mapquest_api_result.blank?
+      if return_hash.blank?
+        return_hash = parse_bing_api(term)
+      end
+
+      if return_hash.blank?
+        return_hash = parse_google_api(term)
+      end
+
+      if return_hash.blank?
         return nil
       end
 
-      return_hash[:longitude] = mapquest_api_result.first.data['latLng']['lng']
-      return_hash[:latitude] = mapquest_api_result.first.data['latLng']['lat']
-
-      country_code = Bplmodels::Constants::COUNTRY_TGN_LOOKUP[mapquest_api_result.first.data["adminArea1"]]
-      country_part = Country.new(mapquest_api_result.first.data["adminArea1"]).name
-
-      if country_code == 7012149
-        state_part = Bplmodels::Constants::STATE_ABBR[mapquest_api_result.first.data["adminArea3"]]
-      else
-        state_part = mapquest_api_result.first.data["adminArea3"]
-      end
-
-      city_part = mapquest_api_result.first.data["adminArea5"]
+      state_part = return_hash[:state_part]
+      country_code = return_hash[:country_code]
+      country_part = return_hash[:country_part]
+      city_part = return_hash[:city_part]
 
       top_match_term = ''
       match_term = nil
@@ -619,25 +526,21 @@ module Bplmodels
       if city_part.blank? && state_part.blank?
         # Limit to nations
         place_type = 81010
-        #tgn_response = Typhoeus::Request.get("http://vocabsservices.getty.edu/TGNService.asmx/TGNGetTermMatch?placetypeid=#{place_type}&nationid=#{country_code}&name="  + CGI.escape(term), userpwd: BPL_CONFIG_GLOBAL['getty_un'] + ':' + BPL_CONFIG_GLOBAL['getty_pw'])
         top_match_term = ''
         match_term = term.downcase
       elsif state_part.present? && city_part.blank? && country_code == 7012149
         #Limit to states
         place_type = 81175
-        #tgn_response = Typhoeus::Request.get("http://vocabsservices.getty.edu/TGNService.asmx/TGNGetTermMatch?placetypeid=#{place_type}&nationid=#{country_code}&name=" + CGI.escape(state_part), userpwd: BPL_CONFIG_GLOBAL['getty_un'] + ':' + BPL_CONFIG_GLOBAL['getty_pw'])
         top_match_term = country_part
         match_term = state_part.downcase
       elsif state_part.present? && city_part.blank?
         #Limit to regions
         place_type = 81165
-        #tgn_response = Typhoeus::Request.get("http://vocabsservices.getty.edu/TGNService.asmx/TGNGetTermMatch?placetypeid=#{place_type}&nationid=#{country_code}&name=" + CGI.escape(state_part), userpwd: BPL_CONFIG_GLOBAL['getty_un'] + ':' + BPL_CONFIG_GLOBAL['getty_pw'])
         top_match_term = country_part
         match_term = state_part.downcase
       elsif state_part.present? && city_part.present?
         #Limited to only inhabited places at the moment...
         place_type = 83002
-        #tgn_response = Typhoeus::Request.get("http://vocabsservices.getty.edu/TGNService.asmx/TGNGetTermMatch?placetypeid=#{place_type}&nationid=#{country_code}&name=" + CGI.escape(city_part), userpwd: BPL_CONFIG_GLOBAL['getty_un'] + ':' + BPL_CONFIG_GLOBAL['getty_pw'])
         top_match_term = state_part.downcase
         match_term = city_part.downcase
       else
@@ -689,19 +592,19 @@ module Bplmodels
 
 
       return return_hash
-
     end
+
 
     def self.LCSHize(value)
 
-      #Remove ending periods ... except when an initial
-      if value.last == '.' && value[-2].match(/[^A-Z]/)
+      #Remove ending periods ... except when an initial or etc.
+      if value.last == '.' && value[-2].match(/[^A-Z]/) && !value[-4..-1].match('etc.')
         value = value.slice(0..-2)
       end
 
       #Remove white space after and vefore  '--'
-      value = value.gsub(/\s--/,'--')
-      value = value.gsub(/--\s/,'--')
+      value = value.gsub(/\s+--/,'--')
+      value = value.gsub(/--\s+/,'--')
 
       #Ensure first work is capitalized
       value[0] = value.first.capitalize[0]
@@ -744,6 +647,71 @@ module Bplmodels
     end
 
 
+    def self.getProperTitle(title)
+      nonSort = nil
+      title = title
+
+      if title[0..1].downcase == "a "
+        nonSort = title[0]
+        title = title[2..title.length]
+      elsif title[0..3].downcase == "the "
+        nonSort = title[0..2]
+        title = title[4..title.length]
+      elsif title[0..2].downcase == "an "
+        nonSort = title[0..1]
+        title = title[3..title.length]
+        #elsif title[0..6].downcase == "in the "
+        #return [title[0..5], title[7..title.length]]
+      end
+
+      return [nonSort, title]
+    end
+
+    def self.parse_name_roles(name)
+      return_hash = {}
+
+      #Make sure we have at least three distinct parts of 2-letter+ words. Avoid something like: Steven C. Painter or Painter, Steven C.
+      #Possible Issue: Full name of Steven Carlos Painter ?
+      potential_role_check = name.match(/[\(\"\',]*\w\w+[\),\"\']* [\w\.,\d\-\"]*[\w\d][\w\d][\w\.,\d\-\"]* [\(\"\',]*\w\w+[\),\"\']*$/) || name.split(/[ ]+/).length >= 4
+
+      if potential_role_check.present?
+        authority_check = Qa::Authorities::Loc.new
+
+        #Check the last value of the name string...
+        role_value = name.match(/(?<=[\(\"\', ])\w+(?=[\),\"\']*$)/).to_s
+        authority_result = authority_check.search(URI.escape(role_value), 'relators')
+        if authority_result.present?
+
+          authority_result = authority_result.select{|hash| hash['label'].downcase == role_value.downcase}
+          if  authority_result.present?
+            #Remove the word and any other characters around it. $ means the end of the line.
+            return_hash[:name] = name.sub(/[\(\"\', ]*\w+[\),\"\']*$/, '').strip
+            return_hash[:uri] = authority_result.first["id"].gsub('info:lc', 'http://id.loc.gov')
+            return_hash[:label] = authority_result.first["label"]
+          end
+        end
+
+        #Check the last value of the name string...
+        role_value = name.match(/\w+(?=[\),\"\']*)/).to_s
+        authority_result = authority_check.search(URI.escape(role_value), 'relators')
+        if authority_result.present? && return_hash.blank?
+
+          authority_result = authority_result.select{|hash| hash['label'].downcase == role_value.downcase}
+          if  authority_result.present?
+            #Remove the word and any other characters around it. $ means the end of the line.
+            return_hash[:name] = name.sub(/[\(\"\', ]*\w+[ \),\"\']*/, '').strip
+            return_hash[:uri] = authority_result.first["id"].gsub('info:lc', 'http://id.loc.gov')
+            return_hash[:label] = authority_result.first["label"]
+          end
+        end
+      end
+
+      return return_hash
+    end
+
+    def self.is_numeric? (string)
+      true if Float(string) rescue false
+    end
 
   end
 end

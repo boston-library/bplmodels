@@ -328,7 +328,10 @@ module Bplmodels
             t.shelf_locator(:path=>"shelfLocator")
           }
         }
-        t.url(:path=>"url")
+        t.url(:path=>"url") {
+          t.usage(:path=>{:attribute=>"usage"})
+          t.access(:path=>{:attribute=>"access"})
+        }
       }
 
 
@@ -423,6 +426,9 @@ module Bplmodels
           t.nonSort(:path=>"nonSort")
         }
         t.identifier
+        t.location(:path=>'location') {
+          t.url(:path=>'url')
+        }
       }
 
       t.use_and_reproduction(:path=>"accessCondition", :attributes=>{:type=>"use and reproduction"})
@@ -1394,6 +1400,15 @@ module Bplmodels
       self.mods(0).item_location(location_index).physical_location(physical_location_index, location) unless location.blank?
       self.mods(0).item_location(location_index).holding_simple(0).copy_information(0).sub_location = sublocation unless sublocation.blank?
       self.mods(0).item_location(location_index).holding_simple(0).copy_information(0).shelf_locator = shelf_locator unless shelf_locator.blank?
+    end
+
+    def insert_location_url(url=nil, access=nil, usage=nil)
+      location_index = self.mods(0).item_location.count
+
+      self.mods(0).item_location(location_index).url = url unless url.blank?
+      self.mods(0).item_location(location_index).url(0).usage = usage unless usage.blank?
+      self.mods(0).item_location(location_index).url(0).access = access unless access.blank?
+
     end
 
 
