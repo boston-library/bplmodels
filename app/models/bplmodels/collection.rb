@@ -103,12 +103,9 @@ module Bplmodels
       as_json = JSON.parse(response.body)
       object = self.new(:pid=>as_json["pid"])
 
-      title = Bplmodels::DataStreamInputFuncs.getProperTitle(args[:label])
+      title = Bplmodels::DatastreamInputFuncs.getProperTitle(args[:label])
       object.label = args[:label]
       object.descMetadata.insert_title(title[0], title[1])
-
-      object.read_groups = ["public"]
-      object.edit_groups = ["superuser", 'admin[' + @institution.pid + ']']
 
       object.add_relationship(:is_member_of, "info:fedora/" + args[:parent_pid])
       uri = ARK_CONFIG_GLOBAL['url'] + '/ark:/'+ as_json["namespace_ark"] + '/' +  as_json["noid"]

@@ -1093,7 +1093,7 @@ module Bplmodels
 
 
     def insert_subject_topic(topic=nil, valueURI=nil, authority=nil)
-      if topic.present?
+      if topic.present? && !self.mods(0).subject.topic.include?(topic)
         subject_index = self.mods(0).subject.count
         self.mods(0).subject(subject_index).topic = topic unless topic.blank?
         self.mods(0).subject(subject_index).valueURI = valueURI unless valueURI.blank?

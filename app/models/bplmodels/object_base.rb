@@ -58,16 +58,8 @@ module Bplmodels
         return as_json["pid"]
       end
 
+      puts 'pid is: ' + as_json["pid"]
       object = self.new(:pid=>as_json["pid"])
-
-      object.read_groups = ["public"]
-      object.edit_groups = ["superuser", 'admin[' + @institution.pid + ']']
-
-      object.add_relationship(:is_member_of, "info:fedora/" + args[:parent_pid])
-      uri = ARK_CONFIG_GLOBAL['url'] + '/ark:/'+ as_json["namespace_ark"] + '/' +  as_json["noid"]
-      object.descMetadata.insert_access_links(nil, uri)
-
-      object.add_oai_relationships
 
       return object
     end
