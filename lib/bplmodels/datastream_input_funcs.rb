@@ -412,7 +412,22 @@ module Bplmodels
     #Note: Limited to only looking at United States places...
     def self.parse_bing_api(term)
       return_hash = {}
-      Geocoder.configure(:lookup => :bing,:api_key => 'Avmp8UMpfYiAJOYa2D-6_cykJoprZsvvN5YLv6SDalvN-BZnW9KMlCzjIV7Zrtmn',:timeout => 5)
+
+      #Note: the following returns junk from Bing as if these are in WI, California, Etc:
+      #East Monponsett Lake (Halifax, Mass.)
+      #Silver Lake (Halifax, Mass.)
+      if term.match(/[\(\)]+/)
+        #Attempt to fix address if something like (word)
+        if term.match(/ \(+.*\)+/)
+
+        #Else skip this
+        else
+          return return_hash
+        end
+
+      end
+
+      Geocoder.configure(:lookup => :bing,:api_key => 'Avmp8UMpfYiAJOYa2D-6_cykJoprZsvvN5YLv6SDalvN-BZnW9KMlCzjIV7Zrtmn',:timeout => 7)
       bing_api_result = Geocoder.search(term)
 
       #Use bing first and only for United States results...
@@ -440,7 +455,7 @@ module Bplmodels
     #Mapquest allows unlimited requests - start here?
     def self.parse_mapquest_api(term)
       return_hash = {}
-      Geocoder.configure(:lookup => :mapquest,:api_key => 'Fmjtd%7Cluubn1utn0%2Ca2%3Do5-90b00a',:timeout => 5)
+      Geocoder.configure(:lookup => :mapquest,:api_key => 'Fmjtd%7Cluubn1utn0%2Ca2%3Do5-90b00a',:timeout => 7)
       mapquest_api_result = Geocoder.search(term)
 
       #If this call returned a result...
@@ -472,21 +487,23 @@ module Bplmodels
     def self.parse_google_api(term)
       return_hash = {}
 
-      Geocoder.configure(:lookup => :google,:api_key => nil,:timeout => 5)
+      Geocoder.configure(:lookup => :google,:api_key => nil,:timeout => 7)
       google_api_result = Geocoder.search(term)
 
-      #Types: street number, route, neighborhood, establishment, transit_station, bus_station
-      google_api_result.first.data["address_components"].each do |result|
-        if (result['types'] & ['street number', 'route', 'neighborhood', 'establishment', 'transit_station', 'bus_station']).present?
-          return_hash[:keep_original_string] = google_api_result.first.data['partial_match'] unless google_api_result.first.data['partial_match'].blank?
-          return_hash[:coordinates] = google_api_result.first.data['geometry']['location']['lat'].to_s + ',' + google_api_result.first.data['geometry']['location']['lng'].to_s
-        elsif (result['types'] & ['country']).present?
-          return_hash[:country_code] = Bplmodels::Constants::COUNTRY_TGN_LOOKUP[result['long_name']]
-          return_hash[:country_part] = result['long_name']
-        elsif (result['types'] & ['administrative_area_level_1']).present?
-          return_hash[:state_part] = result['long_name'].to_ascii
-        elsif (result['types'] & ['locality']).present?
-          return_hash[:city_part] = result['long_name']
+      if google_api_result.present?
+        #Types: street number, route, neighborhood, establishment, transit_station, bus_station
+        google_api_result.first.data["address_components"].each do |result|
+          if (result['types'] & ['street number', 'route', 'neighborhood', 'establishment', 'transit_station', 'bus_station']).present?
+            return_hash[:keep_original_string] = google_api_result.first.data['partial_match'] unless google_api_result.first.data['partial_match'].blank?
+            return_hash[:coordinates] = google_api_result.first.data['geometry']['location']['lat'].to_s + ',' + google_api_result.first.data['geometry']['location']['lng'].to_s
+          elsif (result['types'] & ['country']).present?
+            return_hash[:country_code] = Bplmodels::Constants::COUNTRY_TGN_LOOKUP[result['long_name']]
+            return_hash[:country_part] = result['long_name']
+          elsif (result['types'] & ['administrative_area_level_1']).present?
+            return_hash[:state_part] = result['long_name'].to_ascii
+          elsif (result['types'] & ['locality']).present?
+            return_hash[:city_part] = result['long_name']
+          end
         end
       end
 
@@ -531,12 +548,12 @@ module Bplmodels
       elsif state_part.present? && city_part.blank? && country_code == 7012149
         #Limit to states
         place_type = 81175
-        top_match_term = country_part
+        top_match_term = country_part.downcase
         match_term = state_part.downcase
       elsif state_part.present? && city_part.blank?
         #Limit to regions
         place_type = 81165
-        top_match_term = country_part
+        top_match_term = country_part.downcase
         match_term = state_part.downcase
       elsif state_part.present? && city_part.present?
         #Limited to only inhabited places at the moment...
@@ -554,6 +571,7 @@ module Bplmodels
         retry_count = retry_count + 1
 
         tgn_response = Typhoeus::Request.get("http://vocabsservices.getty.edu/TGNService.asmx/TGNGetTermMatch?placetypeid=#{place_type}&nationid=#{country_code}&name=" + CGI.escape(match_term), userpwd: BPL_CONFIG_GLOBAL['getty_un'] + ':' + BPL_CONFIG_GLOBAL['getty_pw'])
+
 
       end until (tgn_response.code != 500 || retry_count == max_retry)
 
@@ -602,7 +620,10 @@ module Bplmodels
         value = value.slice(0..-2)
       end
 
-      #Remove white space after and vefore  '--'
+      #Fix when '- -' occurs
+      value = value.gsub(/-\s-/,'--')
+
+      #Remove white space after and before  '--'
       value = value.gsub(/\s+--/,'--')
       value = value.gsub(/--\s+/,'--')
 
