@@ -20,5 +20,17 @@ module Bplmodels
       doc['active_fedora_model_ssi'] = self.class.name
       doc
     end
+
+    #Expects the following args:
+    #parent_pid => id of the parent object
+    #local_id => local ID of the object
+    #local_id_type => type of that local ID
+    #label => label of the collection
+    def self.mint(args)
+      args[:namespace_id] = ARK_CONFIG_GLOBAL['namespace_oai_pid']
+      #TODO: Duplication check here to prevent over-writes?
+
+      super(args)
+    end
   end
 end

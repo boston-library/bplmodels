@@ -413,22 +413,21 @@ module Bplmodels
     def self.parse_bing_api(term)
       return_hash = {}
 
-      #Note: the following returns junk from Bing as if these are in WI, California, Etc:
-      #East Monponsett Lake (Halifax, Mass.)
-      #Silver Lake (Halifax, Mass.)
+      #Bing API does badly with paranthesis...
       if term.match(/[\(\)]+/)
-        #Attempt to fix address if something like (word)
-        if term.match(/ \(+.*\)+/)
+        return return_hash
+      end
 
-        #Else skip this
-        else
-          return return_hash
-        end
-
+      #Sometimes with building, city, state, bing is dumb and will only return state. Example: Boston Harbor, Boston, Mass.
+      #So if not a street address, pass to have google handle it for better results...
+      if term.split(',').length >= 3 && term.match(/\d/).blank? && term.downcase.match('ave').blank? && term.downcase.match('street').blank? && term.downcase.match('road').blank? && term.downcase.match('rd').blank?
+        return return_hash
       end
 
       Geocoder.configure(:lookup => :bing,:api_key => 'Avmp8UMpfYiAJOYa2D-6_cykJoprZsvvN5YLv6SDalvN-BZnW9KMlCzjIV7Zrtmn',:timeout => 7)
       bing_api_result = Geocoder.search(term)
+
+
 
       #Use bing first and only for United States results...
       if bing_api_result.present? && bing_api_result.first.data["address"]["countryRegion"] == 'United States'
@@ -494,7 +493,7 @@ module Bplmodels
         #Types: street number, route, neighborhood, establishment, transit_station, bus_station
         google_api_result.first.data["address_components"].each do |result|
           if (result['types'] & ['street number', 'route', 'neighborhood', 'establishment', 'transit_station', 'bus_station']).present?
-            return_hash[:keep_original_string] = google_api_result.first.data['partial_match'] unless google_api_result.first.data['partial_match'].blank?
+            return_hash[:keep_original_string] = true
             return_hash[:coordinates] = google_api_result.first.data['geometry']['location']['lat'].to_s + ',' + google_api_result.first.data['geometry']['location']['lng'].to_s
           elsif (result['types'] & ['country']).present?
             return_hash[:country_code] = Bplmodels::Constants::COUNTRY_TGN_LOOKUP[result['long_name']]
@@ -506,6 +505,7 @@ module Bplmodels
           end
         end
       end
+      return_hash[:keep_original_string] ||= google_api_result.first.data['partial_match'] unless google_api_result.first.data['partial_match'].blank?
 
       return return_hash
     end
@@ -517,6 +517,21 @@ module Bplmodels
       max_retry = 3
       sleep_time = 60 # In seconds
       retry_count = 0
+
+      #Note: the following returns junk from Bing as if these are in WI, California, Etc:
+      #East Monponsett Lake (Halifax, Mass.)
+      #Silver Lake (Halifax, Mass.)
+      #Scarier note: Washington Park (Reading, Mass.) will always return Boston, MA in google
+      if term.match(/[\(\)]+/)
+        #Attempt to fix address if something like (word)
+        if term.match(/ \(+.*\)+/)
+          #Make this replacement better?
+          term = term.gsub(' (', ', ').gsub(')', '')
+          #Else skip this as data returned likely will be unreliable for now... FIXME when use case occurs.
+        else
+          return return_hash
+        end
+      end
 
       return_hash = parse_mapquest_api(term)
 
@@ -536,6 +551,11 @@ module Bplmodels
       country_code = return_hash[:country_code]
       country_part = return_hash[:country_part]
       city_part = return_hash[:city_part]
+
+      #Keep original string if three parts at least or if there is a number in the term.
+      if term.split(',').length >= 3 || term.match(/\d/).present?
+        return_hash[:keep_original_string] = true
+      end
 
       top_match_term = ''
       match_term = nil

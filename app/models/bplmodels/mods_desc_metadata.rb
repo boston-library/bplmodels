@@ -650,8 +650,48 @@ module Bplmodels
     end
 
     def insert_tgn(tgn_id)
-      subject_index = self.mods(0).subject.count
+
       api_result = Bplmodels::DatastreamInputFuncs.get_tgn_data(tgn_id)
+
+      #Get rid of less specific matches... city level information should trump state level information.
+      if api_result[:city].present? && self.subject.hierarchical_geographic.present?
+        self.mods(0).subject.each_with_index do |ignored, subject_index|
+          if self.mods(0).subject(subject_index).authority == 'tgn'
+            if self.mods(0).subject(subject_index).hierarchical_geographic(0).city.blank? && self.mods(0).subject(subject_index).hierarchical_geographic(0).state == api_result[:state]
+              self.mods(0).subject(subject_index, nil)
+            end
+          end
+        end
+
+        #Exit if same city match
+        self.mods(0).subject.each_with_index do |ignored, subject_index|
+          if self.mods(0).subject(subject_index).authority == 'tgn'
+            if self.mods(0).subject(subject_index).hierarchical_geographic(0).city == api_result[:city]
+              return false
+            end
+          end
+        end
+      #Exit check if trying to insert same state twice with no city
+      elsif api_result[:city].blank? && api_result[:state].present? && self.subject.hierarchical_geographic.present?
+        self.mods(0).subject.each_with_index do |ignored, subject_index|
+          if self.mods(0).subject(subject_index).authority == 'tgn'
+            if self.mods(0).subject(subject_index).hierarchical_geographic(0).state == api_result[:state]
+              return false
+            end
+          end
+        end
+      #Finally exit if inserting the same country...
+      elsif api_result[:city].blank? && api_result[:state].blank? && api_result[:country].present? && self.subject.hierarchical_geographic.present?
+        self.mods(0).subject.each_with_index do |ignored, subject_index|
+          if self.mods(0).subject(subject_index).authority == 'tgn'
+            if self.mods(0).subject(subject_index).hierarchical_geographic(0).country == api_result[:country]
+              return false
+            end
+          end
+        end
+      end
+
+      subject_index = self.mods(0).subject.count
 
       self.mods(0).subject(subject_index).authority = "tgn"
       self.mods(0).subject(subject_index).valueURI = tgn_id
