@@ -1,3 +1,6 @@
+#!/bin/env ruby
+# encoding: utf-8
+
 module Bplmodels
   class DatastreamInputFuncs
 
@@ -455,7 +458,9 @@ module Bplmodels
     def self.parse_mapquest_api(term)
       return_hash = {}
       Geocoder.configure(:lookup => :mapquest,:api_key => 'Fmjtd%7Cluubn1utn0%2Ca2%3Do5-90b00a',:timeout => 7)
+
       mapquest_api_result = Geocoder.search(term)
+
 
       #If this call returned a result...
       if mapquest_api_result.present?
@@ -489,6 +494,15 @@ module Bplmodels
       Geocoder.configure(:lookup => :google,:api_key => nil,:timeout => 7)
       google_api_result = Geocoder.search(term)
 
+      #Check if only a partial match. To avoid errors, strip out the first part and try again...
+      #Need better way to check for street endings. See: http://pe.usps.gov/text/pub28/28apc_002.htm
+      if google_api_result.present?
+        if google_api_result.first.data['partial_match'] && term.split(',').length > 1 && !term.downcase.include?('street') && !term.downcase.include?('st.') && !term.downcase.include?('avenue') && !term.downcase.include?('ave.') && !term.downcase.include?('court')
+          term = term.split(',')[1..term.split(',').length-1].join(',').strip
+          google_api_result = Geocoder.search(term)
+        end
+      end
+
       if google_api_result.present?
         #Types: street number, route, neighborhood, establishment, transit_station, bus_station
         google_api_result.first.data["address_components"].each do |result|
@@ -504,33 +518,80 @@ module Bplmodels
             return_hash[:city_part] = result['long_name']
           end
         end
+
+        return_hash[:keep_original_string] ||= google_api_result.first.data['partial_match'] unless google_api_result.first.data['partial_match'].blank?
       end
-      return_hash[:keep_original_string] ||= google_api_result.first.data['partial_match'] unless google_api_result.first.data['partial_match'].blank?
+
 
       return return_hash
     end
 
 
 
-    def self.tgn_id_from_term(term)
+    def self.tgn_id_from_term(term,parse_term=false)
       return_hash = {}
       max_retry = 3
       sleep_time = 60 # In seconds
       retry_count = 0
 
-      #Note: the following returns junk from Bing as if these are in WI, California, Etc:
-      #East Monponsett Lake (Halifax, Mass.)
-      #Silver Lake (Halifax, Mass.)
-      #Scarier note: Washington Park (Reading, Mass.) will always return Boston, MA in google
-      if term.match(/[\(\)]+/)
-        #Attempt to fix address if something like (word)
-        if term.match(/ \(+.*\)+/)
-          #Make this replacement better?
-          term = term.gsub(' (', ', ').gsub(')', '')
-          #Else skip this as data returned likely will be unreliable for now... FIXME when use case occurs.
-        else
+      #If not a good address source, parsing is done here...
+      if parse_term
+        geo_term = nil
+
+        #Weird incorrect dash seperator
+        term = term.gsub('–', '--')
+
+        #Likely too long to be an address... some fields have junk with an address string...
+        if term.length > 125
           return return_hash
         end
+
+        #TODO: Use Countries gem of https://github.com/hexorx/countries
+        #test = Country.new('US')
+        #test.states
+
+        #Parsing a subject geographic term.
+        if term.include?('--')
+          term.split('--').each_with_index do |split_term, index|
+            if split_term.include?('Massachusetts') || split_term.include?('New Jersey') || split_term.include?('Wisconsin')
+              geo_term = term.split('--')[index..term.split('--').length-1].reverse!.join(',')
+            elsif split_term.include?('Mass') || split_term.include?(' MA')
+              geo_term = split_term
+            end
+          end
+          #Other than a '--' field
+        else
+          if term.include?('Mass') || term.include?(' MA') || term.include?('Massachusetts') || term.include?('New Jersey') || term.include?('Wisconsin')
+            geo_term = term
+          end
+        end
+
+        #Remove common junk terms
+        geo_term = geo_term.gsub('Cranberries', '').gsub('History', '').gsub('Maps', '').gsub('State Police', '').gsub('Pictorial works.', '').strip
+
+        #Strip any leading periods or commas from junk terms
+        geo_term = geo_term.gsub(/^[\.,]+/, '').strip
+
+        if geo_term.blank?
+          return return_hash
+        end
+
+        #Note: the following returns junk from Bing as if these are in WI, California, Etc:
+        #East Monponsett Lake (Halifax, Mass.)
+        #Silver Lake (Halifax, Mass.)
+        #Scarier note: Washington Park (Reading, Mass.) will always return Boston, MA in google
+        if geo_term.match(/[\(\)]+/)
+          #Attempt to fix address if something like (word)
+          if geo_term.match(/ \(+.*\)+/)
+            #Make this replacement better?
+            geo_term = geo_term.gsub(' (', ', ').gsub(')', '')
+            #Else skip this as data returned likely will be unreliable for now... FIXME when use case occurs.
+          else
+            return return_hash
+          end
+        end
+
+        term = geo_term
       end
 
       return_hash = parse_mapquest_api(term)
