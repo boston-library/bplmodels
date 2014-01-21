@@ -423,7 +423,8 @@ module Bplmodels
 
       #Sometimes with building, city, state, bing is dumb and will only return state. Example: Boston Harbor, Boston, Mass.
       #So if not a street address, pass to have google handle it for better results...
-      if term.split(',').length >= 3 && term.match(/\d/).blank? && term.downcase.match('ave').blank? && term.downcase.match('street').blank? && term.downcase.match('road').blank? && term.downcase.match('rd').blank?
+      #Example of another bad record: South Street bridge, West Bridgewater, Mass. would give a place in Holyoke
+      if term.split(',').length >= 3 && term.match(/\d/).blank? && term.downcase.match(/ave\.*,/).blank? && term.downcase.match(/avenue\.*,/).blank? && term.downcase.match(/street\.*,/).blank? && term.downcase.match(/st\.*,/).blank? && term.downcase.match(/road\.*,/).blank? && term.downcase.match(/rd\.*,/).blank?
         return return_hash
       end
 
@@ -457,6 +458,12 @@ module Bplmodels
     #Mapquest allows unlimited requests - start here?
     def self.parse_mapquest_api(term)
       return_hash = {}
+
+      #Mapquest returns bad data for: Manchester, Mass.
+      if term.include?('Manchester')
+         return return_hash
+      end
+
       Geocoder.configure(:lookup => :mapquest,:api_key => 'Fmjtd%7Cluubn1utn0%2Ca2%3Do5-90b00a',:timeout => 7)
 
       mapquest_api_result = Geocoder.search(term)
@@ -553,7 +560,7 @@ module Bplmodels
         #Parsing a subject geographic term.
         if term.include?('--')
           term.split('--').each_with_index do |split_term, index|
-            if split_term.include?('Massachusetts') || split_term.include?('New Jersey') || split_term.include?('Wisconsin')
+            if split_term.include?('Massachusetts') || split_term.include?('New Jersey') || split_term.include?('Wisconsin') || split_term.include?('New Hampshire')  || split_term.include?('New York')  || split_term.include?('Maine')
               geo_term = term.split('--')[index..term.split('--').length-1].reverse!.join(',')
             elsif split_term.include?('Mass') || split_term.include?(' MA')
               geo_term = split_term
@@ -566,15 +573,15 @@ module Bplmodels
           end
         end
 
+        if geo_term.blank?
+          return return_hash
+        end
+
         #Remove common junk terms
         geo_term = geo_term.gsub('Cranberries', '').gsub('History', '').gsub('Maps', '').gsub('State Police', '').gsub('Pictorial works.', '').strip
 
         #Strip any leading periods or commas from junk terms
         geo_term = geo_term.gsub(/^[\.,]+/, '').strip
-
-        if geo_term.blank?
-          return return_hash
-        end
 
         #Note: the following returns junk from Bing as if these are in WI, California, Etc:
         #East Monponsett Lake (Halifax, Mass.)
