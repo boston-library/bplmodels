@@ -91,18 +91,17 @@ module Bplmodels
     #label => label of the collection
     def self.mint(args)
 
+      args[:namespace_id] ||= ARK_CONFIG_GLOBAL['namespace_commonwealth_pid']
+
       #TODO: Duplication check here to prevent over-writes?
 
       response = Typhoeus::Request.post(ARK_CONFIG_GLOBAL['url'] + "/arks.json", :params => {:ark=>{:namespace_ark => ARK_CONFIG_GLOBAL['namespace_commonwealth_ark'], :namespace_id=>ARK_CONFIG_GLOBAL['namespace_commonwealth_pid'], :url_base => ARK_CONFIG_GLOBAL['ark_commonwealth_base'], :model_type => self.name, :local_original_identifier=>args[:local_id], :local_original_identifier_type=>args[:local_id_type]}})
       as_json = JSON.parse(response.body)
       object = self.new(:pid=>as_json["pid"])
 
-      title = Bplmodels::DataStreamInputFuncs.getProperTitle(args[:label])
+      title = Bplmodels::DatastreamInputFuncs.getProperTitle(args[:label])
       object.label = args[:label]
       object.descMetadata.insert_title(title[0], title[1])
-
-      object.read_groups = ["public"]
-      object.edit_groups = ["superuser", 'admin[' + @institution.pid + ']']
 
 
 

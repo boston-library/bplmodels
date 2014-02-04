@@ -651,13 +651,18 @@ module Bplmodels
 
     def insert_tgn(tgn_id)
 
+      #Duplicate TGN value?
+      if self.subject.valueURI.include?(tgn_id)
+        return false
+      end
+
       api_result = Bplmodels::DatastreamInputFuncs.get_tgn_data(tgn_id)
 
       #Get rid of less specific matches... city level information should trump state level information.
-      if api_result[:city].present? && self.subject.hierarchical_geographic.present?
+      if api_result[:hier_geo][:city].present? && self.subject.hierarchical_geographic.present?
         self.mods(0).subject.each_with_index do |ignored, subject_index|
-          if self.mods(0).subject(subject_index).authority == 'tgn'
-            if self.mods(0).subject(subject_index).hierarchical_geographic(0).city.blank? && self.mods(0).subject(subject_index).hierarchical_geographic(0).state == api_result[:state]
+          if self.mods(0).subject(subject_index).authority == ['tgn']
+            if self.mods(0).subject(subject_index).hierarchical_geographic(0).city.blank? && self.mods(0).subject(subject_index).hierarchical_geographic(0).state == [api_result[:hier_geo][:state]]
               self.mods(0).subject(subject_index, nil)
             end
           end
@@ -665,26 +670,26 @@ module Bplmodels
 
         #Exit if same city match
         self.mods(0).subject.each_with_index do |ignored, subject_index|
-          if self.mods(0).subject(subject_index).authority == 'tgn'
-            if self.mods(0).subject(subject_index).hierarchical_geographic(0).city == api_result[:city]
+          if self.mods(0).subject(subject_index).authority == ['tgn']
+            if self.mods(0).subject(subject_index).hierarchical_geographic(0).city == [api_result[:hier_geo][:city]]
               return false
             end
           end
         end
       #Exit check if trying to insert same state twice with no city
-      elsif api_result[:city].blank? && api_result[:state].present? && self.subject.hierarchical_geographic.present?
+      elsif api_result[:hier_geo][:city].blank? && api_result[:hier_geo][:state].present? && self.subject.hierarchical_geographic.present?
         self.mods(0).subject.each_with_index do |ignored, subject_index|
-          if self.mods(0).subject(subject_index).authority == 'tgn'
-            if self.mods(0).subject(subject_index).hierarchical_geographic(0).state == api_result[:state]
+          if self.mods(0).subject(subject_index).authority == ['tgn']
+            if self.mods(0).subject(subject_index).hierarchical_geographic(0).state == [api_result[:hier_geo][:state]]
               return false
             end
           end
         end
       #Finally exit if inserting the same country...
-      elsif api_result[:city].blank? && api_result[:state].blank? && api_result[:country].present? && self.subject.hierarchical_geographic.present?
+      elsif api_result[:hier_geo][:city].blank? && api_result[:hier_geo][:state].blank? && api_result[:hier_geo][:country].present? && self.subject.hierarchical_geographic.present?
         self.mods(0).subject.each_with_index do |ignored, subject_index|
-          if self.mods(0).subject(subject_index).authority == 'tgn'
-            if self.mods(0).subject(subject_index).hierarchical_geographic(0).country == api_result[:country]
+          if self.mods(0).subject(subject_index).authority == ['tgn']
+            if self.mods(0).subject(subject_index).hierarchical_geographic(0).country == [api_result[:hier_geo][:country]]
               return false
             end
           end
@@ -792,33 +797,92 @@ module Bplmodels
 
       #date_index =  self.date.length
       date_index = 0
+      dup_found = false
+
+      #Prevent duplicate entries... Using a flag as keep the potential note?
+      (self.mods(0).date(date_index).dates_created.length-1).times do |index|
+        if converted.has_key?(:single_date)
+          if self.mods(0).date(date_index).dates_created(index).point.blank? && self.mods(0).date(date_index).dates_created(index).first == converted[:single_date]
+            dup_found = true
+          end
+        elsif converted.has_key?(:date_range)
+          if self.mods(0).date(date_index).dates_created(index).point == 'start' && self.mods(0).date(date_index).dates_created(index).first == converted[:date_range][:start]
+            if self.mods(0).date(date_index).dates_created(index+1).point == 'end' && self.mods(0).date(date_index).dates_created(index+1).first == converted[:date_range][:end]
+              dup_found = true
+            end
+
+          end
+        end
+      end
+
+      if !dup_found
+        if converted.has_key?(:single_date) && !self.date.dates_created.include?(converted[:single_date])
+          date_created_index = self.date(date_index).dates_created.length
+          self.date(date_index).dates_created(date_created_index, converted[:single_date])
+          self.date(date_index).dates_created(date_created_index).encoding = 'w3cdtf'
+          if date_created_index == 0
+            self.date(date_index).dates_created(date_created_index).key_date = 'yes'
+          end
+
+          if converted.has_key?(:date_qualifier)
+            self.date(date_index).dates_created(date_created_index).qualifier =  converted[:date_qualifier]
+          end
+        elsif converted.has_key?(:date_range)
+          date_created_index = self.date(date_index).dates_created.length
+          self.date(date_index).dates_created(date_created_index, converted[:date_range][:start])
+          self.date(date_index).dates_created(date_created_index).encoding = 'w3cdtf'
+          if date_created_index == 0
+            self.date(date_index).dates_created(date_created_index).key_date = 'yes'
+          end
+          self.date(date_index).dates_created(date_created_index).point = 'start'
+          self.date(date_index).dates_created(date_created_index).qualifier = converted[:date_qualifier]
+
+          date_created_index = self.date(date_index).dates_created.length
+          self.date(date_index).dates_created(date_created_index, converted[:date_range][:end])
+          self.date(date_index).dates_created(date_created_index).encoding = 'w3cdtf'
+          self.date(date_index).dates_created(date_created_index).point = 'end'
+          self.date(date_index).dates_created(date_created_index).qualifier = converted[:date_qualifier]
+        end
+      end
+
+
+
+      self.insert_note(converted[:date_note],"date") unless !converted.has_key?(:date_note)
+
+    end
+
+    def insert_oai_date_issued(date)
+      converted = Bplmodels::DatastreamInputFuncs.convert_to_mods_date(date)
+
+      #date_index =  self.date.length
+      date_index = 0
 
       if converted.has_key?(:single_date)
-        date_created_index = self.date(date_index).dates_created.length
-        self.date(date_index).dates_created(date_created_index, converted[:single_date])
-        self.date(date_index).dates_created(date_created_index).encoding = 'w3cdtf'
+        date_created_index = self.date(date_index).dates_issued.length
+        self.date(date_index).dates_issued(date_created_index, converted[:single_date])
+        self.date(date_index).dates_issued(date_created_index).encoding = 'w3cdtf'
         if date_created_index == 0
-          self.date(date_index).dates_created(date_created_index).key_date = 'yes'
+          self.date(date_index).dates_issued(date_created_index).key_date = 'yes'
         end
 
         if converted.has_key?(:date_qualifier)
-          self.date(date_index).dates_created(date_created_index).qualifier =  converted[:date_qualifier]
+          self.date(date_index).dates_issued(date_created_index).qualifier =  converted[:date_qualifier]
         end
       elsif converted.has_key?(:date_range)
-        date_created_index = self.date(date_index).dates_created.length
-        self.date(date_index).dates_created(date_created_index, converted[:date_range][:start])
-        self.date(date_index).dates_created(date_created_index).encoding = 'w3cdtf'
+        date_created_index = self.date(date_index).dates_issued.length
+        self.date(date_index).dates_issued(date_created_index, converted[:date_range][:start])
+        self.date(date_index).dates_issued(date_created_index).encoding = 'w3cdtf'
         if date_created_index == 0
-          self.date(date_index).dates_created(date_created_index).key_date = 'yes'
+          self.date(date_index).dates_issued(date_created_index).key_date = 'yes'
         end
-        self.date(date_index).dates_created(date_created_index).point = 'start'
-        self.date(date_index).dates_created(date_created_index).qualifier = converted[:date_qualifier]
+        self.date(date_index).dates_issued(date_created_index).point = 'start'
+        self.date(date_index).dates_issued(date_created_index).qualifier = converted[:date_qualifier]
 
-        date_created_index = self.date(date_index).dates_created.length
-        self.date(date_index).dates_created(date_created_index, converted[:date_range][:end])
-        self.date(date_index).dates_created(date_created_index).encoding = 'w3cdtf'
-        self.date(date_index).dates_created(date_created_index).point = 'end'
-        self.date(date_index).dates_created(date_created_index).qualifier = converted[:date_qualifier]
+        date_created_index = self.date(date_index).dates_issued.length
+        self.date(date_index).dates_issued(date_created_index, converted[:date_range][:end])
+        self.date(date_index).dates_issued(date_created_index).encoding = 'w3cdtf'
+        self.date(date_index).dates_issued(date_created_index).point = 'end'
+        self.date(date_index).dates_issued(date_created_index).qualifier = converted[:date_qualifier]
       end
 
       self.insert_note(converted[:date_note],"date") unless !converted.has_key?(:date_note)

@@ -483,7 +483,7 @@ module Bplmodels
 
         if subject_date_range_start.length > 0
           subject_date_range_start.each_with_index do |date_start,index|
-            if subject_date_range_end
+            if subject_date_range_end.present?
               doc['subject_temporal_facet_ssim'].append(date_start + '-' + subject_date_range_end[index])
             else
               doc['subject_temporal_facet_ssim'].append(date_start)

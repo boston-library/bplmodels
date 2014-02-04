@@ -19,15 +19,37 @@ module Bplmodels
     GENRE_LOOKUP['Periodicals'] = {:id=>'tgm007641', :authority=>'gmgpc'}
     GENRE_LOOKUP['Books'] = {:id=>'tgm001221', :authority=>'gmgpc'}
 
+    COUNTRY_TGN_LOOKUP = {}
+    COUNTRY_TGN_LOOKUP['United States'] = {:tgn_id=>7012149, :tgn_country_name=>'United States'}
+    COUNTRY_TGN_LOOKUP['Canada'] = {:tgn_id=>7005685, :tgn_country_name=>'Canada'}
+    COUNTRY_TGN_LOOKUP['France'] = {:tgn_id=>1000070, :tgn_country_name=>'France'}
+    COUNTRY_TGN_LOOKUP['Vietnam'] = {:tgn_id=>1000145, :tgn_country_name=>'Viet Nam'}
+    COUNTRY_TGN_LOOKUP['South Africa'] = {:tgn_id=>1000193, :tgn_country_name=>'South Africa'}
+    COUNTRY_TGN_LOOKUP['Philippines'] = {:tgn_id=>1000135, :tgn_country_name=>'Pilipinas'}
+    COUNTRY_TGN_LOOKUP['China'] = {:tgn_id=>1000111, :tgn_country_name=>'Zhongguo'}
+    COUNTRY_TGN_LOOKUP['Japan'] = {:tgn_id=>1000120, :tgn_country_name=>'Nihon'}
 
+
+
+
+
+=begin
     COUNTRY_TGN_LOOKUP = {
         'US' => 7012149,
         'CA' => 7005685,
         'FR' => 1000070,
+        'VN' => 1000145,
+        'ZA' => 1000193,
+        'PH' => 1000135,
         'United States' => 7012149,
         'Canada' => 7005685,
         'France' => 1000070,
+        'Vietnam' => 1000145,
+        'Viet Nam' => 1000145,
+        'South Africa' => 1000193,
+        'Philippines' => 1000135
     }
+=end
 
     STATE_ABBR = {
         'AL' => 'Alabama',

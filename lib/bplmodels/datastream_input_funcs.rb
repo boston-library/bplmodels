@@ -424,7 +424,7 @@ module Bplmodels
       #Sometimes with building, city, state, bing is dumb and will only return state. Example: Boston Harbor, Boston, Mass.
       #So if not a street address, pass to have google handle it for better results...
       #Example of another bad record: South Street bridge, West Bridgewater, Mass. would give a place in Holyoke
-      if term.split(',').length >= 3 && term.match(/\d/).blank? && term.downcase.match(/ave\.*,/).blank? && term.downcase.match(/avenue\.*,/).blank? && term.downcase.match(/street\.*,/).blank? && term.downcase.match(/st\.*,/).blank? && term.downcase.match(/road\.*,/).blank? && term.downcase.match(/rd\.*,/).blank?
+      if term.split(' ').length >= 3 && term.match(/\d/).blank? && term.downcase.match(/ave\.*,/).blank? && term.downcase.match(/avenue\.*,/).blank? && term.downcase.match(/street\.*,/).blank? && term.downcase.match(/st\.*,/).blank? && term.downcase.match(/road\.*,/).blank? && term.downcase.match(/rd\.*,/).blank?
         return return_hash
       end
 
@@ -440,10 +440,9 @@ module Bplmodels
           return_hash[:coordinates] = bing_api_result.first.data["geocodePoints"].first["coordinates"].first.to_s + ',' + bing_api_result.first.data["geocodePoints"].first["coordinates"].last.to_s
         end
 
-        return_hash[:country_code] = Bplmodels::Constants::COUNTRY_TGN_LOOKUP[bing_api_result.first.data["address"]["countryRegion"]]
         return_hash[:country_part] = bing_api_result.first.data["address"]["countryRegion"]
 
-        if return_hash[:country_code] == 7012149
+        if return_hash[:country_part] == 'United States'
           return_hash[:state_part] = Bplmodels::Constants::STATE_ABBR[bing_api_result.first.data["address"]["adminDistrict"]]
         else
           return_hash[:state_part] = bing_api_result.first.data["address"]["adminDistrict"]
@@ -464,6 +463,12 @@ module Bplmodels
          return return_hash
       end
 
+      #Messed up with just neighborhoods. Example: Hyde Park (Boston, Mass.) or Hyde Park (Boston, Mass.)
+      #So if not a street address, pass to have google handle it for better results...
+      if term.split(' ').length >= 3 && term.match(/\d/).blank? && term.downcase.match(/ave\.*,/).blank? && term.downcase.match(/avenue\.*,/).blank? && term.downcase.match(/street\.*,/).blank? && term.downcase.match(/st\.*,/).blank? && term.downcase.match(/road\.*,/).blank? && term.downcase.match(/rd\.*,/).blank?
+        return return_hash
+      end
+
       Geocoder.configure(:lookup => :mapquest,:api_key => 'Fmjtd%7Cluubn1utn0%2Ca2%3Do5-90b00a',:timeout => 7)
 
       mapquest_api_result = Geocoder.search(term)
@@ -477,13 +482,15 @@ module Bplmodels
           return_hash[:coordinates] = mapquest_api_result.first.data['latLng']['lat'].to_s + ',' + mapquest_api_result.first.data['latLng']['lng'].to_s
         end
 
-        return_hash[:country_code] = Bplmodels::Constants::COUNTRY_TGN_LOOKUP[mapquest_api_result.first.data["adminArea1"]]
         return_hash[:country_part] = Country.new(mapquest_api_result.first.data["adminArea1"]).name
 
-        if return_hash[:country_code] == 7012149
+        if return_hash[:country_part] == 'United States'
           return_hash[:state_part] = Bplmodels::Constants::STATE_ABBR[mapquest_api_result.first.data["adminArea3"]]
+          if mapquest_api_result.first.data["adminArea4"] == 'District of Columbia'
+            return_hash[:state_part] = mapquest_api_result.first.data["adminArea4"]
+          end
         else
-          return_hash[:state_part] = mapquest_api_result.first.data["adminArea3"]
+          return_hash[:state_part] = mapquest_api_result.first.data["adminArea3"].gsub(' province', '')
         end
 
         return_hash[:city_part] = mapquest_api_result.first.data["adminArea5"]
@@ -517,7 +524,6 @@ module Bplmodels
             return_hash[:keep_original_string] = true
             return_hash[:coordinates] = google_api_result.first.data['geometry']['location']['lat'].to_s + ',' + google_api_result.first.data['geometry']['location']['lng'].to_s
           elsif (result['types'] & ['country']).present?
-            return_hash[:country_code] = Bplmodels::Constants::COUNTRY_TGN_LOOKUP[result['long_name']]
             return_hash[:country_part] = result['long_name']
           elsif (result['types'] & ['administrative_area_level_1']).present?
             return_hash[:state_part] = result['long_name'].to_ascii
@@ -533,6 +539,80 @@ module Bplmodels
       return return_hash
     end
 
+    def self.parse_geographic_term(term)
+      geo_term = nil
+
+      #Weird incorrect dash seperator
+      term = term.gsub('–', '--')
+
+      #Likely too long to be an address... some fields have junk with an address string...
+      if term.length > 125
+        return nil
+      end
+
+      #TODO: Use Countries gem of https://github.com/hexorx/countries
+      #test = Country.new('US')
+      #test.states
+
+      #Parsing a subject geographic term.
+      if term.include?('--')
+        term.split('--').each_with_index do |split_term, index|
+          if split_term.include?('Massachusetts') || split_term.include?('New Jersey') || split_term.include?('Wisconsin') || split_term.include?('New Hampshire')  || split_term.include?('New York')  || split_term.include?('Maine')
+            geo_term = term.split('--')[index..term.split('--').length-1].reverse!.join(',')
+          elsif split_term.include?('Mass') || split_term.include?(' MA')
+            geo_term = split_term
+          end
+        end
+        #Other than a '--' field
+      #Experimental... example: Palmer (Mass) - history or Stores (retail trade) - Palmer, Mass
+      elsif term.include?(' - ')
+        term.split(' - ').each do |split_term|
+          if split_term.include?('Mass') || split_term.include?(' MA') || split_term.include?('Massachusetts') || split_term.include?('New Jersey') || split_term.include?('Wisconsin') || split_term.include?('New Hampshire')  || split_term.include?('New York')  || split_term.include?('Maine')
+            geo_term = split_term
+          end
+
+        end
+      else
+        if term.include?('Mass') || term.include?(' MA') || term.include?('Massachusetts') || term.include?('New Jersey') || term.include?('Wisconsin') || term.include?('New Hampshire')  || term.include?('New York')  || term.include?('Maine')
+          geo_term = term
+        end
+      end
+
+      #if geo_term.blank?
+        #return nil
+      #end
+
+      return geo_term
+    end
+
+    def self.standardize_geographic_term(geo_term)
+      #Remove common junk terms
+      geo_term = geo_term.gsub('Cranberries', '').gsub('History', '').gsub('Maps', '').gsub('State Police', '').gsub('Pictorial works.', '').gsub(/[nN]ation/, '').gsub('Asia', '').gsub('(Republic)', '').strip
+
+      #Strip any leading periods or commas from junk terms
+      geo_term = geo_term.gsub(/^[\.,]+/, '').strip
+
+      #Replace any semicolons with commas... possible strip them?
+      geo_term = geo_term.gsub(';', ',')
+
+      #Note: the following returns junk from Bing as if these are in WI, California, Etc:
+      #East Monponsett Lake (Halifax, Mass.)
+      #Silver Lake (Halifax, Mass.)
+      #Scarier note: Washington Park (Reading, Mass.) will always return Boston, MA in google
+      if geo_term.match(/[\(\)]+/)
+        #Attempt to fix address if something like (word)
+        if geo_term.match(/ \(+.*\)+/)
+          #Make this replacement better?
+          geo_term = geo_term.gsub(' (', ', ').gsub(')', '')
+          #Else skip this as data returned likely will be unreliable for now... FIXME when use case occurs.
+        else
+          return nil
+        end
+      end
+
+      return geo_term
+    end
+
 
 
     def self.tgn_id_from_term(term,parse_term=false)
@@ -542,63 +622,12 @@ module Bplmodels
       retry_count = 0
 
       #If not a good address source, parsing is done here...
-      if parse_term
-        geo_term = nil
+      term = parse_geographic_term(term) unless !parse_term
 
-        #Weird incorrect dash seperator
-        term = term.gsub('–', '--')
+      term = standardize_geographic_term(term) unless term.blank?
 
-        #Likely too long to be an address... some fields have junk with an address string...
-        if term.length > 125
-          return return_hash
-        end
-
-        #TODO: Use Countries gem of https://github.com/hexorx/countries
-        #test = Country.new('US')
-        #test.states
-
-        #Parsing a subject geographic term.
-        if term.include?('--')
-          term.split('--').each_with_index do |split_term, index|
-            if split_term.include?('Massachusetts') || split_term.include?('New Jersey') || split_term.include?('Wisconsin') || split_term.include?('New Hampshire')  || split_term.include?('New York')  || split_term.include?('Maine')
-              geo_term = term.split('--')[index..term.split('--').length-1].reverse!.join(',')
-            elsif split_term.include?('Mass') || split_term.include?(' MA')
-              geo_term = split_term
-            end
-          end
-          #Other than a '--' field
-        else
-          if term.include?('Mass') || term.include?(' MA') || term.include?('Massachusetts') || term.include?('New Jersey') || term.include?('Wisconsin')
-            geo_term = term
-          end
-        end
-
-        if geo_term.blank?
-          return return_hash
-        end
-
-        #Remove common junk terms
-        geo_term = geo_term.gsub('Cranberries', '').gsub('History', '').gsub('Maps', '').gsub('State Police', '').gsub('Pictorial works.', '').strip
-
-        #Strip any leading periods or commas from junk terms
-        geo_term = geo_term.gsub(/^[\.,]+/, '').strip
-
-        #Note: the following returns junk from Bing as if these are in WI, California, Etc:
-        #East Monponsett Lake (Halifax, Mass.)
-        #Silver Lake (Halifax, Mass.)
-        #Scarier note: Washington Park (Reading, Mass.) will always return Boston, MA in google
-        if geo_term.match(/[\(\)]+/)
-          #Attempt to fix address if something like (word)
-          if geo_term.match(/ \(+.*\)+/)
-            #Make this replacement better?
-            geo_term = geo_term.gsub(' (', ', ').gsub(')', '')
-            #Else skip this as data returned likely will be unreliable for now... FIXME when use case occurs.
-          else
-            return return_hash
-          end
-        end
-
-        term = geo_term
+      if term.blank?
+        return return_hash
       end
 
       return_hash = parse_mapquest_api(term)
@@ -616,8 +645,16 @@ module Bplmodels
       end
 
       state_part = return_hash[:state_part]
-      country_code = return_hash[:country_code]
-      country_part = return_hash[:country_part]
+
+
+      country_code = Bplmodels::Constants::COUNTRY_TGN_LOOKUP[return_hash[:country_part]][:tgn_id] unless Bplmodels::Constants::COUNTRY_TGN_LOOKUP[return_hash[:country_part]].blank?
+      country_code ||= ''
+
+
+      country_part = Bplmodels::Constants::COUNTRY_TGN_LOOKUP[return_hash[:country_part]][:tgn_country_name] unless Bplmodels::Constants::COUNTRY_TGN_LOOKUP[return_hash[:country_part]].blank?
+      country_part ||= return_hash[:country_part]
+      country_part ||= ''
+
       city_part = return_hash[:city_part]
 
       #Keep original string if three parts at least or if there is a number in the term.
@@ -632,22 +669,22 @@ module Bplmodels
         # Limit to nations
         place_type = 81010
         top_match_term = ''
-        match_term = term.downcase
+        match_term = country_part.to_ascii.downcase || term.to_ascii.downcase
       elsif state_part.present? && city_part.blank? && country_code == 7012149
         #Limit to states
         place_type = 81175
-        top_match_term = country_part.downcase
-        match_term = state_part.downcase
+        top_match_term = country_part.to_ascii.downcase
+        match_term = state_part.to_ascii.downcase
       elsif state_part.present? && city_part.blank?
         #Limit to regions
         place_type = 81165
-        top_match_term = country_part.downcase
-        match_term = state_part.downcase
+        top_match_term = country_part.to_ascii.downcase
+        match_term = state_part.to_ascii.downcase
       elsif state_part.present? && city_part.present?
         #Limited to only inhabited places at the moment...
         place_type = 83002
-        top_match_term = state_part.downcase
-        match_term = city_part.downcase
+        top_match_term = state_part.to_ascii.downcase
+        match_term = city_part.to_ascii.downcase
       else
         return nil
       end
@@ -675,14 +712,14 @@ module Bplmodels
         if parsed_xml.Vocabulary.Subject.first.blank?
           subject = parsed_xml.Vocabulary.Subject
 
-          current_term = subject.Preferred_Term.text.gsub(/\(.*\)/, '').downcase.strip
+          current_term = subject.Preferred_Term.text.gsub(/\(.*\)/, '').to_ascii.downcase.strip
 
           if current_term == match_term && subject.Preferred_Parent.text.to_ascii.downcase.include?("#{top_match_term}")
             return_hash[:tgn_id] = subject.Subject_ID.text
           end
         else
           parsed_xml.Vocabulary.Subject.each do |subject|
-            current_term = subject.Preferred_Term.text.gsub(/\(.*\)/, '').downcase.strip
+            current_term = subject.Preferred_Term.text.gsub(/\(.*\)/, '').to_ascii.downcase.strip
 
             if current_term == match_term && subject.Preferred_Parent.text.to_ascii.downcase.include?("#{top_match_term}")
               return_hash[:tgn_id] = subject.Subject_ID.text
@@ -710,6 +747,15 @@ module Bplmodels
 
       #Fix when '- -' occurs
       value = value.gsub(/-\s-/,'--')
+
+      #Fix for "em" dashes - two types?
+      value = value.gsub('—','--')
+
+      #Fix for "em" dashes - two types?
+      value = value.gsub('–','--')
+
+      #Fix for ' - ' combinations
+      value = value.gsub(' - ','--')
 
       #Remove white space after and before  '--'
       value = value.gsub(/\s+--/,'--')
