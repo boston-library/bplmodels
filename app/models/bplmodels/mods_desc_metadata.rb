@@ -390,7 +390,13 @@ module Bplmodels
         t.name(:path=>'name') {
           t.name_part(:path=>"namePart[not(@type)]")
           t.date(:path=>"namePart", :attributes=>{:type=>"date"})
+          t.name_part_actual(:path=>"namePart") {
+            t.type(:path=>{:attribute=>"type"})
+          }
           t.type(:path=>{:attribute=>"type"})
+          t.authority(:path=>{:attribute=>"authority"})
+          t.authority_uri(:path=>{:attribute=>"authorityURI"})
+          t.value_uri(:path=>{:attribute=>"valueURI"})
         }
         t.hierarchical_geographic(:path=>"hierarchicalGeographic") {
           t.continent
@@ -1243,123 +1249,33 @@ module Bplmodels
 
     end
 
-    #FIXME: doesn't support multiple!
-    define_template :subject_name do |xml, name, type, authority, valueURI, date|
-      if authority != nil && authority.length > 0
-        if date != nil && date.length > 1
-          if authority == 'naf' && valueURI != nil && valueURI.length > 0
-            xml.subject {
-              xml.name(:type=>type, :authority=>authority, :authorityURI=>'http://id.loc.gov/authorities/names', :valueURI=>valueURI) {
-                xml.namePart {
-                  xml.text name
-                }
-                xml.namePart(:type=>"date") {
-                  xml.text date
-                }
-              }
-            }
-          elsif authority == 'naf'
-            xml.subject {
-              xml.name(:type=>type, :authority=>authority, :authorityURI=>'http://id.loc.gov/authorities/names') {
-                xml.namePart {
-                  xml.text name
-                }
-                xml.namePart(:type=>"date") {
-                  xml.text date
-                }
-              }
-            }
-          elsif authority == 'local'
-            xml.subject {
-              xml.name(:type=>type, :authority=>authority) {
-                xml.namePart {
-                  xml.text name
-                }
-                xml.namePart(:type=>"date") {
-                  xml.text date
-                }
-              }
-            }
-          else
-            xml.subject {
-              xml.name(:type=>type, :authority=>authority, :valueURI=>valueURI) {
-                xml.namePart {
-                  xml.text name
-                }
-                xml.namePart(:type=>"date") {
-                  xml.text date
-                }
-              }
-            }
-          end
+    def insert_abstract(abstract=nil)
+      abstract_index = self.mods(0).abstract.count
 
-        #No date
-        else
-          if authority == 'naf'  && valueURI != nil && valueURI.length > 0
-            xml.subject {
-              xml.name(:type=>type, :authority=>authority, :authorityURI=>'http://id.loc.gov/authorities/names', :valueURI=>valueURI) {
-                xml.namePart {
-                  xml.text name
-                }
-              }
-            }
-          elsif authority == 'naf'
-            xml.subject {
-              xml.name(:type=>type, :authority=>authority, :authorityURI=>'http://id.loc.gov/authorities/names') {
-                xml.namePart {
-                  xml.text name
-                }
-              }
-            }
-
-          elsif authority == 'local'
-            xml.subject {
-              xml.name(:type=>type, :authority=>authority) {
-                xml.namePart {
-                  xml.text name
-                }
-              }
-            }
-          else
-            xml.subject {
-              xml.name(:type=>type, :authority=>authority, :valueURI=>valueURI) {
-                xml.namePart {
-                  xml.text name
-                }
-              }
-            }
-          end
-
-        end
-      else
-        if date != nil && date.length > 1
-          xml.subject {
-            xml.name(:type=>type) {
-              xml.namePart {
-                xml.text name
-              }
-              xml.namePart(:type=>"date") {
-                xml.text date
-              }
-            }
-          }
-
-        else
-          xml.subject {
-            xml.name(:type=>type) {
-              xml.namePart {
-                xml.text name
-              }
-            }
-          }
-        end
-      end
-
-
+      self.mods(0).abstract(abstract_index, abstract) unless abstract.blank?
     end
 
     def insert_subject_name(name=nil, type=nil, authority=nil, valueURI=nil, date=nil)
-      add_child_node(ng_xml.root, :subject_name, name, type, authority, valueURI, date)
+      subject_index = self.mods(0).subject.count
+
+      if name.is_a?String
+        self.mods(0).subject(subject_index).name(0).name_part_actual(0, name)
+        #Date
+        self.mods(0).subject(subject_index).name(0).name_part_actual(1, date) unless date.blank?
+        self.mods(0).subject(subject_index).name(0).name_part_actual(1).type = 'date' unless date.blank?
+
+      elsif name.is_a?Array
+        name.each_with_index do |name_part, index|
+          self.mods(0).subject(subject_index).name(0).name_part_actual(index,  Bplmodels::DatastreamInputFuncs.utf8Encode(name_part))
+
+        end
+
+      end
+
+      self.mods(0).subject(subject_index).name(0).authority = authority unless authority.blank?
+      self.mods(0).subject(subject_index).name(0).authority_uri = 'http://id.loc.gov/authorities/names' if authority == 'naf'
+      self.mods(0).subject(subject_index).name(0).value_uri = valueURI unless valueURI.blank?
+      self.mods(0).subject(subject_index).name(0).type = type unless type.blank?
     end
 
     define_template :subject_geographic do |xml, geographic, authority|

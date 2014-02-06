@@ -29,14 +29,15 @@ module Bplmodels
 # returns corporate name data as an array which can be used to populate <mods:namePart> subparts
 # (corporate name subparts are not differentiated by any attributes in the xml)
 # (see http://id.loc.gov/authorities/names/n82139319.madsxml.xml for example)
+# Note: (?!\)) part is to check for examples like: 'Boston (Mass.) Police Dept.'
 
     def self.corpNamePartSplitter(inputstring)
       splitNamePartsArray = Array.new
-      unless inputstring =~ /[\S]{5}\./
+      unless inputstring =~ /[\S]{5}\.(?!\))/
         splitNamePartsArray << inputstring
       else
-        while inputstring =~ /[\S]{5}\./
-          snip = /[\S]{5}\./.match(inputstring).post_match
+        while inputstring =~ /[\S]{5}\.(?!\))/
+          snip = /[\S]{5}\.(?!\))/.match(inputstring).post_match
           subpart = inputstring.gsub(snip,"")
           splitNamePartsArray << subpart.gsub(/\.\z/,"").strip
           inputstring = snip
