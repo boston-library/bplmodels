@@ -348,7 +348,7 @@ module Bplmodels
               hier_geo[:region] = tgn_term
             when '81175/state', '81117/department', '82133/governorate'
               hier_geo[:state] = tgn_term
-            when '81181/territory', '81021/dependent state', '81186/union territory'
+            when '81181/territory', '81021/dependent state', '81186/union territory', '81125/national district'
               hier_geo[:territory] = tgn_term
             when '81115/county'
               hier_geo[:county] = tgn_term
@@ -379,7 +379,7 @@ module Bplmodels
               hier_geo[:region] = parent
             elsif (parent.include? '(state)') || (parent.include? '(department)') || (parent.include? '(governorate)')
               hier_geo[:state] = parent
-            elsif (parent.include? '(territory)') || (parent.include? '(dependent state)') || (parent.include? '(union territory)')
+            elsif (parent.include? '(territory)') || (parent.include? '(dependent state)') || (parent.include? '(union territory)') || (parent.include? '(national district)')
               hier_geo[:territory] = parent
             elsif parent.include? '(county)'
               hier_geo[:county] = parent
