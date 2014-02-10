@@ -323,10 +323,13 @@ module Bplmodels
           end
           doc['name_personal_role_tsim'].append(self.descMetadata.mods(0).name(index).role.text[0])
         elsif self.descMetadata.mods(0).name(index).type[0] == "corporate"
+          corporate_name = self.descMetadata.mods(0).name(index).namePart.join(". ").gsub(/\.\./,'.')
+          # TODO -- do we need the conditional below?
+          # don't think corp names have dates
           if self.descMetadata.mods(0).name(index).date.length > 0
-            doc['name_corporate_tsim'].append(self.descMetadata.mods(0).name(index).namePart[0] + ", " + self.descMetadata.mods(0).name(index).date[0])
+            doc['name_corporate_tsim'].append(corporate_name + ", " + self.descMetadata.mods(0).name(index).date[0])
           else
-            doc['name_corporate_tsim'].append(self.descMetadata.mods(0).name(index).namePart[0])
+            doc['name_corporate_tsim'].append(corporate_name)
           end
           doc['name_corporate_role_tsim'].append(self.descMetadata.mods(0).name(index).role.text[0])
         else
@@ -426,10 +429,11 @@ module Bplmodels
           doc['subject_facet_ssim'].append(subject_name_personal)
         end
         if self.descMetadata.subject(index).corporate_name.length > 0
+          subject_name_corporate = self.descMetadata.subject(index).corporate_name.name_part.join('. ').gsub(/\.\./,'.')
+          # TODO -- do we need the conditional below?
+          # don't think corp names have dates
           if self.descMetadata.subject(index).corporate_name.date.length > 0
-            subject_name_corporate = self.descMetadata.subject(index).corporate_name.name_part[0] + ", " + self.descMetadata.subject(index).corporate_name.date[0]
-          else
-            subject_name_corporate = self.descMetadata.subject(index).corporate_name.name_part[0]
+            subject_name_corporate = subject_name_corporate + ", " + self.descMetadata.subject(index).corporate_name.date[0]
           end
           doc['subject_name_corporate_tsim'].append(subject_name_corporate)
           doc['subject_facet_ssim'].append(subject_name_corporate)
