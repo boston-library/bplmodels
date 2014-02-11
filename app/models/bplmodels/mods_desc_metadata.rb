@@ -656,6 +656,7 @@ module Bplmodels
     end
 
     def insert_tgn(tgn_id)
+      puts 'TGN ID is: ' + tgn_id
 
       #Duplicate TGN value?
       if self.subject.valueURI.include?(tgn_id)
@@ -663,6 +664,8 @@ module Bplmodels
       end
 
       api_result = Bplmodels::DatastreamInputFuncs.get_tgn_data(tgn_id)
+
+      puts 'API Result is: ' + api_result.to_s
 
       #Get rid of less specific matches... city level information should trump state level information.
       if api_result[:hier_geo][:city].present? && self.subject.hierarchical_geographic.present?
