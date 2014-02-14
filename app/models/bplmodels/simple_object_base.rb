@@ -247,6 +247,7 @@ module Bplmodels
       doc['genre_specific_ssim'] = self.descMetadata.genre_specific
 
       doc['identifier_local_other_tsim'] = self.descMetadata.local_other
+      doc['identifier_local_call_tsim'] = self.descMetadata.local_call
 
       doc['identifier_ark_ssi'] = ''
 
@@ -286,22 +287,46 @@ module Bplmodels
       doc['lang_term_ssim'] = self.descMetadata.language.language_term
       #doc['lang_val_uri_ssim'] = self.descMetadata.language.language_term.lang_val_uri
 
-      if self.descMetadata.related_item.length > 0
-        (0..self.descMetadata.related_item.length-1).each do |index|
-          related_item_type = self.descMetadata.related_item.type[index]
+      # relatedItem, except subseries, subsubseries, etc.
+      if self.descMetadata.mods(0).related_item.length > 0
+        (0..self.descMetadata.mods(0).related_item.length-1).each do |index|
+          related_item_type = self.descMetadata.mods(0).related_item(index).type[0]
           if related_item_type == 'isReferencedBy'
             doc['related_item_' + related_item_type.downcase + '_ssm'] ||= []
-            doc['related_item_' + related_item_type.downcase + '_ssm'].append(self.descMetadata.related_item(index).href[0])
+            doc['related_item_' + related_item_type.downcase + '_ssm'].append(self.descMetadata.mods(0).related_item(index).href[0])
           else
             doc['related_item_' + related_item_type + '_tsim'] ||= []
             doc['related_item_' + related_item_type + '_ssim'] ||= []
-            related_title_prefix = self.descMetadata.related_item.title_info.nonSort[index] ? self.descMetadata.related_item.title_info.nonSort[index] + ' ' : ''
-            doc['related_item_' + related_item_type + '_tsim'].append(related_title_prefix + self.descMetadata.related_item.title_info.title[index])
-            doc['related_item_' + related_item_type + '_ssim'].append(related_title_prefix + self.descMetadata.related_item.title_info.title[index])
+            related_title_prefix = self.descMetadata.mods(0).related_item(index).title_info.nonSort[0] ? self.descMetadata.mods(0).related_item(index).title_info.nonSort[0] + ' ' : ''
+            doc['related_item_' + related_item_type + '_tsim'].append(related_title_prefix + self.descMetadata.mods(0).related_item(index).title_info.title[0])
+            doc['related_item_' + related_item_type + '_ssim'].append(related_title_prefix + self.descMetadata.mods(0).related_item(index).title_info.title[0])
           end
         end
       end
 
+      # subseries
+      if self.descMetadata.related_item.subseries
+        doc['related_item_subseries_tsim'] ||= []
+        doc['related_item_subseries_ssim'] ||= []
+        (0..self.descMetadata.mods(0).related_item.subseries.length-1).each do |index|
+          subseries_prefix = self.descMetadata.mods(0).related_item.subseries(index).title_info.nonSort[0] ? self.descMetadata.mods(0).related_item.subseries(index).title_info.nonSort[0] + ' ' : ''
+          subseries_value = subseries_prefix + self.descMetadata.mods(0).related_item.subseries(index).title_info.title[0]
+          doc['related_item_subseries_tsim'].append(subseries_value)
+          doc['related_item_subseries_ssim'].append(subseries_value)
+        end
+      end
+
+      # subsubseries
+      if self.descMetadata.related_item.subseries.subsubseries
+        doc['related_item_subsubseries_tsim'] ||= []
+        doc['related_item_subsubseries_ssim'] ||= []
+        (0..self.descMetadata.mods(0).related_item.subseries.subsubseries.length-1).each do |index|
+          subsubseries_prefix = self.descMetadata.mods(0).related_item.subseries.subsubseries(index).title_info.nonSort[0] ? self.descMetadata.mods(0).related_item.subseries.subsubseries(index).title_info.nonSort[0] + ' ' : ''
+          subsubseries_value = subsubseries_prefix + self.descMetadata.mods(0).related_item.subseries.subsubseries(index).title_info.title[0]
+          doc['related_item_subsubseries_tsim'].append(subsubseries_value)
+          doc['related_item_subsubseries_ssim'].append(subsubseries_value)
+        end
+      end
 
       #doc['titleInfo_primary_ssim'] = self.descMetadata.title_info(0).main_title.to_s
       #doc['name_personal_ssim'] = self.descMetadata.name(0).to_s

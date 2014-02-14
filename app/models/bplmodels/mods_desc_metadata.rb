@@ -345,6 +345,7 @@ module Bplmodels
       t.local_other :path => 'identifier', :attributes => { :type => "local-other" }
 
       t.local_accession :path => 'identifier', :attributes => { :type => "local-accession" }
+      t.local_call :path => 'identifier', :attributes => { :type => "local-call" }
       t.identifier_uri :path => 'identifier', :attributes => { :type => "uri" }
 
       t.physical_description(:path=>"physicalDescription") {
@@ -435,7 +436,26 @@ module Bplmodels
         t.location(:path=>'location') {
           t.url(:path=>'url')
         }
+        t.subseries(:path=>'relatedItem', :attributes=>{:type => "series"}) {
+          t.title_info(:path=>"titleInfo") {
+            t.title
+            t.nonSort(:path=>"nonSort")
+          }
+          t.subsubseries(:path=>'relatedItem', :attributes=>{:type => "series"}) {
+            t.title_info(:path=>"titleInfo") {
+              t.title
+              t.nonSort(:path=>"nonSort")
+            }
+          }
+        }
       }
+
+      #t.subseries(:path=>'mods/oxns:relatedItem/oxns:relatedItem', :attributes=>{:type => "series"}) {
+      #  t.title_info(:path=>"titleInfo") {
+      #    t.title
+      #    t.nonSort(:path=>"nonSort")
+      #  }
+      #}
 
       t.use_and_reproduction(:path=>"accessCondition", :attributes=>{:type=>"use and reproduction"})
 
