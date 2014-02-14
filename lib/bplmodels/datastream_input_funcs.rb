@@ -530,6 +530,8 @@ module Bplmodels
             return_hash[:state_part] = result['long_name'].to_ascii
           elsif (result['types'] & ['locality']).present?
             return_hash[:city_part] = result['long_name']
+          elsif (result['types'] & ['sublocality', 'political']).present?
+            return_hash[:neighborhood_part] = result['long_name']
           end
         end
 

@@ -435,6 +435,21 @@ module Bplmodels
         t.location(:path=>'location') {
           t.url(:path=>'url')
         }
+        t.related_item(:ref=>[:related_series_item]) {
+          t.related_item(:ref=>[:related_series_item]) {
+            t.related_item(:ref=>[:related_series_item]) {
+              t.related_item(:ref=>[:related_series_item])
+            }
+          }
+        }
+      }
+
+      t.related_series_item(:path=>'relatedItem') {
+        t.type(:path=>{:attribute=>"type"})
+        t.title_info(:path=>"titleInfo") {
+          t.title
+          t.nonSort(:path=>"nonSort")
+        }
       }
 
       t.use_and_reproduction(:path=>"accessCondition", :attributes=>{:type=>"use and reproduction"})
@@ -663,7 +678,7 @@ module Bplmodels
         return false
       end
 
-      api_result = Bplmodels::DatastreamInputFuncs.get_tgn_data(tgn_id)
+      api_result = Bplgeo::TGN.get_tgn_data(tgn_id)
 
       puts 'API Result is: ' + api_result.to_s
 
@@ -1226,9 +1241,31 @@ module Bplmodels
 
     def insert_series(series)
       if series.present?
-        insert_position = self.related_item.length
-        self.related_item(insert_position).type = 'series'
-        self.related_item(insert_position).title_info.title = series
+        top_level_insert_position = self.mods(0).related_item.length
+
+        0.upto self.mods(0).related_item.length-1 do |pos|
+          if self.mods(0).related_item(pos).type == ['series']
+            top_level_insert_position = pos
+          end
+        end
+
+        if self.mods(0).related_item(top_level_insert_position).blank?
+          self.mods(0).related_item(top_level_insert_position).type = 'series'
+          self.mods(0).related_item(top_level_insert_position).title_info.title = series
+        elsif self.mods(0).related_item(top_level_insert_position).related_item(0).blank?
+          self.mods(0).related_item(top_level_insert_position).related_item(0).type = 'series'
+          self.mods(0).related_item(top_level_insert_position).related_item(0).title_info.title = series
+        elsif self.mods(0).related_item(top_level_insert_position).related_item(0).related_item(0).blank?
+          self.mods(0).related_item(top_level_insert_position).related_item(0).related_item(0).type = 'series'
+          self.mods(0).related_item(top_level_insert_position).related_item(0).related_item(0).title_info.title = series
+        elsif self.mods(0).related_item(top_level_insert_position).related_item(0).related_item(0).related_item(0).blank?
+          self.mods(0).related_item(top_level_insert_position).related_item(0).related_item(0).related_item(0).type = 'series'
+          self.mods(0).related_item(top_level_insert_position).related_item(0).related_item(0).related_item(0).title_info.title = series
+        elsif self.mods(0).related_item(top_level_insert_position).related_item(0).related_item(0).related_item(0).related_item(0).blank?
+          self.mods(0).related_item(top_level_insert_position).related_item(0).related_item(0).related_item(0).related_item(0).type = 'series'
+          self.mods(0).related_item(top_level_insert_position).related_item(0).related_item(0).related_item(0).related_item(0).title_info.title = series
+        end
+
       end
 
     end
