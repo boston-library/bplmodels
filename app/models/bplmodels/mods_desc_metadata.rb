@@ -458,6 +458,14 @@ module Bplmodels
 
       }
 
+      t.related_series_item(:path=>'relatedItem') {
+        t.type(:path=>{:attribute=>"type"})
+        t.title_info(:path=>"titleInfo") {
+          t.title
+          t.nonSort(:path=>"nonSort")
+        }
+      }
+
 
       #t.subseries(:path=>'mods/oxns:relatedItem/oxns:relatedItem', :attributes=>{:type => "series"}) {
       #  t.title_info(:path=>"titleInfo") {
