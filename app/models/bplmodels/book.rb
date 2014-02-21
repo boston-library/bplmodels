@@ -1,5 +1,5 @@
 module Bplmodels
-  class Book < Bplmodels::SimpleObjectBase
+  class Book < Bplmodels::ComplexObjectBase
     #has_file_datastream :name => 'productionMaster', :type => ActiveFedora::Datastream
 
 

@@ -1,5 +1,5 @@
 module Bplmodels
-  class SimpleObjectBase < Bplmodels::ObjectBase
+  class ComplexObjectBase < Bplmodels::ObjectBase
     #has_file_datastream :name => 'productionMaster', :type => ActiveFedora::Datastream
 
     include Hydra::ModelMixins::CommonMetadata
@@ -101,6 +101,19 @@ module Bplmodels
 
     def save
       super()
+    end
+
+    #        @image_file.label = title + " File"
+    #        @image_file.label = title[0,242] + "... File"
+    def insert_new_image_file(path)
+      final_file_name =  path.gsub('\\', '/').split('/').last
+
+      image_file = Bplmodels::ImageFile.mint(:parent_pid=>self.pid, :local_id=>final_file_name, :local_id_type=>'File Name', :label=>final_file_name)
+
+      image_file.read_groups = ["public"]
+      image_file.edit_groups = ["superuser", 'admin[' + @institution.pid + ']']
+
+      self.add_relationship(:is_following_page_of, "info:fedora/#{self.pid}", true)
     end
 
     def to_solr(doc = {} )

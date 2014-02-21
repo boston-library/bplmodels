@@ -1,5 +1,5 @@
 module Bplmodels
-  class Manuscript < Bplmodels::SimpleObjectBase
+  class Manuscript < Bplmodels::ComplexObjectBase
     #has_file_datastream :name => 'productionMaster', :type => ActiveFedora::Datastream
 
 

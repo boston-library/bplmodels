@@ -525,7 +525,11 @@ module Bplmodels
         t.description_standard(:path=>'descriptionStandard', :attributes=>{:authority=>"marcdescription"})
         t.record_content_source(:path=>'recordContentSource')
         t.record_origin(:path=>'recordOrigin')
+        t.language_of_cataloging(:path=>'languageOfCataloging') {
+          t.language_term(:path=>'languageTerm', :attributes => { :authority => 'iso639-2b',:authorityURI=> 'http://id.loc.gov/vocabulary/iso639-2', :type=>'text', :valueURI=>'http://id.loc.gov/vocabulary/iso639-2/eng'  })
+        }
       }
+
 
       t.table_of_contents(:path=>'tableOfContents')
 
@@ -590,7 +594,7 @@ module Bplmodels
     def insert_media_type(media_type=nil)
       physical_description_index = 0
       media_type_index = self.mods(0).physical_description(physical_description_index).internet_media_type.count
-      self.mods(0).physical_description(physical_description_index).internet_media_type(media_type_index, media_type) unless media_type.blank?
+      self.mods(0).physical_description(physical_description_index).internet_media_type(media_type_index, media_type) unless media_type.blank? ||  self.mods(0).physical_description(physical_description_index).internet_media_type.include?(media_type)
     end
 
 
@@ -1541,6 +1545,14 @@ module Bplmodels
   def remove_mcgreevy(index)
     self.find_by_terms(:mcgreevy).slice(index.to_i).remove
   end
+
+
+    def insert_record_information(record_content_source)
+      self.mods(0).record_info(0).record_content_source = record_content_source unless record_content_source.blank?
+      self.mods(0).record_info(0).record_origin = 'human prepared'
+      self.mods(0).record_info(0).language_of_cataloging(0).language_term = 'English'
+    end
+
 
     def insert_new_node(term)
       add_child_node(ng_xml.root, term)
