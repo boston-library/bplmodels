@@ -105,15 +105,74 @@ module Bplmodels
 
     #        @image_file.label = title + " File"
     #        @image_file.label = title[0,242] + "... File"
-    def insert_new_image_file(path)
-      final_file_name =  path.gsub('\\', '/').split('/').last
+    def insert_new_image_file(files, institution_pid)
+      raise 'insert new image called with no files!' if files.blank? || !files.is_a?(Array)
 
-      image_file = Bplmodels::ImageFile.mint(:parent_pid=>self.pid, :local_id=>final_file_name, :local_id_type=>'File Name', :label=>final_file_name)
+      final_file_name =  files[0].gsub('\\', '/').split('/').last
+      last_image_file = Bplmodels::ImageFile.mint(:parent_pid=>self.pid, :local_id=>final_file_name, :local_id_type=>'File Name', :label=>final_file_name, :institution_pid=>institution_pid)
 
-      image_file.read_groups = ["public"]
-      image_file.edit_groups = ["superuser", 'admin[' + @institution.pid + ']']
+      last_image_file.productionMaster.content = open(files[0])
+      if files[0].split('.').downcase.last == 'tif'
+        last_image_file.productionMaster.mimeType = 'image/tiff'
+      elsif files[0].split('.').downcase.last == 'jpg'
+        last_image_file.productionMaster.mimeType = 'image/jpeg'
+      else
+        last_image_file.productionMaster.mimeType = 'image/jpeg'
+      end
 
-      self.add_relationship(:is_following_page_of, "info:fedora/#{self.pid}", true)
+      img =  Magick::Image.read(files[0]).first
+      #jp2 image
+      jp2_img = Magick::Image.from_blob( img.to_blob { self.format = "jp2" } ).first
+      last_image_file.accessMaster.content = jp2_img.to_blob { self.format = "jp2" }
+      last_image_file.accessMaster.mimeType = 'image/jpeg2000'
+
+      #thumbnail
+      thumb = Magick::Image.from_blob( img.to_blob { self.format = "jpg" } ).first
+      thumb = thumb.resize_to_fit(300,300)
+
+      last_image_file.thumbnail300.content = thumb.to_blob { self.format = "jpg" }
+      last_image_file.thumbnail300.mimeType = 'image/jpeg'
+
+
+      files.delete_at(0)
+
+      files.each do |file|
+        final_file_name =  file.gsub('\\', '/').split('/').last
+        current_image_file = Bplmodels::ImageFile.mint(:parent_pid=>self.pid, :local_id=>final_file_name, :local_id_type=>'File Name', :label=>final_file_name, :institution_pid=>institution_pid)
+
+        current_image_file.productionMaster.content = open(files[0])
+        if file.split('.').downcase.last == 'tif'
+          current_image_file.productionMaster.mimeType = 'image/tiff'
+        elsif file.split('.').downcase.last == 'jpg'
+          current_image_file.productionMaster.mimeType = 'image/jpeg'
+        else
+          current_image_file.productionMaster.mimeType = 'image/jpeg'
+        end
+
+        img =  Magick::Image.read(file).first
+        #jp2 image
+        jp2_img = Magick::Image.from_blob( img.to_blob { self.format = "jp2" } ).first
+        current_image_file.accessMaster.content = jp2_img.to_blob { self.format = "jp2" }
+        current_image_file.accessMaster.mimeType = 'image/jpeg2000'
+
+        #thumbnail
+        thumb = Magick::Image.from_blob( img.to_blob { self.format = "jpg" } ).first
+        thumb = thumb.resize_to_fit(300,300)
+
+        current_image_file.thumbnail300.content = thumb.to_blob { self.format = "jpg" }
+        current_image_file.thumbnail300.mimeType = 'image/jpeg'
+
+
+        current_image_file.add_relationship(:is_following_file_of, "info:fedora/#{last_image_file.pid}", true)
+        last_image_file.add_relationship(:is_preceding_file_of, "info:fedora/#{current_image_file.pid}", true)
+
+        last_image_file.save
+
+        last_image_file = current_image_file
+      end
+
+      last_image_file.save
+
     end
 
     def to_solr(doc = {} )

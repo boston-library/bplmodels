@@ -17,6 +17,7 @@ module Bplmodels
     #local_id => local ID of the object
     #local_id_type => type of that local ID
     #label => label of the collection
+    #institution_pid => instituional access of this file
     def self.mint(args)
 
       #TODO: Duplication check here to prevent over-writes?
@@ -34,6 +35,9 @@ module Bplmodels
       object = self.new(:pid=>as_json["pid"])
 
       object.label = args[:label]
+
+      image_file.read_groups = ["public"]
+      image_file.edit_groups = ["superuser", "admin[#{args[:parent_pid]}]"]
 
       return object
     end
