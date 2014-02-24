@@ -555,6 +555,9 @@ module Bplmodels
       puts 'pid is: ' + as_json["pid"]
       object = self.new(:pid=>as_json["pid"])
 
+      object.add_relationship(:is_member_of_collection, "info:fedora/" + args[:parent_pid])
+      object.add_oai_relationships
+
       return object
     end
 

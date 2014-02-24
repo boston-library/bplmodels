@@ -802,7 +802,7 @@ module Bplmodels
       self.mods(0).name(name_index).type = type unless type.blank?
       self.mods(0).name(name_index).authority = authority unless authority.blank?
       self.mods(0).name(name_index).valueURI = value_uri unless value_uri.blank?
-
+      puts 'look here A'
       if role.present?
         self.mods(0).name(name_index).role.text = role unless role.blank?
         self.mods(0).name(name_index).role.text.valueURI = role_uri unless role_uri.blank?
@@ -812,10 +812,11 @@ module Bplmodels
         self.mods(0).name(name_index).authorityURI = 'http://id.loc.gov/authorities/names'
       end
 
+      puts 'look here A1'
       if type == 'corporate'
         name_hash = Bplmodels::DatastreamInputFuncs.corpNamePartSplitter(name)
         0.upto name_hash.size do |hash_pos|
-          self.mods(0).name(name_index).namePart.append = name
+          self.mods(0).name(name_index).namePart(hash_pos, name)
         end
       elsif type=='personal'
         name_hash = Bplmodels::DatastreamInputFuncs.persNamePartSplitter(name)
@@ -824,10 +825,11 @@ module Bplmodels
       else
         self.mods(0).name(name_index).namePart = name
       end
-
+      puts 'look here B'
       args.each do |key, value|
         self.mods(0).name(name_index).send(key, Bplmodels::DatastreamInputFuncs.utf8Encode(value)) unless value.blank?
       end
+      puts 'look here C'
     end
 
 
