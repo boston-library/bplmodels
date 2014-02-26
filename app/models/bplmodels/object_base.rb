@@ -3,6 +3,14 @@ module Bplmodels
     # To change this template use File | Settings | File Templates.
     include ActiveFedora::Auditable
 
+    has_many :exemplary_image, :class_name => "Bplmodels::File", :property=> :is_exemplary_image_of
+
+    has_many :image_files, :class_name => "Bplmodels::ImageFile", :property=> :is_image_of
+
+    has_many :audio_files, :class_name => "Bplmodels::AudioFile", :property=> :is_image_of
+
+    has_many :document_files, :class_name => "Bplmodels::DocumentFile", :property=> :is_image_of
+
     def save
       super()
     end
@@ -537,7 +545,8 @@ module Bplmodels
     #parent_pid => id of the parent object
     #local_id => local ID of the object
     #local_id_type => type of that local ID
-    #label => label of the collection
+    #label => label of the object
+    #institution_pid => instituional access of this file
     def self.mint(args)
 
       #TODO: Duplication check here to prevent over-writes?
@@ -552,11 +561,15 @@ module Bplmodels
         return as_json["pid"]
       end
 
-      puts 'pid is: ' + as_json["pid"]
       object = self.new(:pid=>as_json["pid"])
 
       object.add_relationship(:is_member_of_collection, "info:fedora/" + args[:parent_pid])
       object.add_oai_relationships
+
+      object.label = args[:label] if args[:label].present?
+
+      object.read_groups = ["public"]
+      object.edit_groups = ["superuser", "admin[#{args[:institution_pid]}]"] if args[:institution_pid]
 
       return object
     end
@@ -567,6 +580,202 @@ module Bplmodels
 
     def generate_uri
       return ARK_CONFIG_GLOBAL['url'] + '/ark:/' + ARK_CONFIG_GLOBAL["namespace_commonwealth_ark"].to_s + "/" + self.pid.split(':').last.to_s
+    end
+
+    def insert_new_image_file(file, institution_pid)
+      raise 'insert new image called with no files or more than one!' if file.blank? || file.is_a?(Array)
+
+      uri_file_part = file
+      #Fix common url errors
+      if uri_file_part.match(/^http/)
+        #uri_file_part = uri_file_part.gsub(' ', '%20')
+        uri_file_part = URI::escape(uri_file_part)
+      end
+
+      final_file_name =  file.gsub('\\', '/').split('/').last
+      last_image_file = Bplmodels::ImageFile.mint(:parent_pid=>self.pid, :local_id=>final_file_name, :local_id_type=>'File Name', :label=>final_file_name, :institution_pid=>institution_pid)
+      if last_image_file.is_a?(String)
+        Bplmodels::ImageFile.find(last_image_file).delete
+        last_image_file = Bplmodels::ImageFile.mint(:parent_pid=>self.pid, :local_id=>final_file_name, :local_id_type=>'File Name', :label=>final_file_name, :institution_pid=>institution_pid)
+      end
+
+
+      last_image_file.productionMaster.content = open(uri_file_part)
+      if file.split('.').last.downcase.last == 'tif'
+        last_image_file.productionMaster.mimeType = 'image/tiff'
+      elsif file.split('.').last.downcase.last == 'jpg'
+        last_image_file.productionMaster.mimeType = 'image/jpeg'
+      else
+        last_image_file.productionMaster.mimeType = 'image/jpeg'
+      end
+
+      img =  Magick::Image.read(uri_file_part).first
+      #jp2 image
+      jp2_img = Magick::Image.from_blob( img.to_blob { self.format = "jp2" } ).first
+      last_image_file.accessMaster.content = jp2_img.to_blob { self.format = "jp2" }
+      last_image_file.accessMaster.mimeType = 'image/jpeg2000'
+
+      #thumbnail
+      thumb = Magick::Image.from_blob( img.to_blob { self.format = "jpg" } ).first
+      thumb = thumb.resize_to_fit(300,300)
+
+      last_image_file.thumbnail300.content = thumb.to_blob { self.format = "jpg" }
+      last_image_file.thumbnail300.mimeType = 'image/jpeg'
+
+      other_images_exist = false
+      Bplmodels::ImageFile.find_in_batches('is_image_of_ssim'=>"info:fedora/#{self.pid}", 'is_preceding_image_of_ssim'=>'') do |group|
+        group.each { |image_id|
+          other_images_exist = true
+          preceding_image = Bplmodels::ImageFile.find(image_id['id'])
+          preceding_image.add_relationship(:is_preceding_image_of, "info:fedora/#{last_image_file.pid}", true)
+          preceding_image.save
+          last_image_file.add_relationship(:is_following_image_of, "info:fedora/#{image_id['id']}", true)
+        }
+      end
+
+      last_image_file.add_relationship(:is_image_of, "info:fedora/" + self.pid)
+      last_image_file.add_relationship(:is_exemplary_image_of, "info:fedora/" + self.pid) unless other_images_exist
+
+
+      last_image_file.save
+
+      last_image_file
+    end
+
+    def insert_new_audio_file(audio_file, institution_pid)
+      raise 'audio file missing!' if audio_file.blank?
+
+      uri_file_part = audio_file
+      #Fix common url errors
+      if uri_file_part.match(/^http/)
+        #uri_file_part = uri_file_part.gsub(' ', '%20')
+        uri_file_part = URI::escape(uri_file_part)
+      end
+
+      final_audio_name =  audio_file.gsub('\\', '/').split('/').last
+      current_audio_file = Bplmodels::AudioFile.mint(:parent_pid=>self.pid, :local_id=>final_audio_name, :local_id_type=>'File Name', :label=>final_audio_name, :institution_pid=>institution_pid)
+      if current_audio_file.is_a?(String)
+        Bplmodels::AudioFile.find(current_audio_file).delete
+        current_audio_file = Bplmodels::AudioFile.mint(:parent_pid=>self.pid, :local_id=>final_audio_name, :local_id_type=>'File Name', :label=>final_audio_name, :institution_pid=>institution_pid)
+      end
+
+
+      current_audio_file.productionMaster.content = open(uri_file_part)
+      if audio_file.split('.').last.downcase.last == 'mp3'
+        current_audio_file.productionMaster.mimeType = 'audio/mpeg'
+      else
+        current_audio_file.productionMaster.mimeType = 'audio/mpeg'
+      end
+
+
+      other_audio_exist = false
+      Bplmodels::AudioFile.find_in_batches('is_audio_of_ssim'=>"info:fedora/#{self.pid}", 'is_preceding_audio_of_ssim'=>'') do |group|
+        group.each { |audio|
+          other_audio_exist = true
+          preceding_audio = Bplmodels::AudioFile.find(audio['id'])
+          preceding_audio.add_relationship(:is_preceding_audio_of, "info:fedora/#{current_audio_file.pid}", true)
+          preceding_audio.save
+          current_audio_file.add_relationship(:is_following_audio_of, "info:fedora/#{audio['id']}", true)
+        }
+      end
+
+      current_audio_file.add_relationship(:is_audio_of, "info:fedora/" + self.pid)
+
+
+      current_audio_file.save
+
+      current_audio_file
+    end
+
+    #FIXME: Cases of images and PDF?
+    def insert_new_document_file(document_file, institution_pid)
+      raise 'document file missing!' if document_file.blank?
+
+      uri_file_part = document_file
+
+      #Fix common url errors
+      if uri_file_part.match(/^http/)
+        #uri_file_part = uri_file_part.gsub(' ', '%20')
+        uri_file_part = URI::escape(uri_file_part)
+      end
+
+      final_document_name =  document_file.gsub('\\', '/').split('/').last
+      current_document_file = Bplmodels::DocumentFile.mint(:parent_pid=>self.pid, :local_id=>final_document_name, :local_id_type=>'File Name', :label=>final_document_name, :institution_pid=>institution_pid)
+      if current_document_file.is_a?(String)
+        Bplmodels::AudioFile.find(current_document_file).delete
+        current_document_file = Bplmodels::DocumentFile.mint(:parent_pid=>self.pid, :local_id=>final_document_name, :local_id_type=>'File Name', :label=>final_document_name, :institution_pid=>institution_pid)
+      end
+
+
+      current_document_file.productionMaster.content = open(uri_file_part)
+      if document_file.split('.').last.downcase.last == 'pdf'
+        current_document_file.productionMaster.mimeType = 'application/pdf'
+      else
+        current_document_file.productionMaster.mimeType = 'application/pdf'
+      end
+
+      current_page = 0
+      total_colors = 0
+      until total_colors > 1 do
+        img = Magick::Image.read(uri_file_part + '[' + current_page.to_s + ']'){
+          self.quality = 100
+          self.density = 200
+        }.first
+        total_colors = img.total_colors
+        current_page = current_page + 1
+      end
+
+      #This is horrible. But if you don't do this, some PDF files won't come out right at all.
+      #Multiple attempts have failed to fix this but perhaps the bug will be patched in ImageMagick.
+      #To duplicate, one can use the PDF files at: http://libspace.uml.edu/omeka/files/original/7ecb4dc9579b11e2b53ccc2040e58d36.pdf
+      img = Magick::Image.from_blob( img.to_blob { self.format = "jpg" } ).first
+
+      thumb = img.resize_to_fit(300,300)
+
+      current_document_file.thumbnail300.content = thumb.to_blob { self.format = "jpg" }
+      current_document_file.thumbnail300.mimeType = 'image/jpeg'
+
+      other_document_exist = false
+      Bplmodels::AudioFile.find_in_batches('is_document_of_ssim'=>"info:fedora/#{self.pid}", 'is_preceding_document_of_ssim'=>'') do |group|
+        group.each { |document|
+          other_document_exist = true
+          preceding_document = Bplmodels::DocumentFile.find(document['id'])
+          preceding_document.add_relationship(:is_preceding_document_of, "info:fedora/#{current_document_file.pid}", true)
+          preceding_document.save
+          current_document_file.add_relationship(:is_following_document_of, "info:fedora/#{document['id']}", true)
+        }
+      end
+
+      current_document_file.add_relationship(:is_document_of, "info:fedora/" + self.pid)
+
+      current_document_file.add_relationship(:is_exemplary_image_of, "info:fedora/" + self.pid) unless other_document_exist
+
+      current_document_file.save
+
+      current_document_file
+    end
+
+    def deleteAllFiles
+      Bplmodels::AudioFile.find_in_batches('is_image_of_ssim'=>"info:fedora/#{self.pid}") do |group|
+        group.each { |solr_object|
+          object = ActiveFedora::Base.find(solr_object['id']).adapt_to_cmodel
+          object.delete
+        }
+      end
+
+      Bplmodels::AudioFile.find_in_batches('is_audio_of_ssim'=>"info:fedora/#{self.pid}") do |group|
+        group.each { |solr_object|
+          object = ActiveFedora::Base.find(solr_object['id']).adapt_to_cmodel
+          object.delete
+        }
+      end
+
+      Bplmodels::AudioFile.find_in_batches('is_document_of_ssim'=>"info:fedora/#{self.pid}") do |group|
+        group.each { |solr_object|
+          object = ActiveFedora::Base.find(solr_object['id']).adapt_to_cmodel
+          object.delete
+        }
+      end
     end
 
   end

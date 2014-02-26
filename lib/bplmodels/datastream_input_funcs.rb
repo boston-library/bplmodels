@@ -743,6 +743,13 @@ module Bplmodels
 
     def self.LCSHize(value)
 
+      if value.blank?
+        return ''
+      end
+
+      #Remove stuff that is quoted (quotation for first and last words)..
+      value = value.gsub(/^['"]/, '').gsub(/['"]$/, '').strip
+
       #Remove ending periods ... except when an initial or etc.
       if value.last == '.' && value[-2].match(/[^A-Z]/) && !value[-4..-1].match('etc.')
         value = value.slice(0..-2)
@@ -823,6 +830,21 @@ module Bplmodels
       end
 
       return [nonSort, title]
+    end
+
+    def self.parse_role(role_value)
+      return_hash = {}
+      authority_check = Qa::Authorities::Loc.new
+      authority_result = authority_check.search(URI.escape(role_value), 'relators')
+      if authority_result.present?
+        authority_result = authority_result.select{|hash| hash['label'].downcase == role_value.downcase}
+        if  authority_result.present?
+          return_hash[:uri] = authority_result.first["id"].gsub('info:lc', 'http://id.loc.gov')
+          return_hash[:label] = authority_result.first["label"]
+        end
+      end
+
+      return return_hash
     end
 
     def self.parse_name_roles(name)

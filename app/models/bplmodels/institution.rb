@@ -103,7 +103,8 @@ module Bplmodels
       object.label = args[:label]
       object.descMetadata.insert_title(title[0], title[1])
 
-
+      object.read_groups = ["public"]
+      object.edit_groups = ["superuser", 'admin[' + object.pid + ']']
 
       return object
     end

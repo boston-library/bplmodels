@@ -12,7 +12,6 @@ module Bplmodels
     #label => label of the collection
     def self.mint(args)
        args[:namespace_id] = ARK_CONFIG_GLOBAL['namespace_oai_pid']
-      #TODO: Duplication check here to prevent over-writes?
 
       super(args)
     end

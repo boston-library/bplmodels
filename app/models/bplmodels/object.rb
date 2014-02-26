@@ -30,5 +30,7 @@ module Bplmodels
       doc['active_fedora_model_ssi'] = self.class.name
       doc
     end
+
+
   end
 end

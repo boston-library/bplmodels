@@ -115,6 +115,9 @@ module Bplmodels
 
       object.add_oai_relationships
 
+      object.read_groups = ["public"]
+      object.edit_groups = ["superuser", "admin[#{args[:parent_pid]}]"]
+
       return object
     end
 

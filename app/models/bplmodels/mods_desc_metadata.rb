@@ -660,8 +660,9 @@ module Bplmodels
 
       self.mods(0).genre(genre_index, value) unless value.blank?
 
-      self.mods(0).genre(genre_index).authority unless authority.blank?
-      if authority == 'gmgpc'
+      self.mods(0).genre(genre_index).authority = authority unless authority.blank?
+
+      if authority == 'gmgpc' || authority == 'lctgm'
         self.mods(0).genre(genre_index).authorityURI = 'http://id.loc.gov/vocabulary/graphicMaterials'
       end
 
@@ -771,7 +772,7 @@ module Bplmodels
     end
 
     #usage=nil,  supplied=nil, subtitle=nil, language=nil, type=nil, authority=nil, authorityURI=nil, valueURI=nil
-    def insert_title(nonSort=nil, main_title=nil, usage=nil, supplied=nil, args={})
+    def insert_title(nonSort=nil, main_title=nil, usage=nil, supplied=nil, type=nil, args={})
       puts args
       title_index = self.mods(0).title_info.count
       self.mods(0).title_info(title_index).nonSort = nonSort unless nonSort.blank?
@@ -779,6 +780,8 @@ module Bplmodels
 
       self.mods(0).title_info(title_index).usage = usage unless usage.blank?
       self.mods(0).title_info(title_index).supplied = 'yes' unless supplied.blank? || supplied == 'no'
+
+      self.mods(0).title_info(title_index).type = type unless type.blank?
 
       args.each do |key, value|
         self.mods(0).title_info(title_index).send(key, Bplmodels::DatastreamInputFuncs.utf8Encode(value)) unless value.blank?
@@ -793,7 +796,6 @@ module Bplmodels
 
 
     def insert_name(name=nil, type=nil, authority=nil, value_uri=nil, role=nil, role_uri=nil, args={})
-      puts 'look here'
       puts name
       puts role
       puts role_uri
@@ -802,7 +804,7 @@ module Bplmodels
       self.mods(0).name(name_index).type = type unless type.blank?
       self.mods(0).name(name_index).authority = authority unless authority.blank?
       self.mods(0).name(name_index).valueURI = value_uri unless value_uri.blank?
-      puts 'look here A'
+
       if role.present?
         self.mods(0).name(name_index).role.text = role unless role.blank?
         self.mods(0).name(name_index).role.text.valueURI = role_uri unless role_uri.blank?
@@ -812,11 +814,10 @@ module Bplmodels
         self.mods(0).name(name_index).authorityURI = 'http://id.loc.gov/authorities/names'
       end
 
-      puts 'look here A1'
       if type == 'corporate'
-        name_hash = Bplmodels::DatastreamInputFuncs.corpNamePartSplitter(name)
-        0.upto name_hash.size do |hash_pos|
-          self.mods(0).name(name_index).namePart(hash_pos, name)
+        name_array = Bplmodels::DatastreamInputFuncs.corpNamePartSplitter(name)
+        name_array.each do |name_value, array_pos|
+          self.mods(0).name(name_index).namePart(array_pos, name_value)
         end
       elsif type=='personal'
         name_hash = Bplmodels::DatastreamInputFuncs.persNamePartSplitter(name)
@@ -825,11 +826,9 @@ module Bplmodels
       else
         self.mods(0).name(name_index).namePart = name
       end
-      puts 'look here B'
       args.each do |key, value|
         self.mods(0).name(name_index).send(key, Bplmodels::DatastreamInputFuncs.utf8Encode(value)) unless value.blank?
       end
-      puts 'look here C'
     end
 
 
