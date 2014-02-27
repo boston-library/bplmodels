@@ -8,9 +8,7 @@ module Bplmodels
 
     belongs_to :institutions, :class_name => 'Bplmodels::Institution', :property => :is_member_of
 
-    has_many :image_files, :class_name => "Bplmodels::ImageFile", :property=> :is_exemplary_image_of
-
-    has_many :image_object, :class_name => "Bplmodels::OAIObject", :property=> :is_exemplary_image_of
+    has_many :exemplary_image, :class_name => "ActiveFedora::Base", :property=> :is_exemplary_image_of
 
     # Uses the Hydra modsCollection profile for collection list
     #has_metadata :name => "members", :type => Hydra::ModsCollectionMembers
@@ -76,14 +74,9 @@ module Bplmodels
         doc['institution_pid_ssi'] = self.institutions.pid
       end
 
-      if self.image_files.first != nil
+      if self.exemplary_image.first != nil
         doc['exemplary_image_ss'] = self.image_files.first.pid
         doc['exemplary_image_ssi'] = self.image_files.first.pid
-      end
-
-      if self.image_object.first != nil
-        doc['exemplary_image_ss'] = self.image_object.first.pid
-        doc['exemplary_image_ssi'] = self.image_object.first.pid
       end
 
       doc

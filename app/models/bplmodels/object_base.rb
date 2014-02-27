@@ -522,18 +522,17 @@ module Bplmodels
         doc['workflow_state_ssi'] = self.workflowMetadata.item_status.state
       end
 
-      if self.exemplary_image.first != nil && self.exemplary_image.first.pid != nil
-        # keep both for now, we will eventually phase out exemplary_image_ss
-        doc['exemplary_image_ss'] = self.exemplary_image.first.pid
-        doc['exemplary_image_ssi'] = self.exemplary_image.first.pid
+      ActiveFedora::Base.find_in_batches('is_exemplary_image_of_ssim'=>"info:fedora/#{self.pid}") do |group|
+        group.each { |exemplary_solr|
+          doc['exemplary_image_ss'] = exemplary_solr['id']
+          doc['exemplary_image_ssi'] = exemplary_solr['id']
+        }
       end
 
       if self.workflowMetadata.marked_for_deletion.present?
         doc['marked_for_deletion_bsi']  =  self.workflowMetadata.marked_for_deletion.first
         doc['marked_for_deletion_reason_ssi']  =  self.workflowMetadata.marked_for_deletion.reason.first
       end
-
-
 
 
       #doc['all_text_timv'] = [self.descMetadata.abstract, main_title, self.rels_ext.model.class.to_s.gsub(/\A[\w]*::/,''),self.descMetadata.item_location(0).physical_location[0]]
