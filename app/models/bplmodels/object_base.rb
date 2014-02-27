@@ -633,6 +633,7 @@ module Bplmodels
       end
 
       last_image_file.add_relationship(:is_image_of, "info:fedora/" + self.pid)
+      last_image_file.add_relationship(:is_file_of, "info:fedora/" + self.pid)
       last_image_file.add_relationship(:is_exemplary_image_of, "info:fedora/" + self.pid) unless other_images_exist
 
 
@@ -679,7 +680,7 @@ module Bplmodels
       end
 
       current_audio_file.add_relationship(:is_audio_of, "info:fedora/" + self.pid)
-
+      current_audio_file.add_relationship(:is_file_of, "info:fedora/" + self.pid)
 
       current_audio_file.save
 
@@ -733,19 +734,20 @@ module Bplmodels
 
       current_document_file.thumbnail300.content = thumb.to_blob { self.format = "jpg" }
       current_document_file.thumbnail300.mimeType = 'image/jpeg'
-
+       puts 'huh?'
       other_document_exist = false
-      Bplmodels::AudioFile.find_in_batches('is_document_of_ssim'=>"info:fedora/#{self.pid}", 'is_preceding_document_of_ssim'=>'') do |group|
-        group.each { |document|
+      Bplmodels::DocumentFile.find_in_batches('is_document_of_ssim'=>"info:fedora/#{self.pid}", 'is_preceding_document_of_ssim'=>'') do |group|
+        group.each { |document_solr|
           other_document_exist = true
-          preceding_document = Bplmodels::DocumentFile.find(document['id'])
+          preceding_document = Bplmodels::DocumentFile.find(document_solr['id'])
           preceding_document.add_relationship(:is_preceding_document_of, "info:fedora/#{current_document_file.pid}", true)
           preceding_document.save
-          current_document_file.add_relationship(:is_following_document_of, "info:fedora/#{document['id']}", true)
+          current_document_file.add_relationship(:is_following_document_of, "info:fedora/#{document_solr['id']}", true)
         }
       end
 
       current_document_file.add_relationship(:is_document_of, "info:fedora/" + self.pid)
+      current_document_file.add_relationship(:is_file_of, "info:fedora/" + self.pid)
 
       current_document_file.add_relationship(:is_exemplary_image_of, "info:fedora/" + self.pid) unless other_document_exist
 
