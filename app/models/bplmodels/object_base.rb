@@ -734,7 +734,7 @@ module Bplmodels
 
       current_document_file.thumbnail300.content = thumb.to_blob { self.format = "jpg" }
       current_document_file.thumbnail300.mimeType = 'image/jpeg'
-       puts 'huh?'
+
       other_document_exist = false
       Bplmodels::DocumentFile.find_in_batches('is_document_of_ssim'=>"info:fedora/#{self.pid}", 'is_preceding_document_of_ssim'=>'') do |group|
         group.each { |document_solr|
