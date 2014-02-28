@@ -1,5 +1,5 @@
 module Bplmodels
-  class SoundRecording < Bplmodels::SimpleObjectBase
+  class SoundRecording < Bplmodels::ComplexObjectBase
     #has_file_datastream :name => 'productionMaster', :type => ActiveFedora::Datastream
 
     def to_solr(doc = {} )
