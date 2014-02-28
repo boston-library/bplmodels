@@ -97,6 +97,13 @@ module Bplmodels
 
       response = Typhoeus::Request.post(ARK_CONFIG_GLOBAL['url'] + "/arks.json", :params => {:ark=>{:namespace_ark => ARK_CONFIG_GLOBAL['namespace_commonwealth_ark'], :namespace_id=>ARK_CONFIG_GLOBAL['namespace_commonwealth_pid'], :url_base => ARK_CONFIG_GLOBAL['ark_commonwealth_base'], :model_type => self.name, :local_original_identifier=>args[:local_id], :local_original_identifier_type=>args[:local_id_type]}})
       as_json = JSON.parse(response.body)
+
+      Bplmodels::Institution.find_in_batches('id'=>as_json["pid"]) do |group|
+        group.each { |solr_result|
+          return as_json["pid"]
+        }
+      end
+
       object = self.new(:pid=>as_json["pid"])
 
       title = Bplmodels::DatastreamInputFuncs.getProperTitle(args[:label])

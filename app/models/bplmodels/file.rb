@@ -53,9 +53,18 @@ module Bplmodels
       response = Typhoeus::Request.post(ARK_CONFIG_GLOBAL['url'] + "/arks.json", :params => {:ark=>{:parent_pid=>args[:parent_pid], :namespace_ark => ARK_CONFIG_GLOBAL['namespace_commonwealth_ark'], :namespace_id=>args[:namespace_id], :url_base => ARK_CONFIG_GLOBAL['ark_commonwealth_base'], :model_type => self.name, :local_original_identifier=>args[:local_id], :local_original_identifier_type=>args[:local_id_type]}})
       as_json = JSON.parse(response.body)
 
+      #Below stopped working suddenly?
+=begin
       dup_check = ActiveFedora::Base.find(:pid=>as_json["pid"])
       if dup_check.present?
         return as_json["pid"]
+      end
+=end
+
+      Bplmodels::File.find_in_batches('id'=>as_json["pid"]) do |group|
+        group.each { |solr_result|
+          return as_json["pid"]
+        }
       end
 
       object = self.new(:pid=>as_json["pid"])
