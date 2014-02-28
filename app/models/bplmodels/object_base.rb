@@ -702,11 +702,11 @@ module Bplmodels
       final_document_name =  document_file.gsub('\\', '/').split('/').last
       current_document_file = Bplmodels::DocumentFile.mint(:parent_pid=>self.pid, :local_id=>final_document_name, :local_id_type=>'File Name', :label=>final_document_name, :institution_pid=>institution_pid)
       if current_document_file.is_a?(String)
-        Bplmodels::AudioFile.find(current_document_file).delete
+        Bplmodels::DocumentFile.find(current_document_file).delete
         current_document_file = Bplmodels::DocumentFile.mint(:parent_pid=>self.pid, :local_id=>final_document_name, :local_id_type=>'File Name', :label=>final_document_name, :institution_pid=>institution_pid)
       end
 
-
+      puts 'Document Part A'
       current_document_file.productionMaster.content = open(uri_file_part)
       if document_file.split('.').last.downcase.last == 'pdf'
         current_document_file.productionMaster.mimeType = 'application/pdf'
@@ -724,7 +724,7 @@ module Bplmodels
         total_colors = img.total_colors
         current_page = current_page + 1
       end
-
+      puts 'Document Part B'
       #This is horrible. But if you don't do this, some PDF files won't come out right at all.
       #Multiple attempts have failed to fix this but perhaps the bug will be patched in ImageMagick.
       #To duplicate, one can use the PDF files at: http://libspace.uml.edu/omeka/files/original/7ecb4dc9579b11e2b53ccc2040e58d36.pdf
@@ -745,6 +745,7 @@ module Bplmodels
           current_document_file.add_relationship(:is_following_document_of, "info:fedora/#{document_solr['id']}", true)
         }
       end
+      puts 'Document Part C'
 
       current_document_file.add_relationship(:is_document_of, "info:fedora/" + self.pid)
       current_document_file.add_relationship(:is_file_of, "info:fedora/" + self.pid)
