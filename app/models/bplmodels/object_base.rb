@@ -699,7 +699,7 @@ module Bplmodels
     #FIXME: Cases of images and PDF?
     def insert_new_document_file(document_file, institution_pid)
       raise 'document file missing!' if document_file.blank?
-
+      puts 'Document Part AAAA'
       uri_file_part = document_file
 
       #Fix common url errors
