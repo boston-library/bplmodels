@@ -601,13 +601,14 @@ module Bplmodels
 
     define_template :language do |xml, value, code|
       xml.language {
-        xml.languageTerm(:type=>"text", :authority=>"iso639-2b", :authorityURI=>"http://id.loc.gov/vocabulary/iso639-2", :valueURI=>"http://id.loc.gov/vocabulary/iso639-2/#{code}") {
+        xml.languageTerm(:type=>"text", :authority=>"iso639-2b", :authorityURI=>"http://id.loc.gov/vocabulary/iso639-2", :valueURI=>code) {
           xml.text value
         }
       }
     end
 
     def insert_language(value=nil, code='eng')
+      code = "http://id.loc.gov/vocabulary/iso639-2/#{code}" unless code.include?('http')
       add_child_node(ng_xml.root, :language, value, code)
     end
 

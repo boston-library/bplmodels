@@ -832,6 +832,22 @@ module Bplmodels
       return [nonSort, title]
     end
 
+    def self.parse_language(language_value)
+      return_hash = {}
+      authority_check = Qa::Authorities::Loc.new
+      authority_result = authority_check.search(URI.escape(language_value), 'iso639-2')
+
+      if authority_result.present?
+        authority_result = authority_result.select{|hash| hash['label'].downcase == language_value.downcase || hash['id'].downcase == language_value.downcase}
+        if  authority_result.present?
+          return_hash[:uri] = authority_result.first["id"].gsub('info:lc', 'http://id.loc.gov')
+          return_hash[:label] = authority_result.first["label"]
+        end
+      end
+
+      return return_hash
+    end
+
     def self.parse_role(role_value)
       return_hash = {}
       authority_check = Qa::Authorities::Loc.new
