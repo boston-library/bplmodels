@@ -838,7 +838,7 @@ module Bplmodels
       authority_result = authority_check.search(URI.escape(language_value), 'iso639-2')
 
       if authority_result.present?
-        authority_result = authority_result.select{|hash| hash['label'].downcase == language_value.downcase || hash['id'].downcase == language_value.downcase}
+        authority_result2 = authority_result.select{|hash| hash['label'].downcase == language_value.downcase || hash['id'].split('/').last.downcase == language_value.downcase }
         if  authority_result.present?
           return_hash[:uri] = authority_result.first["id"].gsub('info:lc', 'http://id.loc.gov')
           return_hash[:label] = authority_result.first["label"]
