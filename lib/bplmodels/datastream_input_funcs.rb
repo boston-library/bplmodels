@@ -881,7 +881,7 @@ module Bplmodels
           authority_result = authority_result.select{|hash| hash['label'].downcase == role_value.downcase}
           if  authority_result.present?
             #Remove the word and any other characters around it. $ means the end of the line.
-            return_hash[:name] = name.sub(/[\(\"\', ]*\w+[\),\"\']*$/, '').strip
+            return_hash[:name] = name.sub(/[\(\"\', ]*\w+[\),\"\']*$/, '').gsub(/^:/, '').strip
             return_hash[:uri] = authority_result.first["id"].gsub('info:lc', 'http://id.loc.gov')
             return_hash[:label] = authority_result.first["label"]
           end
