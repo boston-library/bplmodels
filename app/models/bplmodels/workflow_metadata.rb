@@ -22,7 +22,8 @@ module Bplmodels
 
       t.item_source(:path=>"itemSource") {
         t.ingest_origin(:path=>"ingestOrigin")
-        t.ingest_filepath(:path=>"ingestFilepath")
+        t.ingest_filepath(:path=>"ingestFilepath") #Only supported later for file objects.
+        t.ingest_filename(:path=>"ingestFilename") #Only recently added
       }
 
       t.marked_for_deletion(:path=>'markedForDelation') {
@@ -37,6 +38,19 @@ module Bplmodels
 
         }
       end.doc
+    end
+
+
+    def insert_file_path(value=nil)
+      ingest_filepath_index = self.item_source.ingest_filepath.count
+
+      self.item_source.ingest_filepath(ingest_filepath_index, value) unless value.blank? || self.item_source.ingest_filepath.include?(value)
+    end
+
+    def insert_file_name(value=nil)
+      ingest_filename_index = self.item_source.ingest_filepath.count
+
+      self.item_source.ingest_filename(ingest_filename_index, value) unless value.blank? || self.item_source.ingest_filepath.include?(value)
     end
   end
 end

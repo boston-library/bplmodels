@@ -647,6 +647,12 @@ module Bplmodels
       last_image_file.add_relationship(:is_file_of, "info:fedora/" + self.pid)
       last_image_file.add_relationship(:is_exemplary_image_of, "info:fedora/" + self.pid) unless other_images_exist
 
+      last_image_file.workflowMetadata.insert_file_path(file)
+      last_image_file.workflowMetadata.insert_file_name(final_file_name)
+      last_image_file.workflowMetadata.item_status.state = "published"
+      last_image_file.workflowMetadata.item_status.state_comment = "Added via the ingest image object base method on " + Time.new.year.to_s + "/" + Time.new.month.to_s + "/" + Time.new.day.to_s
+
+
 
       last_image_file.save
 
@@ -693,6 +699,11 @@ module Bplmodels
       current_audio_file.add_relationship(:is_audio_of, "info:fedora/" + self.pid)
       current_audio_file.add_relationship(:is_file_of, "info:fedora/" + self.pid)
 
+      current_audio_file.workflowMetadata.insert_file_path(audio_file)
+      current_audio_file.workflowMetadata.insert_file_name(final_audio_name)
+      current_audio_file.workflowMetadata.item_status.state = "published"
+      current_audio_file.workflowMetadata.item_status.state_comment = "Added via the ingest audio object base method on " + Time.new.year.to_s + "/" + Time.new.month.to_s + "/" + Time.new.day.to_s
+
       current_audio_file.save
 
       current_audio_file
@@ -701,7 +712,6 @@ module Bplmodels
     #FIXME: Cases of images and PDF?
     def insert_new_document_file(document_file, institution_pid)
       raise 'document file missing!' if document_file.blank?
-      puts 'Document Part AAAA'
       uri_file_part = document_file
 
       #Fix common url errors
@@ -717,7 +727,6 @@ module Bplmodels
         current_document_file = Bplmodels::DocumentFile.mint(:parent_pid=>self.pid, :local_id=>final_document_name, :local_id_type=>'File Name', :label=>final_document_name, :institution_pid=>institution_pid)
       end
 
-      puts 'Document Part A'
       current_document_file.productionMaster.content = open(uri_file_part)
       if document_file.split('.').last.downcase.last == 'pdf'
         current_document_file.productionMaster.mimeType = 'application/pdf'
@@ -735,7 +744,7 @@ module Bplmodels
         total_colors = img.total_colors
         current_page = current_page + 1
       end
-      puts 'Document Part B'
+
       #This is horrible. But if you don't do this, some PDF files won't come out right at all.
       #Multiple attempts have failed to fix this but perhaps the bug will be patched in ImageMagick.
       #To duplicate, one can use the PDF files at: http://libspace.uml.edu/omeka/files/original/7ecb4dc9579b11e2b53ccc2040e58d36.pdf
@@ -746,7 +755,6 @@ module Bplmodels
       current_document_file.thumbnail300.content = thumb.to_blob { self.format = "jpg" }
       current_document_file.thumbnail300.mimeType = 'image/jpeg'
 
-      other_document_exist = false
       Bplmodels::DocumentFile.find_in_batches('is_document_of_ssim'=>"info:fedora/#{self.pid}", 'is_preceding_document_of_ssim'=>'') do |group|
         group.each { |document_solr|
           other_document_exist = true
@@ -756,12 +764,24 @@ module Bplmodels
           current_document_file.add_relationship(:is_following_document_of, "info:fedora/#{document_solr['id']}", true)
         }
       end
-      puts 'Document Part C'
+
+      #TODO: Fix this in the image file object?
+      other_exemplary_exist = false
+      Bplmodels::File.find_in_batches('is_exemplary_image_of_ssim'=>"info:fedora/#{self.pid}") do |group|
+        group.each { |exemplary_solr|
+          other_exemplary_exist = true
+        }
+      end
 
       current_document_file.add_relationship(:is_document_of, "info:fedora/" + self.pid)
       current_document_file.add_relationship(:is_file_of, "info:fedora/" + self.pid)
 
-      current_document_file.add_relationship(:is_exemplary_image_of, "info:fedora/" + self.pid) unless other_document_exist
+      current_document_file.add_relationship(:is_exemplary_image_of, "info:fedora/" + self.pid) unless other_exemplary_exist
+
+      current_document_file.workflowMetadata.insert_file_path(document_file)
+      current_document_file.workflowMetadata.insert_file_name(final_document_name)
+      current_document_file.workflowMetadata.item_status.state = "published"
+      current_document_file.workflowMetadata.item_status.state_comment = "Added via the ingest document object base method on " + Time.new.year.to_s + "/" + Time.new.month.to_s + "/" + Time.new.day.to_s
 
       current_document_file.save
 
