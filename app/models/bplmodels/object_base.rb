@@ -611,9 +611,9 @@ module Bplmodels
 
 
       last_image_file.productionMaster.content = open(uri_file_part)
-      if file.split('.').last.downcase.last == 'tif'
+      if file.split('.').last.downcase == 'tif'
         last_image_file.productionMaster.mimeType = 'image/tiff'
-      elsif file.split('.').last.downcase.last == 'jpg'
+      elsif file.split('.').last.downcase == 'jpg'
         last_image_file.productionMaster.mimeType = 'image/jpeg'
       else
         last_image_file.productionMaster.mimeType = 'image/jpeg'
@@ -678,7 +678,7 @@ module Bplmodels
 
 
       current_audio_file.productionMaster.content = open(uri_file_part)
-      if audio_file.split('.').last.downcase.last == 'mp3'
+      if audio_file.split('.').last.downcase == 'mp3'
         current_audio_file.productionMaster.mimeType = 'audio/mpeg'
       else
         current_audio_file.productionMaster.mimeType = 'audio/mpeg'
@@ -728,7 +728,7 @@ module Bplmodels
       end
 
       current_document_file.productionMaster.content = open(uri_file_part)
-      if document_file.split('.').last.downcase.last == 'pdf'
+      if document_file.split('.').last.downcase == 'pdf'
         current_document_file.productionMaster.mimeType = 'application/pdf'
       else
         current_document_file.productionMaster.mimeType = 'application/pdf'

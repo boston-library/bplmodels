@@ -817,7 +817,7 @@ module Bplmodels
 
       if type == 'corporate'
         name_array = Bplmodels::DatastreamInputFuncs.corpNamePartSplitter(name)
-        name_array.each do |name_value, array_pos|
+        name_array.each_with_index do |name_value, array_pos|
           self.mods(0).name(name_index).namePart(array_pos, name_value)
         end
       elsif type=='personal'
