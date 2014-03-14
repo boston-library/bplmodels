@@ -862,7 +862,9 @@ module Bplmodels
 
       return return_hash
     end
-
+    return_hash = {}
+    authority_check = Qa::Authorities::Loc.new
+    authority_result = authority_check.search(URI.escape(term), 'subjects')
     def self.parse_name_roles(name)
       return_hash = {}
 
