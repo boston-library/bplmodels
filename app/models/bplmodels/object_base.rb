@@ -595,6 +595,8 @@ module Bplmodels
     def insert_new_image_file(file, institution_pid)
       raise 'insert new image called with no files or more than one!' if file.blank? || file.is_a?(Array)
 
+      puts 'processing image of: ' + self.pid.to_s + ' with file: ' + file
+
       uri_file_part = file
       #Fix common url errors
       if uri_file_part.match(/^http/)
@@ -713,6 +715,9 @@ module Bplmodels
     #FIXME: Cases of images and PDF?
     def insert_new_document_file(document_file, institution_pid)
       raise 'document file missing!' if document_file.blank?
+
+      puts 'processing document of: ' + self.pid.to_s + ' with file: ' + document_file
+
       uri_file_part = document_file
 
       #Fix common url errors
