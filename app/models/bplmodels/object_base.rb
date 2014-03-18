@@ -624,12 +624,14 @@ module Bplmodels
 
       img =  Magick::Image.read(uri_file_part).first
       #jp2 image
-      jp2_img = Magick::Image.from_blob( img.to_blob { self.format = "jp2" } ).first
+      #jp2_img = Magick::Image.from_blob( img.to_blob { self.format = "jp2" } ).first
+      jp2_img = img
       last_image_file.accessMaster.content = jp2_img.to_blob { self.format = "jp2" }
       last_image_file.accessMaster.mimeType = 'image/jpeg2000'
 
       #thumbnail
-      thumb = Magick::Image.from_blob( jp2_img.to_blob { self.format = "jpg" } ).first
+      #thumb = Magick::Image.from_blob( jp2_img.to_blob { self.format = "jpg" } ).first
+      thumb = img
       thumb = thumb.resize_to_fit(300,300)
 
       last_image_file.thumbnail300.content = thumb.to_blob { self.format = "jpg" }
@@ -729,9 +731,9 @@ module Bplmodels
       final_document_name =  document_file.gsub('\\', '/').split('/').last
       current_document_file = Bplmodels::DocumentFile.mint(:parent_pid=>self.pid, :local_id=>final_document_name, :local_id_type=>'File Name', :label=>final_document_name, :institution_pid=>institution_pid)
       if current_document_file.is_a?(String)
-        #Bplmodels::DocumentFile.find(current_document_file).delete
-        #current_document_file = Bplmodels::DocumentFile.mint(:parent_pid=>self.pid, :local_id=>final_document_name, :local_id_type=>'File Name', :label=>final_document_name, :institution_pid=>institution_pid)
-        return true
+        Bplmodels::DocumentFile.find(current_document_file).delete
+        current_document_file = Bplmodels::DocumentFile.mint(:parent_pid=>self.pid, :local_id=>final_document_name, :local_id_type=>'File Name', :label=>final_document_name, :institution_pid=>institution_pid)
+        #return true
       end
 
       current_document_file.productionMaster.content = open(uri_file_part)
