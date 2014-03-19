@@ -661,6 +661,8 @@ module Bplmodels
 
       last_image_file.save
 
+      thumb.destroy!
+      img.destroy!
       last_image_file
     end
 
@@ -794,6 +796,8 @@ module Bplmodels
 
       current_document_file.save
 
+      thumb.destory!
+      img.destroy!
       current_document_file
     end
 
