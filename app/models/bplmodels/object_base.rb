@@ -635,6 +635,10 @@ module Bplmodels
       img =  Magick::Image.read(uri_file_part).first
       #jp2 image
       #jp2_img = Magick::Image.from_blob( img.to_blob { self.format = "jp2" } ).first
+
+      #Convert to black and white if only 1 color currently... bug in Djokota
+      img = img.quantize(2, Magick::GRAYColorspace) if img.depth == 1
+
       jp2_img = img
       last_image_file.accessMaster.content = jp2_img.to_blob { self.format = "jp2" }
       last_image_file.accessMaster.mimeType = 'image/jpeg2000'
