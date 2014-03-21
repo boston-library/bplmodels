@@ -637,7 +637,7 @@ module Bplmodels
       #jp2_img = Magick::Image.from_blob( img.to_blob { self.format = "jp2" } ).first
 
       #Convert to black and white if only 1 color currently... bug in Djokota
-      img = img.quantize(2, Magick::GRAYColorspace) if img.depth == 1
+      #img = img.quantize(2, Magick::GRAYColorspace) if img.depth == 1
 
       jp2_img = img
       last_image_file.accessMaster.content = jp2_img.to_blob { self.format = "jp2" }
@@ -810,7 +810,6 @@ module Bplmodels
 
       current_document_file.save
 
-      thumb.destory!
       img.destroy!
       current_document_file
     end
