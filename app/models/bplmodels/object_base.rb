@@ -15,6 +15,16 @@ module Bplmodels
       super()
     end
 
+    def delete
+      Bplmodels::File.find_in_batches('is_file_of_ssim'=>"info:fedora/#{self.pid}") do |group|
+        group.each { |solr_file|
+          file = Bplmodels::File.find(solr_file['id']).adapt_to_cmodel
+          file.delete
+        }
+      end
+      super()
+    end
+
     #Rough initial attempt at this implementation
     #use test2.relationships(:has_model)?
     def convert_to(klass)
