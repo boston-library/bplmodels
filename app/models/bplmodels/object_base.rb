@@ -663,7 +663,7 @@ module Bplmodels
         last_image_file.thumbnail300.mimeType = 'image/jpeg'
 
       else
-        Magick::limit_resource(:memory, 9000)
+        Magick::limit_resource(:memory, 8500)
         img =  Magick::Image.read(uri_file_part).first
 
         #jp2 image
