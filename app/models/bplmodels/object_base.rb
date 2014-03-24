@@ -607,6 +607,9 @@ module Bplmodels
 
       puts 'processing image of: ' + self.pid.to_s + ' with file: ' + file
 
+
+      conserve_memory = true
+
       uri_file_part = file
       #Fix common url errors
       if uri_file_part.match(/^http/)
@@ -633,24 +636,47 @@ module Bplmodels
       end
 
       img =  Magick::Image.read(uri_file_part).first
-      #jp2 image
-      #jp2_img = Magick::Image.from_blob( img.to_blob { self.format = "jp2" } ).first
 
-      #Convert to black and white if only 1 color currently... bug in Djokota
-      #img = img.quantize(2, Magick::GRAYColorspace) if img.depth == 1
+      if conserve_memory
+        directory = "public/data"
 
-      jp2_img = img
-      last_image_file.accessMaster.content = jp2_img.to_blob { self.format = "jp2" }
-      last_image_file.accessMaster.mimeType = 'image/jpeg2000'
+        path = File.join(directory, "temp.jp2")
+        img.write(path)
 
-      #thumbnail
-      #thumb = Magick::Image.from_blob( jp2_img.to_blob { self.format = "jpg" } ).first
-      thumb = img
-      thumb = thumb.resize_to_fit(300,300)
+        puts 'JPEG 2000 written!'
 
-      last_image_file.thumbnail300.content = thumb.to_blob { self.format = "jpg" }
-      last_image_file.thumbnail300.mimeType = 'image/jpeg'
+        thumb = img.resize_to_fit(300,300)
 
+        last_image_file.thumbnail300.content = thumb.to_blob { self.format = "jpg" }
+        last_image_file.thumbnail300.mimeType = 'image/jpeg'
+
+        thumb.destroy!
+        img.destroy!
+
+        last_image_file.accessMaster.content = open(path)
+        last_image_file.accessMaster.mimeType = 'image/jpeg2000'
+      else
+
+        #jp2 image
+        #jp2_img = Magick::Image.from_blob( img.to_blob { self.format = "jp2" } ).first
+
+        #Convert to black and white if only 1 color currently... bug in Djokota
+        #img = img.quantize(2, Magick::GRAYColorspace) if img.depth == 1
+        jp2_img = img
+        last_image_file.accessMaster.content = jp2_img.to_blob { self.format = "jp2" }
+        last_image_file.accessMaster.mimeType = 'image/jpeg2000'
+
+        #thumbnail
+        #thumb = Magick::Image.from_blob( jp2_img.to_blob { self.format = "jpg" } ).first
+        thumb = img
+        thumb = thumb.resize_to_fit(300,300)
+
+        last_image_file.thumbnail300.content = thumb.to_blob { self.format = "jpg" }
+        last_image_file.thumbnail300.mimeType = 'image/jpeg'
+
+        thumb.destroy!
+        img.destroy!
+      end
       other_images_exist = false
       Bplmodels::ImageFile.find_in_batches('is_image_of_ssim'=>"info:fedora/#{self.pid}", 'is_preceding_image_of_ssim'=>'') do |group|
         group.each { |image_id|
@@ -675,8 +701,6 @@ module Bplmodels
 
       last_image_file.save
 
-      thumb.destroy!
-      img.destroy!
       last_image_file
     end
 
