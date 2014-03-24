@@ -637,6 +637,11 @@ module Bplmodels
 
       if conserve_memory
         img = MiniMagick::Image.open(uri_file_part)
+        img.combine_options do |opt|
+          opt.limit "memory", "2000MiB"
+          opt.limit "map", "2000MiB"
+          opt.limit "disk", "100000MiB"
+        end
 
         directory = "public/data/"
 
@@ -663,7 +668,9 @@ module Bplmodels
         last_image_file.thumbnail300.mimeType = 'image/jpeg'
 
       else
-        Magick::limit_resource(:memory, 7500)
+        #Magick::limit_resource(:memory, 7500000000)
+        Magick::limit_resource(:memory, 5500000000)
+        Magick::limit_resource(:map, 5500000000)
         img =  Magick::Image.read(uri_file_part).first
 
         #jp2 image
