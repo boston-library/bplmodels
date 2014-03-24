@@ -635,28 +635,32 @@ module Bplmodels
         last_image_file.productionMaster.mimeType = 'image/jpeg'
       end
 
-      img =  Magick::Image.read(uri_file_part).first
-
       if conserve_memory
+        img = MiniMagick::Image.open(uri_file_part)
+
         directory = "public/data"
 
         #path = File.join(directory, "temp.jp2")
         path = directory + "temp.jp2"
+
         img.write(path)
 
         puts 'JPEG 2000 written!'
 
-        thumb = img.resize_to_fit(300,300)
-
-        last_image_file.thumbnail300.content = thumb.to_blob { self.format = "jpg" }
-        last_image_file.thumbnail300.mimeType = 'image/jpeg'
-
-        thumb.destroy!
-        img.destroy!
-
         last_image_file.accessMaster.content = open(path)
         last_image_file.accessMaster.mimeType = 'image/jpeg2000'
+
+        puts 'JPEG 2000 stored!'
+
+        img = img.resize_to_fit(300,300)
+        path = directory + "thumbnail.jpeg"
+        img.write(path)
+
+        last_image_file.thumbnail300.content = open(path)
+        last_image_file.thumbnail300.mimeType = 'image/jpeg'
+
       else
+        img =  Magick::Image.read(uri_file_part).first
 
         #jp2 image
         #jp2_img = Magick::Image.from_blob( img.to_blob { self.format = "jp2" } ).first
