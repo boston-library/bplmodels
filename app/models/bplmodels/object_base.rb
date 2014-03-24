@@ -640,7 +640,8 @@ module Bplmodels
       if conserve_memory
         directory = "public/data"
 
-        path = File.join(directory, "temp.jp2")
+        #path = File.join(directory, "temp.jp2")
+        path = directory + "temp.jp2"
         img.write(path)
 
         puts 'JPEG 2000 written!'
