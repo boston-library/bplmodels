@@ -608,7 +608,7 @@ module Bplmodels
       puts 'processing image of: ' + self.pid.to_s + ' with file: ' + file
 
 
-      conserve_memory = true
+      conserve_memory = false
 
       uri_file_part = file
       #Fix common url errors
@@ -638,10 +638,11 @@ module Bplmodels
       if conserve_memory
         img = MiniMagick::Image.open(uri_file_part)
 
-        directory = "public/data"
+        directory = "public/data/"
 
         #path = File.join(directory, "temp.jp2")
-        path = directory + "temp.jp2"
+        path = directory + "convertedjp2.jp2"
+        img.format "jp2"
 
         img.write(path)
 
@@ -652,14 +653,17 @@ module Bplmodels
 
         puts 'JPEG 2000 stored!'
 
-        img = img.resize_to_fit(300,300)
-        path = directory + "thumbnail.jpeg"
+        img = MiniMagick::Image.open(uri_file_part)
+        img.format "jpg"
+        img.resize("300X300")
+        path = directory + "thumbnail.jpg"
         img.write(path)
 
         last_image_file.thumbnail300.content = open(path)
         last_image_file.thumbnail300.mimeType = 'image/jpeg'
 
       else
+        Magick::limit_resource(:memory, 9000)
         img =  Magick::Image.read(uri_file_part).first
 
         #jp2 image
