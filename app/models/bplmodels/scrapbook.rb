@@ -1,5 +1,5 @@
 module Bplmodels
-  class Scrapbook < Bplmodels::SimpleObjectBase
+  class Scrapbook < Bplmodels::ComplexObjectBase
     #has_file_datastream :name => 'productionMaster', :type => ActiveFedora::Datastream
 
 

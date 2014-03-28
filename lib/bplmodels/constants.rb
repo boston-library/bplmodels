@@ -18,6 +18,7 @@ module Bplmodels
     GENRE_LOOKUP['Motion pictures'] = {:id=>'tgm006804', :authority=>'lctgm'}
     GENRE_LOOKUP['Periodicals'] = {:id=>'tgm007641', :authority=>'gmgpc'}
     GENRE_LOOKUP['Books'] = {:id=>'tgm001221', :authority=>'gmgpc'}
+    GENRE_LOOKUP['Albums'] = {:id=>'tgm000229', :authority=>'gmgpc'}
 
     COUNTRY_TGN_LOOKUP = {}
     COUNTRY_TGN_LOOKUP['United States'] = {:tgn_id=>7012149, :tgn_country_name=>'United States'}
