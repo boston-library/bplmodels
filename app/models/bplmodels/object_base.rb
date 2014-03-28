@@ -607,6 +607,9 @@ module Bplmodels
 
       puts 'processing image of: ' + self.pid.to_s + ' with file: ' + file
 
+
+      conserve_memory = false
+
       uri_file_part = file
       #Fix common url errors
       if uri_file_part.match(/^http/)
@@ -632,25 +635,64 @@ module Bplmodels
         last_image_file.productionMaster.mimeType = 'image/jpeg'
       end
 
-      img =  Magick::Image.read(uri_file_part).first
-      #jp2 image
-      #jp2_img = Magick::Image.from_blob( img.to_blob { self.format = "jp2" } ).first
+      if conserve_memory
+        img = MiniMagick::Image.open(uri_file_part)
+        img.combine_options do |opt|
+          opt.limit "memory", "2000MiB"
+          opt.limit "map", "2000MiB"
+          opt.limit "disk", "100000MiB"
+        end
 
-      #Convert to black and white if only 1 color currently... bug in Djokota
-      #img = img.quantize(2, Magick::GRAYColorspace) if img.depth == 1
+        directory = "public/data/"
 
-      jp2_img = img
-      last_image_file.accessMaster.content = jp2_img.to_blob { self.format = "jp2" }
-      last_image_file.accessMaster.mimeType = 'image/jpeg2000'
+        #path = File.join(directory, "temp.jp2")
+        path = directory + "convertedjp2.jp2"
+        img.format "jp2"
 
-      #thumbnail
-      #thumb = Magick::Image.from_blob( jp2_img.to_blob { self.format = "jpg" } ).first
-      thumb = img
-      thumb = thumb.resize_to_fit(300,300)
+        img.write(path)
 
-      last_image_file.thumbnail300.content = thumb.to_blob { self.format = "jpg" }
-      last_image_file.thumbnail300.mimeType = 'image/jpeg'
+        puts 'JPEG 2000 written!'
 
+        last_image_file.accessMaster.content = open(path)
+        last_image_file.accessMaster.mimeType = 'image/jpeg2000'
+
+        puts 'JPEG 2000 stored!'
+
+        img = MiniMagick::Image.open(uri_file_part)
+        img.format "jpg"
+        img.resize("300X300")
+        path = directory + "thumbnail.jpg"
+        img.write(path)
+
+        last_image_file.thumbnail300.content = open(path)
+        last_image_file.thumbnail300.mimeType = 'image/jpeg'
+
+      else
+        #Magick::limit_resource(:memory, 7500000000)
+        Magick::limit_resource(:memory, 5500000000)
+        Magick::limit_resource(:map, 5500000000)
+        img =  Magick::Image.read(uri_file_part).first
+
+        #jp2 image
+        #jp2_img = Magick::Image.from_blob( img.to_blob { self.format = "jp2" } ).first
+
+        #Convert to black and white if only 1 color currently... bug in Djokota
+        #img = img.quantize(2, Magick::GRAYColorspace) if img.depth == 1
+        jp2_img = img
+        last_image_file.accessMaster.content = jp2_img.to_blob { self.format = "jp2" }
+        last_image_file.accessMaster.mimeType = 'image/jpeg2000'
+
+        #thumbnail
+        #thumb = Magick::Image.from_blob( jp2_img.to_blob { self.format = "jpg" } ).first
+        thumb = img
+        thumb = thumb.resize_to_fit(300,300)
+
+        last_image_file.thumbnail300.content = thumb.to_blob { self.format = "jpg" }
+        last_image_file.thumbnail300.mimeType = 'image/jpeg'
+
+        thumb.destroy!
+        img.destroy!
+      end
       other_images_exist = false
       Bplmodels::ImageFile.find_in_batches('is_image_of_ssim'=>"info:fedora/#{self.pid}", 'is_preceding_image_of_ssim'=>'') do |group|
         group.each { |image_id|
@@ -675,8 +717,6 @@ module Bplmodels
 
       last_image_file.save
 
-      thumb.destroy!
-      img.destroy!
       last_image_file
     end
 
