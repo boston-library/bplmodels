@@ -178,5 +178,15 @@ module Bplmodels
        return nil
      end
 
+     def self.getFileParentObject(pid)
+       Bplmodels::File.find_in_batches('id'=>"#{pid}") do |group|
+         group.each { |solr_object|
+           return solr_object['is_file_of_ssim'].first
+         }
+       end
+
+       return nil
+     end
+
   end
 end
