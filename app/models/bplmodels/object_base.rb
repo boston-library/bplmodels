@@ -377,6 +377,37 @@ module Bplmodels
       # coordinates
       doc['subject_coordinates_geospatial'] = self.descMetadata.subject.cartographics.coordinates
 
+      #Blacklight-maps esque placename_coords
+      0.upto self.descMetadata.subject.length-1 do |subject_index|
+       if self.descMetadata.mods(0).subject(subject_index).cartographics.present?
+         place_name = "Results"
+         if self.mods(0).subject(subject_index).authority == ['tgn']
+           place_locations = []
+           self.descMetadata.mods(0).subject(subject_index).hierarchical_geographic[0].split("\n").each do |split_geo|
+             split_geo = split_geo.strip
+             place_locations << split_geo if split_geo.present? && !split_geo.include?('North and Central America') && !split_geo.include?('United States')
+           end
+           place_name = place_locations.reverse.join(', ')
+         else
+           place_name = self.mods(0).subject(subject_index).geographic
+         end
+
+         doc['subject_blacklight_maps_ssim'] = "#{place_name}-|-#{self.descMetadata.mods(0).subject(subject_index).cartographics.coordinates.split(',').last}-|-#{self.descMetadata.mods(0).subject(subject_index).cartographics.coordinates.split(',').first}"
+       end
+      end
+
+      place_locations = []
+      test.descMetadata.mods(0).subject(index).hierarchical_geographic[0].split("\n").each do |split_geo|
+        split_geo = split_geo.strip
+        place_locations << split_geo if split_geo.present? && !split_geo.include?('North and Central America') && !split_geo.include?('United States')
+      end
+      place_name = place_locations.reverse.join(', ')
+
+      self.descMetadata.subject.cartographics.coordinates.each_with_index do |coord|
+          doc['placename_coords_ssim'] = self.descMetadata.subject.cartographics.coordinates
+      end
+
+
       # add " (county)" to county values for better faceting
       county_facet = []
       if county.length > 0
