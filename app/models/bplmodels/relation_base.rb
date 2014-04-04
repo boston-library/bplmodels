@@ -1,8 +1,11 @@
 module Bplmodels
   class RelationBase < ActiveFedora::Base
-    include Hydra::ModelMixins::CommonMetadata
+    include Hydra::AccessControls::Permissions
     include Hydra::ModelMethods
-    include Hydra::ModelMixins::RightsMetadata
+
+    #include Hydra::ModelMixins::CommonMetadata
+    #include Hydra::ModelMethods
+    #include Hydra::ModelMixins::RightsMetadata
 
     include ActiveFedora::Auditable
 
@@ -16,7 +19,7 @@ module Bplmodels
     # collections and institutions can have an associated image file
     has_many :image_files, :class_name => "Bplmodels::ImageFile", :property=> :is_image_of
 
-    delegate :abstract, :to=>'descMetadata', :at => [:abstract], :unique=>true
+    has_attributes :abstract, :datastream=>'descMetadata', :at => [:abstract], :multiple=>false
 
 
 

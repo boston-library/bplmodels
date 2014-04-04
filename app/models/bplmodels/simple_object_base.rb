@@ -2,10 +2,9 @@ module Bplmodels
   class SimpleObjectBase < Bplmodels::ObjectBase
     #has_file_datastream :name => 'productionMaster', :type => ActiveFedora::Datastream
 
-    include Hydra::ModelMixins::CommonMetadata
-    include Hydra::ModelMixins::RightsMetadata
+    include Hydra::AccessControls::Permissions
     include Hydra::ModelMethods
-
+    #multiple: false
 
     belongs_to :institution, :class_name => 'Bplmodels::Institution', :property => :is_member_of
 
@@ -20,32 +19,32 @@ module Bplmodels
     # Uses the Hydra Rights Metadata Schema for tracking access permissions & copyright
     has_metadata :name => "rightsMetadata", :type => Hydra::Datastream::RightsMetadata
 
-    delegate :abstract, :to=>'descMetadata', :at => [:mods, :abstract], :unique=>true
-    delegate :title, :to=>'descMetadata', :at => [:mods, :title]
-    delegate :supplied_title, :to=>'descMetadata', :at => [:mods, :title_info, :supplied]
-    delegate :note_value, :to=>'descMetadata', :at => [:mods, :note]
-    delegate :workflow_state, :to=>'workflowMetadata', :at => [:item_status, :state]  #, :unique=>true
-    delegate :creator_name, :to=>'descMetadata', :at => [:mods, :name, :namePart]
-    delegate :creator_type, :to=>'descMetadata', :at => [:mods, :name, :type]
-    delegate :creator_role, :to=>'descMetadata', :at => [:mods, :name, :role, :text]
-    delegate :resource_type, :to=>'descMetadata', :at => [:mods, :type_of_resource]
-    delegate :manuscript, :to=>'descMetadata', :at => [:mods, :type_of_resource, :manuscript]
-    delegate :genre, :to=>'descMetadata', :at => [:mods, :genre_basic]
-    delegate :identifier, :to=>'descMetadata', :at=>[:mods, :identifier]
-    delegate :identifier_type, :to=>'descMetadata', :at=>[:mods, :identifier, :type_at]
-    delegate :publisher_name, :to=>'descMetadata', :at=>[:mods, :origin_info, :publisher]
-    delegate :publisher_place, :to=>'descMetadata', :at=>[:mods, :origin_info, :place, :place_term]
-    delegate :extent, :to=>'descMetadata', :at=>[:mods, :physical_description, :extent]
-    delegate :digital_source, :to=>'descMetadata', :at=>[:mods, :physical_description, :digital_origin]
-    delegate :note, :to=>'descMetadata', :at=>[:mods, :note]
-    delegate :note_type, :to=>'descMetadata', :at=>[:mods, :note, :type_at]
-    delegate :subject_place_value, :to=>'descMetadata', :at=>[:mods, :subject, :geographic]
-    delegate :subject_name_value, :to=>'descMetadata', :at=>[:mods, :subject, :name, :name_part]
-    delegate :subject_name_type, :to=>'descMetadata', :at=>[:mods, :subject, :name, :type]
-    delegate :subject_topic_value, :to=>'descMetadata', :at=>[:mods, :subject, :topic]
-    delegate :subject_authority, :to=>'descMetadata', :at=>[:mods, :subject, :authority]
-    delegate :language, :to=>'descMetadata', :at=>[:mods, :language, :language_term]
-    delegate :language_uri, :to=>'descMetadata', :at=>[:mods, :language, :language_term, :lang_val_uri]
+    has_attributes :abstract, :datastream=>'descMetadata', :at => [:mods, :abstract], :multiple=> false
+    has_attributes :title, :datastream=>'descMetadata', :at => [:mods, :title],  :multiple=> true
+    has_attributes :supplied_title, :datastream=>'descMetadata', :at => [:mods, :title_info, :supplied],  :multiple=> true
+    has_attributes :note_value, :datastream=>'descMetadata', :at => [:mods, :note],  :multiple=> true
+    has_attributes :workflow_state, :datastream=>'workflowMetadata', :at => [:item_status, :state],  :multiple=> true
+    has_attributes :creator_name, :datastream=>'descMetadata', :at => [:mods, :name, :namePart],  :multiple=> true
+    has_attributes :creator_type, :datastream=>'descMetadata', :at => [:mods, :name, :type],  :multiple=> true
+    has_attributes :creator_role, :datastream=>'descMetadata', :at => [:mods, :name, :role, :text],  :multiple=> true
+    has_attributes :resource_type, :datastream=>'descMetadata', :at => [:mods, :type_of_resource],  :multiple=> true
+    has_attributes :manuscript, :datastream=>'descMetadata', :at => [:mods, :type_of_resource, :manuscript],  :multiple=> true
+    has_attributes :genre, :datastream=>'descMetadata', :at => [:mods, :genre_basic],  :multiple=> true
+    has_attributes :identifier, :datastream=>'descMetadata', :at=>[:mods, :identifier],  :multiple=> true
+    has_attributes :identifier_type, :datastream=>'descMetadata', :at=>[:mods, :identifier, :type_at],  :multiple=> true
+    has_attributes :publisher_name, :datastream=>'descMetadata', :at=>[:mods, :origin_info, :publisher],  :multiple=> true
+    has_attributes :publisher_place, :datastream=>'descMetadata', :at=>[:mods, :origin_info, :place, :place_term],  :multiple=> true
+    has_attributes :extent, :datastream=>'descMetadata', :at=>[:mods, :physical_description, :extent],  :multiple=> true
+    has_attributes :digital_source, :datastream=>'descMetadata', :at=>[:mods, :physical_description, :digital_origin],  :multiple=> true
+    has_attributes :note, :datastream=>'descMetadata', :at=>[:mods, :note],  :multiple=> true
+    has_attributes :note_type, :datastream=>'descMetadata', :at=>[:mods, :note, :type_at],  :multiple=> true
+    has_attributes :subject_place_value, :datastream=>'descMetadata', :at=>[:mods, :subject, :geographic],  :multiple=> true
+    has_attributes :subject_name_value, :datastream=>'descMetadata', :at=>[:mods, :subject, :name, :name_part],  :multiple=> true
+    has_attributes :subject_name_type, :datastream=>'descMetadata', :at=>[:mods, :subject, :name, :type],  :multiple=> true
+    has_attributes :subject_topic_value, :datastream=>'descMetadata', :at=>[:mods, :subject, :topic],  :multiple=> true
+    has_attributes :subject_authority, :datastream=>'descMetadata', :at=>[:mods, :subject, :authority],  :multiple=> true
+    has_attributes :language, :datastream=>'descMetadata', :at=>[:mods, :language, :language_term],  :multiple=> true
+    has_attributes :language_uri, :datastream=>'descMetadata', :at=>[:mods, :language, :language_term, :lang_val_uri],  :multiple=> true
 
 
 
@@ -55,7 +54,7 @@ module Bplmodels
 
     #delegate :title, :to=>'descMetadata', :at => [:mods, :titleInfo, :title]
     #delegate :abstract, :to => "descMetadata"
-    delegate :description, :to=>'descMetadata', :at => [:abstract], :unique=>true
+    has_attributes :description, :datastream=>'descMetadata', :at => [:abstract],  :multiple=> false
     #delegate :url, :to=>'descMetadata', :at => [:relatedItem, :location, :url], :unique=>true
     #delegate :description, :to=>'descMetadata', :at => [:abstract], :unique=>true
     #delegate :identifier_accession, :to=>'descMetadata', :at => [:identifier_accession], :unique=>true
