@@ -2,8 +2,7 @@ module Bplmodels
   class ComplexObjectBase < Bplmodels::ObjectBase
     #has_file_datastream :name => 'productionMaster', :type => ActiveFedora::Datastream
 
-    include Hydra::ModelMixins::CommonMetadata
-    include Hydra::ModelMixins::RightsMetadata
+    include Hydra::AccessControls::Permissions
     include Hydra::ModelMethods
 
 
