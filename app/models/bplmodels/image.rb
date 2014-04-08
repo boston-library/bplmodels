@@ -4,7 +4,7 @@ module Bplmodels
 
     belongs_to :institution, :class_name => 'Bplmodels::Institution', :property => :is_member_of
 
-    has_and_belongs_to_many :image_files, :class => "Bplmodels::ImageFile", :property=> :has_image
+    has_and_belongs_to_many :image_files, :class_name => "Bplmodels::ImageFile", :property=> :has_image
 
     def fedora_name
       'image'
