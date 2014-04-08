@@ -1,8 +1,7 @@
 module Bplmodels
   class File  < ActiveFedora::Base
-    include Hydra::ModelMixins::CommonMetadata
+    include Hydra::AccessControls::Permissions
     include Hydra::ModelMethods
-    include Hydra::ModelMixins::RightsMetadata
 
     include ActiveFedora::Auditable
 

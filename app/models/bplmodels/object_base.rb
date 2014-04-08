@@ -185,6 +185,13 @@ module Bplmodels
           end
         end
 
+        # yearly faceting
+        (1500..2020).step(1) do |index|
+          if ((date_facet_start >= index && date_facet_start < index+1) || (date_facet_end != -1 && index > date_facet_start && date_facet_end >= index))
+            doc['date_facet_yearly_ssim'].append(index.to_s + 's')
+          end
+        end
+
       end
 
       doc['abstract_tsim'] = self.descMetadata.abstract
