@@ -185,6 +185,7 @@ module Bplmodels
           end
         end
 
+        doc['date_facet_yearly_ssim'] = []
         # yearly faceting
         (1500..2020).step(1) do |index|
           if ((date_facet_start >= index && date_facet_start < index+1) || (date_facet_end != -1 && index > date_facet_start && date_facet_end >= index))
