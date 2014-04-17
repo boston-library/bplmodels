@@ -404,6 +404,22 @@ module Bplmodels
        end
       end
 
+      #Blacklight-maps coords only
+      best_coords_found = false
+      0.upto self.descMetadata.subject.length-1 do |subject_index|
+        if self.descMetadata.mods(0).subject(subject_index).cartographics.present?
+          if self.descMetadata.mods(0).subject(subject_index).authority != ['tgn']
+            best_coords_found = true
+            doc['subject_blacklight_maps_coords_ssim'] = self.descMetadata.mods(0).subject(subject_index).cartographics.coordinates[0]
+          end
+        end
+      end
+      0.upto self.descMetadata.subject.length-1 do |subject_index|
+        if self.descMetadata.mods(0).subject(subject_index).cartographics.present? && !best_coords_found
+            doc['subject_blacklight_maps_coords_ssim'] = self.descMetadata.mods(0).subject(subject_index).cartographics.coordinates[0]
+        end
+      end
+
       # add " (county)" to county values for better faceting
       county_facet = []
       if county.length > 0
