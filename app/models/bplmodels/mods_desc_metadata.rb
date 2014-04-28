@@ -318,6 +318,7 @@ module Bplmodels
         t.place(:path=>"place") {
           t.place_term(:path=>"placeTerm", :attributes=>{:type=>'text'})
         }
+        t.issuance(:path=>"issuance")
       }
 
       t.item_location(:path=>"location") {
@@ -523,7 +524,9 @@ module Bplmodels
 
       t.record_info(:path=>'recordInfo') {
         t.description_standard(:path=>'descriptionStandard', :attributes=>{:authority=>"marcdescription"})
-        t.record_content_source(:path=>'recordContentSource')
+        t.record_content_source(:path=>'recordContentSource') {
+          t.authority(:path=>{:attribute=>"authority"})
+        }
         t.record_origin(:path=>'recordOrigin')
         t.language_of_cataloging(:path=>'languageOfCataloging') {
           t.language_term(:path=>'languageTerm', :attributes => { :authority => 'iso639-2b',:authorityURI=> 'http://id.loc.gov/vocabulary/iso639-2', :type=>'text', :valueURI=>'http://id.loc.gov/vocabulary/iso639-2/eng'  })
@@ -653,6 +656,13 @@ module Bplmodels
 
     def remove_publisher(index)
       self.find_by_terms(:mods, :publisher).slice(index.to_i).remove
+    end
+
+    def insert_issuance(issuance=nil)
+      origin_index = 0
+      issuance_index = self.mods(0).origin_info(origin_index).issuance.count
+
+      self.mods(0).origin_info(origin_index).issuance(issuance_index, issuance) unless issuance.blank?
     end
 
 
@@ -1385,8 +1395,23 @@ module Bplmodels
 
     def insert_subject_cartographic(coordinates=nil, scale=nil, projection=nil)
       subject_index =  self.mods(0).subject.count
+      if coordinates.split(' ').length == 3
+        coordinates.scan(/([NSWE])([\d\.]+) *([NSWE])([\d\.]+) *([NSWE])([\d\.]+) *([NSWE])([\d\.]+)/).map do |dir1,deg1,dir2,deg2,dir3,deg3,dir4,deg4|
+          deg1 = deg1 * -1 if dir1 == 'S' || dir1 == 'W'
+          deg2 = deg2 * -1 if dir2 == 'S' || dir2 == 'W'
+          deg3 = deg3 * -1 if dir3 == 'S' || dir3 == 'W'
+          deg4 = deg4 * -1 if dir4 == 'S' || dir4 == 'W'
 
-      self.mods(0).subject(subject_index).cartographics(0).coordinates = coordinates unless coordinates.blank?
+          if deg1 == deg2 && deg3 == deg4
+            self.mods(0).subject(subject_index).cartographics(0).coordinates = deg3.to_s + ',' + deg1.to_s
+          else
+            self.mods(0).subject(subject_index).cartographics(0).coordinates = deg1.to_s + ' ' + deg3.to_s + ' ' + deg2.to_s + ' ' + deg4.to_s
+          end
+        end
+      else
+        self.mods(0).subject(subject_index).cartographics(0).coordinates = coordinates unless coordinates.blank?
+      end
+
       self.mods(0).subject(subject_index).cartographics(0).scale = scale unless scale.blank?
       self.mods(0).subject(subject_index).cartographics(0).projection = projection unless projection.blank?
 
@@ -1549,8 +1574,9 @@ module Bplmodels
   end
 
 
-    def insert_record_information(record_content_source)
+    def insert_record_information(record_content_source, record_content_authority=nil)
       self.mods(0).record_info(0).record_content_source = record_content_source unless record_content_source.blank?
+      self.mods(0).record_info(0).record_content_source(0).authority = record_content_authority unless record_content_authority.blank?
       self.mods(0).record_info(0).record_origin = 'human prepared'
       self.mods(0).record_info(0).language_of_cataloging(0).language_term = 'English'
     end
