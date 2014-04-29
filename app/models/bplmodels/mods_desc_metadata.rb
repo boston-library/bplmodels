@@ -791,8 +791,7 @@ module Bplmodels
     end
 
     #usage=nil,  supplied=nil, subtitle=nil, language=nil, type=nil, authority=nil, authorityURI=nil, valueURI=nil
-    def insert_title(nonSort=nil, main_title=nil, usage=nil, supplied=nil, type=nil, args={})
-      puts args
+    def insert_title(nonSort=nil, main_title=nil, usage=nil, supplied=nil, type=nil, subtitle=nil, args={})
       title_index = self.mods(0).title_info.count
       self.mods(0).title_info(title_index).nonSort = nonSort unless nonSort.blank?
       self.mods(0).title_info(title_index).main_title = main_title unless main_title.blank?
@@ -801,6 +800,12 @@ module Bplmodels
       self.mods(0).title_info(title_index).supplied = 'yes' unless supplied.blank? || supplied == 'no'
 
       self.mods(0).title_info(title_index).type = type unless type.blank?
+
+      self.mods(0).title_info(title_index).subtitle = subtitle unless subtitle.blank?
+
+      if args.present?
+        raise 'broken args in Active Fedora 7'
+      end
 
       args.each do |key, value|
         self.mods(0).title_info(title_index).send(key, Bplmodels::DatastreamInputFuncs.utf8Encode(value)) unless value.blank?
