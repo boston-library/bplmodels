@@ -653,7 +653,7 @@ module Bplmodels
       puts 'processing image of: ' + self.pid.to_s + ' with file: ' + file
 
 
-      conserve_memory = false
+      conserve_memory = true
 
       uri_file_part = file
       #Fix common url errors
@@ -681,6 +681,7 @@ module Bplmodels
       end
 
       if conserve_memory
+=begin
         img = MiniMagick::Image.open(uri_file_part)
         img.combine_options do |opt|
           opt.limit "memory", "2000MiB"
@@ -711,6 +712,7 @@ module Bplmodels
 
         last_image_file.thumbnail300.content = open(path)
         last_image_file.thumbnail300.mimeType = 'image/jpeg'
+=end
 
       else
         #Magick::limit_resource(:memory, 7500000000)
