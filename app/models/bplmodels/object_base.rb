@@ -408,7 +408,7 @@ module Bplmodels
       best_coords_found = false
       0.upto self.descMetadata.subject.length-1 do |subject_index|
         if self.descMetadata.mods(0).subject(subject_index).cartographics.present?
-          if self.descMetadata.mods(0).subject(subject_index).authority != ['tgn']
+          if self.descMetadata.mods(0).subject(subject_index).authority.present? && self.descMetadata.mods(0).subject(subject_index).authority != ['tgn']
             best_coords_found = true
             doc['subject_blacklight_maps_coords_ssim'] = self.descMetadata.mods(0).subject(subject_index).cartographics.coordinates[0]
           end
