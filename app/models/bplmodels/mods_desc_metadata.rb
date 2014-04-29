@@ -1405,7 +1405,7 @@ module Bplmodels
           if deg1 == deg2 && deg3 == deg4
             self.mods(0).subject(subject_index).cartographics(0).coordinates = deg3.to_s + ',' + deg1.to_s
           else
-            self.mods(0).subject(subject_index).cartographics(0).coordinates = deg1.to_s + ' ' + deg3.to_s + ' ' + deg2.to_s + ' ' + deg4.to_s
+            self.mods(0).subject(subject_index).cartographics(0).coordinates = deg1.to_s + ' ' + deg4.to_s + ' ' + deg2.to_s + ' ' + deg3.to_s
           end
         end
       else
