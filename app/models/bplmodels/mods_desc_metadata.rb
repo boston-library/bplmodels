@@ -287,7 +287,7 @@ module Bplmodels
         t.authority(:path=>{:attribute=>"authority"})
         t.authorityURI(:path=>{:attribute=>"authorityURI"})
         t.valueURI(:path=>{:attribute=>"valueURI"})
-        t.subtitle(:path=>"subtitle", :label=>"subtitle")
+        t.subtitle(:path=>"subTitle", :label=>"subtitle")
       }
       t.title(:proxy=>[:title_info, :main_title])
 

@@ -242,6 +242,10 @@ module Bplmodels
 
       doc['pubplace_tsim'] = self.descMetadata.origin_info.place.place_term
 
+      doc['edition_tsim'] = self.descMetadata.origin_info.edition
+
+      doc['issuance_tsim'] = self.descMetadata.origin_info.issuance
+
       doc['lang_term_ssim'] = self.descMetadata.language.language_term
       #doc['lang_val_uri_ssim'] = self.descMetadata.language.language_term.lang_val_uri
 
@@ -382,8 +386,22 @@ module Bplmodels
       doc['subject_geo_area_tsim'] = area
       doc['subject_geo_area_ssim'] = area
 
-      # coordinates
-      doc['subject_coordinates_geospatial'] = self.descMetadata.subject.cartographics.coordinates
+      # scale
+      doc['subject_scale_tsim'] = self.descMetadata.subject.cartographics.scale
+
+      # coordinates / bbox
+      if self.descMetadata.subject.cartographics.coordinates.length > 0
+        self.descMetadata.subject.cartographics.coordinates.each do |coordinates|
+          if coordinates.scan(/[\s]/).length == 3
+            doc['subject_bounding_box_geospatial'] ||= []
+            doc['subject_bounding_box_geospatial'] << coordinates
+          else
+            doc['subject_coordinates_geospatial'] ||= []
+            doc['subject_coordinates_geospatial'] << coordinates
+          end
+        end
+      end
+      # doc['subject_coordinates_geospatial'] = self.descMetadata.subject.cartographics.coordinates # use this if we want to mix bbox and point data
 
       #Blacklight-maps esque placename_coords
       0.upto self.descMetadata.subject.length-1 do |subject_index|
