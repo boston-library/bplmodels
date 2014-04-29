@@ -1397,10 +1397,10 @@ module Bplmodels
       subject_index =  self.mods(0).subject.count
       if coordinates.split(' ').length >= 3
         coordinates.scan(/([NSWE])([\d\.]+) *([NSWE])([\d\.]+) *([NSWE])([\d\.]+) *([NSWE])([\d\.]+)/).map do |dir1,deg1,dir2,deg2,dir3,deg3,dir4,deg4|
-          deg1 = deg1 * -1 if dir1 == 'S' || dir1 == 'W'
-          deg2 = deg2 * -1 if dir2 == 'S' || dir2 == 'W'
-          deg3 = deg3 * -1 if dir3 == 'S' || dir3 == 'W'
-          deg4 = deg4 * -1 if dir4 == 'S' || dir4 == 'W'
+          deg1 = Float(deg1) * -1 if dir1 == 'S' || dir1 == 'W'
+          deg2 = Float(deg2) * -1 if dir2 == 'S' || dir2 == 'W'
+          deg3 = Float(deg3) * -1 if dir3 == 'S' || dir3 == 'W'
+          deg4 = Float(deg4) * -1 if dir4 == 'S' || dir4 == 'W'
 
           if deg1 == deg2 && deg3 == deg4
             self.mods(0).subject(subject_index).cartographics(0).coordinates = deg3.to_s + ',' + deg1.to_s
