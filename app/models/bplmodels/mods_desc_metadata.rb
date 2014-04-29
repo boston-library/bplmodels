@@ -802,7 +802,10 @@ module Bplmodels
 
       self.mods(0).title_info(title_index).type = type unless type.blank?
 
+      puts args.to_s
       args.each do |key, value|
+        puts key
+        puts value
         self.mods(0).title_info(title_index).send(key, Bplmodels::DatastreamInputFuncs.utf8Encode(value)) unless value.blank?
       end
     end
