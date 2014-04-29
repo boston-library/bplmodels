@@ -405,6 +405,7 @@ module Bplmodels
       end
 
       #Blacklight-maps coords only
+=begin
       best_coords_found = false
       0.upto self.descMetadata.subject.length-1 do |subject_index|
         if self.descMetadata.mods(0).subject(subject_index).cartographics.present?
@@ -419,6 +420,7 @@ module Bplmodels
             doc['subject_blacklight_maps_coords_ssim'] = self.descMetadata.mods(0).subject(subject_index).cartographics.coordinates[0]
         end
       end
+=end
 
       # add " (county)" to county values for better faceting
       county_facet = []
