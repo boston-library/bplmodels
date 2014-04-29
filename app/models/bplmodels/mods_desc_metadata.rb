@@ -1395,7 +1395,7 @@ module Bplmodels
 
     def insert_subject_cartographic(coordinates=nil, scale=nil, projection=nil)
       subject_index =  self.mods(0).subject.count
-      if coordinates.split(' ').length == 3
+      if coordinates.split(' ').length >= 3
         coordinates.scan(/([NSWE])([\d\.]+) *([NSWE])([\d\.]+) *([NSWE])([\d\.]+) *([NSWE])([\d\.]+)/).map do |dir1,deg1,dir2,deg2,dir3,deg3,dir4,deg4|
           deg1 = deg1 * -1 if dir1 == 'S' || dir1 == 'W'
           deg2 = deg2 * -1 if dir2 == 'S' || dir2 == 'W'
