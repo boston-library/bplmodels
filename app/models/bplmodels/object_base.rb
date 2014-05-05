@@ -671,7 +671,7 @@ module Bplmodels
       puts 'processing image of: ' + self.pid.to_s + ' with file: ' + file
 
 
-      conserve_memory = true
+      conserve_memory = false
 
       uri_file_part = file
       #Fix common url errors
