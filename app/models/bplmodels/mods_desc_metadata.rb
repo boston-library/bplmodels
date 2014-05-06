@@ -11,7 +11,7 @@ module Bplmodels
     end
 
     MODS_NS = 'http://www.loc.gov/mods/v3'
-    MODS_SCHEMA = 'http://www.loc.gov/standards/mods/v3/mods-3-4.xsd'
+    MODS_SCHEMA = 'http://www.loc.gov/standards/mods/v3/mods-3-5.xsd'
     MODS_PARAMS = {
         "version"            => "3.4",
         "xmlns:xlink"        => "http://www.w3.org/1999/xlink",
