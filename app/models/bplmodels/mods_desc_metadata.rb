@@ -637,9 +637,10 @@ module Bplmodels
 
     def insert_type_of_resource(value=nil, manuscript=nil)
       resource_index = self.mods(0).type_of_resource.count
-
-      self.mods(0).type_of_resource(resource_index, value) unless value.blank? || self.mods(0).type_of_resource.include?(value)
-      self.mods(0).type_of_resource(resource_index).manuscript = 'yes' unless manuscript.blank? || self.mods(0).type_of_resource.include?(value)
+      if !self.mods(0).type_of_resource.include?(value)
+        self.mods(0).type_of_resource(resource_index, value) unless value.blank?
+        self.mods(0).type_of_resource(resource_index).manuscript = 'yes' unless manuscript.blank?
+      end
     end
 
     def remove_type_of_resource(index)
