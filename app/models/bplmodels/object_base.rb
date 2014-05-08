@@ -406,7 +406,7 @@ module Bplmodels
 
       #Blacklight-maps esque placename_coords
       0.upto self.descMetadata.subject.length-1 do |subject_index|
-       if self.descMetadata.mods(0).subject(subject_index).cartographics.present?
+       if self.descMetadata.mods(0).subject(subject_index).cartographics.present? && self.descMetadata.mods(0).subject(subject_index).cartographics.scale.blank?
          place_name = "Results"
          if self.descMetadata.mods(0).subject(subject_index).authority == ['tgn']
            place_locations = []
