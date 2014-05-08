@@ -1429,12 +1429,20 @@ module Bplmodels
           end
         end
       else
+        #Remove spaces around the comma
+        coordinates = coordinates.gsub(/ *, */, ',')
         self.mods(0).subject(subject_index).cartographics(0).coordinates = coordinates unless coordinates.blank?
       end
 
+      #FIXME: self.mods(0).subject(subject_index).cartographics(0).scale = scale unless scale.blank?
+      #FIXME: self.mods(0).subject(subject_index).cartographics(0).projection = projection unless projection.blank?
+
+    end
+
+    def insert_subject_scale(scale=nil, projection=nil)
+      subject_index =  self.mods(0).subject.count
       self.mods(0).subject(subject_index).cartographics(0).scale = scale unless scale.blank?
       self.mods(0).subject(subject_index).cartographics(0).projection = projection unless projection.blank?
-
     end
 
     def remove_subject_cartographic(index)
