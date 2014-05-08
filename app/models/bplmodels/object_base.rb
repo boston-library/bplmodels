@@ -206,6 +206,7 @@ module Bplmodels
 
       doc['identifier_local_other_tsim'] = self.descMetadata.local_other
       doc['identifier_local_call_tsim'] = self.descMetadata.local_call
+      doc['identifier_local_barcode_tsim'] = self.descMetadata.local_barcode
 
       doc['identifier_ark_ssi'] = ''
 

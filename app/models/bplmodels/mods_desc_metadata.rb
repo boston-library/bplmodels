@@ -348,6 +348,7 @@ module Bplmodels
 
       t.local_accession :path => 'identifier', :attributes => { :type => "local-accession" }
       t.local_call :path => 'identifier', :attributes => { :type => "local-call" }
+      t.local_barcode :path => 'identifier', :attributes => { :type => "local-barcode" }
       t.identifier_uri :path => 'identifier', :attributes => { :type => "uri" }
 
       t.physical_description(:path=>"physicalDescription") {
