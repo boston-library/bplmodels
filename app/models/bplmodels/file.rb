@@ -3,7 +3,16 @@ module Bplmodels
     include Hydra::AccessControls::Permissions
     include Hydra::ModelMethods
 
+    include Bplmodels::Characterization
+
     include ActiveFedora::Auditable
+    include Hydra::Derivatives
+
+    has_file_datastream 'productionMaster', versionable: true, label: 'productionMaster datastream', type: FileContentDatastream
+
+    has_file_datastream 'accessMaster', versionable: false, label: 'accessMaster datastream'
+
+    has_file_datastream 'thumbnail300', versionable: false,  label:'thumbnail300 datastream'
 
     belongs_to :object, :class_name => "Bplmodels::ObjectBase", :property => :is_image_of
 

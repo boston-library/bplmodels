@@ -26,6 +26,10 @@ module Bplmodels
         t.ingest_filename(:path=>"ingestFilename") #Only recently added
       }
 
+      t.item_designations(:path=>'itemDesignations') {
+        t.flagged_for_content(:path=>"flaggedForContent")
+      }
+
       t.marked_for_deletion(:path=>'markedForDelation') {
         t.reason(:path=>'reason')
       }

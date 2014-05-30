@@ -19,6 +19,7 @@ Gem::Specification.new do |s|
   s.add_dependency "rails"
   s.add_dependency "mods"
   s.add_dependency "timeliness"
+  s.add_dependency "hydra-derivatives"
   # s.add_dependency "jquery-rails"
 
   s.add_development_dependency "sqlite3"

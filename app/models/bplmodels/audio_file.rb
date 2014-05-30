@@ -1,6 +1,5 @@
 module Bplmodels
   class AudioFile  < Bplmodels::File
-    has_file_datastream 'productionMaster', :versionable=>true, :label=>'productionMaster datastream'
 
     has_many :next_audio, :class_name => "Bplmodels::AudioFile", :property=> :is_preceding_audio_of
 

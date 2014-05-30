@@ -812,11 +812,12 @@ module Bplmodels
     end
 
 
+    #Problems: A . Some Name and A & R
     def self.getProperTitle(title)
       nonSort = nil
       title = title
 
-      if title[0..1].downcase == "a "
+      if title[0..1].downcase == "a " && (title[0..2].downcase != "a ." && title[0..2].downcase != "a &")
         nonSort = title[0]
         title = title[2..title.length]
       elsif title[0..3].downcase == "the "
