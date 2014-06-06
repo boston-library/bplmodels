@@ -8,6 +8,8 @@ module Bplmodels
     include ActiveFedora::Auditable
     include Hydra::Derivatives
 
+    has_file_datastream 'preProductionNegativeMaster', versionable: true, label: 'preProductionNegativeMaster datastream'
+
     has_file_datastream 'productionMaster', versionable: true, label: 'productionMaster datastream', type: FileContentDatastream
 
     has_file_datastream 'accessMaster', versionable: false, label: 'accessMaster datastream'
@@ -46,6 +48,34 @@ module Bplmodels
 
     end
 
+
+    def generate_derivatives
+      case self.productionMaster.mimeType
+        when 'application/pdf'
+          #transform_datastream :productionMaster, { :thumb => "100x100>" }
+        when 'audio/wav'
+          #transform_datastream :productionMaster, { :mp3 => {format: 'mp3'}, :ogg => {format: 'ogg'} }, processor: :audio
+        when 'video/avi'
+          #transform_datastream :productionMaster, { :mp4 => {format: 'mp4'}, :webm => {format: 'webm'} }, processor: :video
+        when 'image/tiff', 'image/png', 'image/jpg'
+          transform_datastream :productionMaster, { :testJP2k => { recipe: :default, datastream: 'accessMaster'  } }, processor: 'jpeg2k_image'
+          transform_datastream :productionMaster, { :thumb => {size: "300x300>", datastream: 'thumbnail300', format: 'jpg'} }
+      end
+    end
+
+    def derivative_service(is_new)
+      response = Typhoeus::Request.post(DERIVATIVE_CONFIG_GLOBAL['url'] + "/processor.json", :params => {:pid=>self.pid, :new=>is_new})
+      as_json = JSON.parse(response.body)
+
+      if as_json['result'] == "false"
+        pid = self.object.pid
+        self.delete
+        raise "Error Generating Derivatives For Object: " + pid
+      end
+
+      return true
+    end
+
     #Expects the following args:
     #parent_pid => id of the parent object
     #local_id => local ID of the object
@@ -81,6 +111,10 @@ module Bplmodels
 
       object.read_groups = ["public"]
       object.edit_groups = ["superuser", "admin[#{args[:institution_pid]}]"]  if args[:institution_pid].present?
+
+      object.workflowMetadata.item_ark_info.ark_id = args[:local_id]
+      object.workflowMetadata.item_ark_info.ark_type = args[:local_id_type]
+      object.workflowMetadata.item_ark_info.ark_parent_pid = args[:parent_pid]
 
       return object
     end

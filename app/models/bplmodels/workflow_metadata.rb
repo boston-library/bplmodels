@@ -18,12 +18,27 @@ module Bplmodels
       t.item_status(:path=>"itemStatus") {
         t.state(:path=>"state")
         t.state_comment(:path=>"stateComment")
+        t.processing(:path=>"processing")
+        t.processing_comment(:path=>"processingComment")
       }
 
       t.item_source(:path=>"itemSource") {
         t.ingest_origin(:path=>"ingestOrigin")
         t.ingest_filepath(:path=>"ingestFilepath") #Only supported later for file objects.
         t.ingest_filename(:path=>"ingestFilename") #Only recently added
+      }
+
+      t.item_ark_info(:path=>"arkInformation") {
+        t.ark_id(:path=>"arkID")
+        t.ark_type(:path=>"arkType")
+        t.ark_parent_pid(:path=>"arkParentPID")
+      }
+
+      t.source(:path=>"source") {
+        t.ingest_origin(:path=>"ingestOrigin")
+        t.ingest_filepath(:path=>"ingestFilepath") #Only supported later for file objects.
+        t.ingest_filename(:path=>"ingestFilename") #Only recently added
+        t.ingest_datastream(:path=>"ingestDatastream")
       }
 
       t.item_designations(:path=>'itemDesignations') {
@@ -55,6 +70,14 @@ module Bplmodels
       ingest_filename_index = self.item_source.ingest_filepath.count
 
       self.item_source.ingest_filename(ingest_filename_index, value) unless value.blank? || self.item_source.ingest_filepath.include?(value)
+    end
+
+    def insert_file_source(filepath, filename, datastream)
+      source_count = self.source.count
+
+      self.source(source_count).ingest_filepath(0, filepath) unless filepath.blank?
+      self.source(source_count).ingest_filename(0, filename) unless filename.blank?
+      self.source(source_count).ingest_datastream(0, datastream) unless datastream.blank?
     end
   end
 end
