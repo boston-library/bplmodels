@@ -822,9 +822,6 @@ module Bplmodels
 
 
     def insert_name(name=nil, type=nil, authority=nil, value_uri=nil, role=nil, role_uri=nil, args={})
-      puts name
-      puts role
-      puts role_uri
 
       name_index = self.mods(0).name.count
       self.mods(0).name(name_index).type = type unless type.blank?
@@ -832,8 +829,14 @@ module Bplmodels
       self.mods(0).name(name_index).valueURI = value_uri unless value_uri.blank?
 
       if role.present?
-        self.mods(0).name(name_index).role.text = role unless role.blank?
-        self.mods(0).name(name_index).role.text.valueURI = role_uri unless role_uri.blank?
+        role_split = role.split('{|}') #new split var - see Arnold ticket
+        role_uri_split = role_uri.split('{|}') #new split var - see Arnold ticket
+
+        role_split.each_with_index do |single_role, role_index|
+          self.mods(0).name(name_index).role(role_index).text = single_role unless single_role.blank?
+          self.mods(0).name(name_index).role(role_index).text.valueURI = role_uri_split[role_index] unless role_uri_split[role_index].blank?
+        end
+
       end
 
       if(authority == 'naf')
