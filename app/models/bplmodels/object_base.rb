@@ -309,7 +309,12 @@ module Bplmodels
           else
             doc['name_personal_tsim'].append(self.descMetadata.mods(0).name(index).namePart[0])
           end
-          doc['name_personal_role_tsim'].append(self.descMetadata.mods(0).name(index).role.text[0])
+          if self.descMetadata.mods(0).name(index).role.length > 1
+            doc['name_personal_role_tsim'].append(self.descMetadata.mods(0).name(0).role.join('||').gsub(/[\n]\s*/,''))
+          else
+            doc['name_personal_role_tsim'].append(self.descMetadata.mods(0).name(index).role.text[0])
+          end
+
         elsif self.descMetadata.mods(0).name(index).type[0] == "corporate"
           corporate_name = self.descMetadata.mods(0).name(index).namePart.join(". ").gsub(/\.\./,'.')
           # TODO -- do we need the conditional below?
@@ -319,15 +324,23 @@ module Bplmodels
           else
             doc['name_corporate_tsim'].append(corporate_name)
           end
-          doc['name_corporate_role_tsim'].append(self.descMetadata.mods(0).name(index).role.text[0])
-        else
+          if self.descMetadata.mods(0).name(index).role.length > 1
+            doc['name_corporate_role_tsim'].append(self.descMetadata.mods(0).name(0).role.join('||').gsub(/[\n]\s*/,''))
+          else
+            doc['name_corporate_role_tsim'].append(self.descMetadata.mods(0).name(index).role.text[0])
+          end
 
+        else
           if self.descMetadata.mods(0).name(index).date.length > 0
             doc['name_generic_tsim'].append(self.descMetadata.mods(0).name(index).namePart[0] + ", " + self.descMetadata.mods(0).name(index).date[0])
           else
             doc['name_generic_tsim'].append(self.descMetadata.mods(0).name(index).namePart[0])
           end
-          doc['name_generic_role_tsim'].append(self.descMetadata.mods(0).name(index).role.text[0])
+          if self.descMetadata.mods(0).name(index).role.length > 1
+            doc['name_generic_role_tsim'].append(self.descMetadata.mods(0).name(0).role.join('||').gsub(/[\n]\s*/,''))
+          else
+            doc['name_generic_role_tsim'].append(self.descMetadata.mods(0).name(index).role.text[0])
+          end
         end
 
       end
