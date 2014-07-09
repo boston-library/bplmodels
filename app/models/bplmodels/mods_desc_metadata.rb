@@ -1292,6 +1292,8 @@ module Bplmodels
           self.mods(0).subject(subject_index).authorityURI = 'http://id.loc.gov/vocabulary/graphicMaterials'
         elsif authority == 'lcsh'
           self.mods(0).subject(subject_index).authorityURI = 'http://id.loc.gov/authorities/subjects'
+        elsif authority == 'naf'
+          self.mods(0).subject(subject_index).authorityURI = 'http://id.loc.gov/authorities/names'
         end
 
         self.mods(0).subject(subject_index).title_info(0).valueURI = valueURI unless valueURI.blank?
