@@ -551,6 +551,14 @@ module Bplmodels
 
       end
 
+      # title subjects
+      if self.descMetadata.subject.title_info.length > 0
+        doc['subject_title_tsim'] = []
+        self.descMetadata.subject.title_info.title.each do |subject_title|
+          doc['subject_title_tsim'] << subject_title
+        end
+        doc['subject_facet_ssim'].concat(doc['subject_title_tsim'])
+      end
 
       doc['active_fedora_model_suffix_ssi'] = self.rels_ext.model.class.to_s.gsub(/\A[\w]*::/,'')
 
@@ -560,12 +568,15 @@ module Bplmodels
       doc['note_tsim'] = []
       doc['note_resp_tsim'] = []
       doc['note_date_tsim'] = []
+      doc['note_performers_tsim'] = []
 
       0.upto self.descMetadata.note.length-1 do |index|
         if self.descMetadata.note(index).type_at.first == 'statement of responsibility'
           doc['note_resp_tsim'].append(self.descMetadata.mods(0).note(index).first)
         elsif self.descMetadata.note(index).type_at.first == 'date'
           doc['note_date_tsim'].append(self.descMetadata.mods(0).note(index).first)
+        elsif self.descMetadata.note(index).type_at.first == 'performers'
+          doc['note_performers_tsim'].append(self.descMetadata.mods(0).note(index).first)
         else
           doc['note_tsim'].append(self.descMetadata.mods(0).note(index).first)
         end
