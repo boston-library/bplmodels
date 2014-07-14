@@ -930,7 +930,7 @@ module Bplmodels
     end
 
     def deleteAllFiles
-      Bplmodels::AudioFile.find_in_batches('is_image_of_ssim'=>"info:fedora/#{self.pid}") do |group|
+      Bplmodels::ImageFile.find_in_batches('is_image_of_ssim'=>"info:fedora/#{self.pid}") do |group|
         group.each { |solr_object|
           object = ActiveFedora::Base.find(solr_object['id']).adapt_to_cmodel
           object.delete
@@ -944,7 +944,7 @@ module Bplmodels
         }
       end
 
-      Bplmodels::AudioFile.find_in_batches('is_document_of_ssim'=>"info:fedora/#{self.pid}") do |group|
+      Bplmodels::DocumentFile.find_in_batches('is_document_of_ssim'=>"info:fedora/#{self.pid}") do |group|
         group.each { |solr_object|
           object = ActiveFedora::Base.find(solr_object['id']).adapt_to_cmodel
           object.delete
