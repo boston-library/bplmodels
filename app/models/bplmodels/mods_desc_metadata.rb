@@ -1277,7 +1277,7 @@ module Bplmodels
     end
 
     #usage=nil,  supplied=nil, subtitle=nil, language=nil, type=nil, authority=nil, authorityURI=nil, valueURI=nil
-    def insert_subject_title(main_title=nil, authority=nil, valueURI=nil)
+    def insert_subject_title(main_title=nil, authority=nil, valueURI=nil, type=nil)
       if main_title.present?
         subject_index = self.mods(0).subject.count
         sorted_title = Bplmodels::DatastreamInputFuncs.getProperTitle(main_title)
@@ -1286,14 +1286,15 @@ module Bplmodels
 
         self.mods(0).subject(subject_index).title_info(0).nonSort = nonSort unless nonSort.blank?
         self.mods(0).subject(subject_index).title_info(0).main_title = title unless title.blank?
+        self.mods(0).subject(subject_index).title_info(0).type = type unless type.blank?
 
         self.mods(0).subject(subject_index).title_info(0).authority = authority unless authority.blank?
         if authority == 'lctgm'
-          self.mods(0).subject(subject_index).authorityURI = 'http://id.loc.gov/vocabulary/graphicMaterials'
+          self.mods(0).subject(subject_index).title_info(0).authorityURI = 'http://id.loc.gov/vocabulary/graphicMaterials'
         elsif authority == 'lcsh'
-          self.mods(0).subject(subject_index).authorityURI = 'http://id.loc.gov/authorities/subjects'
+          self.mods(0).subject(subject_index).title_info(0).authorityURI = 'http://id.loc.gov/authorities/subjects'
         elsif authority == 'naf'
-          self.mods(0).subject(subject_index).authorityURI = 'http://id.loc.gov/authorities/names'
+          self.mods(0).subject(subject_index).title_info(0).authorityURI = 'http://id.loc.gov/authorities/names'
         end
 
         self.mods(0).subject(subject_index).title_info(0).valueURI = valueURI unless valueURI.blank?
