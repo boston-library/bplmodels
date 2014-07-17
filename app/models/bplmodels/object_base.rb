@@ -513,7 +513,8 @@ module Bplmodels
           if self.descMetadata.subject.temporal.point[index] != 'end'
             subject_temporal_start = value
             doc['subject_temporal_start_tsim'].append(subject_temporal_start)
-            subject_temporal_start.length > 4 ? subject_date_range_start.append(subject_temporal_start[0..3]) : subject_date_range_start.append(subject_temporal_start)
+            subject_date_range_start.append(subject_temporal_start)
+            # subject_temporal_start.length > 4 ? subject_date_range_start.append(subject_temporal_start[0..3]) : subject_date_range_start.append(subject_temporal_start)
             if subject_temporal_start.length == 4
               doc['subject_temporal_start_dtsim'].append(subject_temporal_start + '-01-01T00:00:00.000Z')
             elsif subject_temporal_start.length == 7
@@ -526,7 +527,8 @@ module Bplmodels
             doc['subject_temporal_end_dtsim'] = []
             subject_temporal_end = value
             doc['subject_temporal_end_tsim'].append(subject_temporal_end)
-            subject_temporal_end.length > 4 ? subject_date_range_end.append(subject_temporal_end[0..3]) : subject_date_range_end.append(subject_temporal_end)
+            subject_date_range_end.append(subject_temporal_end)
+            # subject_temporal_end.length > 4 ? subject_date_range_end.append(subject_temporal_end[0..3]) : subject_date_range_end.append(subject_temporal_end)
             if subject_temporal_end.length == 4
               doc['subject_temporal_end_dtsim'].append(subject_temporal_end + '-01-01T00:00:00.000Z')
             elsif subject_temporal_end.length == 7
@@ -540,7 +542,7 @@ module Bplmodels
         if subject_date_range_start.length > 0
           subject_date_range_start.each_with_index do |date_start,index|
             if subject_date_range_end.present?
-              doc['subject_temporal_facet_ssim'].append(date_start + '-' + subject_date_range_end[index])
+              doc['subject_temporal_facet_ssim'].append(date_start[0..3] + '-' + subject_date_range_end[index][0..3])
             else
               doc['subject_temporal_facet_ssim'].append(date_start)
             end
@@ -551,6 +553,14 @@ module Bplmodels
 
       end
 
+      # title subjects
+      if self.descMetadata.subject.title_info.length > 0
+        doc['subject_title_tsim'] = []
+        self.descMetadata.subject.title_info.title.each do |subject_title|
+          doc['subject_title_tsim'] << subject_title
+        end
+        doc['subject_facet_ssim'].concat(doc['subject_title_tsim'])
+      end
 
       doc['active_fedora_model_suffix_ssi'] = self.rels_ext.model.class.to_s.gsub(/\A[\w]*::/,'')
 
@@ -560,12 +570,15 @@ module Bplmodels
       doc['note_tsim'] = []
       doc['note_resp_tsim'] = []
       doc['note_date_tsim'] = []
+      doc['note_performers_tsim'] = []
 
       0.upto self.descMetadata.note.length-1 do |index|
         if self.descMetadata.note(index).type_at.first == 'statement of responsibility'
           doc['note_resp_tsim'].append(self.descMetadata.mods(0).note(index).first)
         elsif self.descMetadata.note(index).type_at.first == 'date'
           doc['note_date_tsim'].append(self.descMetadata.mods(0).note(index).first)
+        elsif self.descMetadata.note(index).type_at.first == 'performers'
+          doc['note_performers_tsim'].append(self.descMetadata.mods(0).note(index).first)
         else
           doc['note_tsim'].append(self.descMetadata.mods(0).note(index).first)
         end
@@ -917,7 +930,7 @@ module Bplmodels
     end
 
     def deleteAllFiles
-      Bplmodels::AudioFile.find_in_batches('is_image_of_ssim'=>"info:fedora/#{self.pid}") do |group|
+      Bplmodels::ImageFile.find_in_batches('is_image_of_ssim'=>"info:fedora/#{self.pid}") do |group|
         group.each { |solr_object|
           object = ActiveFedora::Base.find(solr_object['id']).adapt_to_cmodel
           object.delete
@@ -931,7 +944,7 @@ module Bplmodels
         }
       end
 
-      Bplmodels::AudioFile.find_in_batches('is_document_of_ssim'=>"info:fedora/#{self.pid}") do |group|
+      Bplmodels::DocumentFile.find_in_batches('is_document_of_ssim'=>"info:fedora/#{self.pid}") do |group|
         group.each { |solr_object|
           object = ActiveFedora::Base.find(solr_object['id']).adapt_to_cmodel
           object.delete

@@ -424,7 +424,9 @@ module Bplmodels
         t.temporal(:path=>'temporal', :attributes=>{:encoding => "w3cdtf"}) {
           t.point(:path=>{:attribute=>"point"})
         }
-        t.title_info(:ref=>[:title_info])
+        t.title_info(:ref=>[:title_info]) {
+          t.title
+        }
 
       end
 
