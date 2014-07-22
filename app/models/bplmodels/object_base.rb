@@ -635,6 +635,12 @@ module Bplmodels
         doc['marked_for_deletion_reason_ssi']  =  self.workflowMetadata.marked_for_deletion.reason.first
       end
 
+      if self.workflowMetadata.item_designations.present?
+        if self.workflowMetadata.item_designations(0).flagged_for_content.present?
+          doc['flagged_content_ssi'] = self.workflowMetadata.item_designations(0).flagged_for_content
+        end
+      end
+
 
       #doc['all_text_timv'] = [self.descMetadata.abstract, main_title, self.rels_ext.model.class.to_s.gsub(/\A[\w]*::/,''),self.descMetadata.item_location(0).physical_location[0]]
 

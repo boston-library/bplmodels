@@ -79,5 +79,9 @@ module Bplmodels
       self.source(source_count).ingest_filename(0, filename) unless filename.blank?
       self.source(source_count).ingest_datastream(0, datastream) unless datastream.blank?
     end
+
+    def insert_flagged(value=nil)
+      self.item_designations(0).flagged_for_content(0, value) unless value.blank?
+    end
   end
 end
