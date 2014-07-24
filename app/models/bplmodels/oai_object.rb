@@ -3,6 +3,8 @@ module Bplmodels
 
     has_metadata :name => "oaiMetadata", :type => OAIMetadata
 
+    has_metadata :name => "workflowMetadata", :type => WorkflowMetadata
+
     has_many :exemplary_image, :class_name => "Bplmodels::OAIObject", :property=> :is_exemplary_image_of
 
 
@@ -18,6 +20,7 @@ module Bplmodels
     def to_solr(doc = {} )
       doc = super(doc)
       doc['active_fedora_model_ssi'] = self.class.name
+
       doc
     end
 

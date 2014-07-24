@@ -7,9 +7,11 @@ module Bplmodels
 
     has_many :image_files, :class_name => "Bplmodels::ImageFile", :property=> :is_image_of
 
-    has_many :audio_files, :class_name => "Bplmodels::AudioFile", :property=> :is_image_of
+    has_many :audio_files, :class_name => "Bplmodels::AudioFile", :property=> :is_audio_of
 
-    has_many :document_files, :class_name => "Bplmodels::DocumentFile", :property=> :is_image_of
+    has_many :document_files, :class_name => "Bplmodels::DocumentFile", :property=> :is_document_of
+
+    has_many :files, :class_name => "Bplmodels::File", :property=> :is_file_of
 
     def save
       super()

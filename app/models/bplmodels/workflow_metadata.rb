@@ -83,5 +83,12 @@ module Bplmodels
     def insert_flagged(value=nil)
       self.item_designations(0).flagged_for_content(0, value) unless value.blank?
     end
+
+    def insert_oai_defaults
+      @object.workflowMetadata.item_status(0).state = "published"
+      @object.workflowMetadata.item_status(0).state_comment = "OAI Harvested Record"
+      @object.workflowMetadata.item_status(0).processing = "complete"
+      @object.workflowMetadata.item_status(0).processing_comment = "Object Processing Complete"
+    end
   end
 end

@@ -60,6 +60,8 @@ module Bplmodels
         when 'image/tiff', 'image/png', 'image/jpg'
           transform_datastream :productionMaster, { :testJP2k => { recipe: :default, datastream: 'accessMaster'  } }, processor: 'jpeg2k_image'
           transform_datastream :productionMaster, { :thumb => {size: "300x300>", datastream: 'thumbnail300', format: 'jpg'} }
+          self.accessMaster.label = self.productionMaster.label
+          self.thumbnail300.label = self.productionMaster.label
       end
     end
 
