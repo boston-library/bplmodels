@@ -87,6 +87,8 @@ module Bplmodels
         #dateCreated
         if self.descMetadata.date(0).dates_created[0]
           self.descMetadata.date(0).dates_created.each_with_index do |date,index|
+          #FIXME: Has to add "date.present" and the when '' case for oai-test:h415pc718
+           if date.present?
             case self.descMetadata.date(0).dates_created(index).point[0]
               when nil
                 dates_static << date
@@ -102,6 +104,7 @@ module Bplmodels
                 doc['date_start_qualifier_ssm'] = self.descMetadata.date(0).dates_created(index).qualifier[0]
               when 'end'
                 dates_end << date
+            end
             end
           end
         end
