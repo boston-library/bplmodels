@@ -92,6 +92,10 @@ module Bplmodels
                 dates_static << date
                 doc['date_type_ssm'] << 'dateCreated'
                 doc['date_start_qualifier_ssm'] = self.descMetadata.date(0).dates_created(index).qualifier[0]
+              when ''
+                dates_static << date
+                doc['date_type_ssm'] << 'dateCreated'
+                doc['date_start_qualifier_ssm'] = self.descMetadata.date(0).dates_created(index).qualifier[0]
               when 'start'
                 dates_start << date
                 doc['date_type_ssm'] << 'dateCreated'
