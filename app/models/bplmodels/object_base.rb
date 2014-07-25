@@ -41,6 +41,7 @@ module Bplmodels
 
       adapted_object.assert_content_model
       adapted_object.save
+      adapted_object
       #end
 
     end
