@@ -438,7 +438,7 @@ module Bplmodels
              place_locations << split_geo if split_geo.present? && !split_geo.include?('North and Central America') && !split_geo.include?('United States')
            end
            place_name = place_locations.reverse.join(', ')
-         else if self.descMetadata.mods(0).subject(subject_index).geographic.present?
+         elsif self.descMetadata.mods(0).subject(subject_index).geographic.present?
            place_name = self.descMetadata.mods(0).subject(subject_index).geographic.first
          end
 
