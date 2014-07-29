@@ -427,10 +427,18 @@ module Bplmodels
       end
       # doc['subject_coordinates_geospatial'] = self.descMetadata.subject.cartographics.coordinates # use this if we want to mix bbox and point data
 
+      new_logger = Logger.new('log/geo_log')
+      new_logger.level = Logger::ERROR
+
       #Blacklight-maps esque placename_coords
       0.upto self.descMetadata.subject.length-1 do |subject_index|
        if self.descMetadata.mods(0).subject(subject_index).cartographics.present? && self.descMetadata.mods(0).subject(subject_index).cartographics.scale.blank?
          place_name = "Results"
+
+         if self.descMetadata.mods(0).subject(subject_index).authority == ['tgn'] && hierarchical_geographic[0].blank?
+           new_logger.error "Weird Geography for: " + self.pid
+         end
+
          if self.descMetadata.mods(0).subject(subject_index).authority == ['tgn'] && hierarchical_geographic[0].present?
            place_locations = []
            self.descMetadata.mods(0).subject(subject_index).hierarchical_geographic[0].split("\n").each do |split_geo|
