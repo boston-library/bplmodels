@@ -431,14 +431,14 @@ module Bplmodels
       0.upto self.descMetadata.subject.length-1 do |subject_index|
        if self.descMetadata.mods(0).subject(subject_index).cartographics.present? && self.descMetadata.mods(0).subject(subject_index).cartographics.scale.blank?
          place_name = "Results"
-         if self.descMetadata.mods(0).subject(subject_index).authority == ['tgn']
+         if self.descMetadata.mods(0).subject(subject_index).authority == ['tgn'] && hierarchical_geographic[0].present?
            place_locations = []
            self.descMetadata.mods(0).subject(subject_index).hierarchical_geographic[0].split("\n").each do |split_geo|
              split_geo = split_geo.strip
              place_locations << split_geo if split_geo.present? && !split_geo.include?('North and Central America') && !split_geo.include?('United States')
            end
            place_name = place_locations.reverse.join(', ')
-         else
+         else if self.descMetadata.mods(0).subject(subject_index).geographic.present?
            place_name = self.descMetadata.mods(0).subject(subject_index).geographic.first
          end
 
