@@ -788,7 +788,7 @@ module Bplmodels
           image_file.send(datastream).mimeType = 'image/jpeg'
         end
 
-        image_file.send(datastream).dsLabel = file[:file_name]
+        image_file.send(datastream).dsLabel = file[:file_name].gsub('.tif', '').gsub('.jpg', '').gsub('.jpeg', '')
 
         #FIXME!!!
         image_file.workflowMetadata.insert_file_source(file[:file_path],file[:file_name],datastream)
@@ -819,6 +819,7 @@ module Bplmodels
       image_file
     end
 
+    #FIXME: NOT UPDATED!
     def insert_new_audio_file(audio_file, institution_pid)
       raise 'audio file missing!' if audio_file.blank?
 
@@ -869,6 +870,7 @@ module Bplmodels
       current_audio_file
     end
 
+    #FIXME: NOT UPDATED!
     #FIXME: Cases of images and PDF?
     def insert_new_document_file(document_file, institution_pid)
       raise 'document file missing!' if document_file.blank?
