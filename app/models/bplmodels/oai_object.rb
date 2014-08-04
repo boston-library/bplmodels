@@ -33,7 +33,13 @@ module Bplmodels
       args[:namespace_id] = ARK_CONFIG_GLOBAL['namespace_oai_pid']
       #TODO: Duplication check here to prevent over-writes?
 
-      super(args)
+      return_object = super(args)
+
+      if !return_object.is_a?(String)
+        return_object.workflowMetadata.insert_oai_defaults
+      end
+
+      return return_object
     end
   end
 end
