@@ -760,8 +760,17 @@ module Bplmodels
             end
           end
         end
+      #Exit check if trying to insert the same area...
+      elsif api_result[:hier_geo][:city].blank? && api_result[:hier_geo][:area].present? && self.subject.hierarchical_geographic.present?
+        self.mods(0).subject.each_with_index do |ignored, subject_index|
+          if self.mods(0).subject(subject_index).authority == ['tgn']
+            if self.mods(0).subject(subject_index).hierarchical_geographic(0).area == [api_result[:hier_geo][:area]]
+              return false
+            end
+          end
+        end
       #Finally exit if inserting the same country...
-      elsif api_result[:hier_geo][:city].blank? && api_result[:hier_geo][:state].blank? && api_result[:hier_geo][:country].present? && self.subject.hierarchical_geographic.present?
+      elsif api_result[:hier_geo][:city].blank? && api_result[:hier_geo][:state].blank? && api_result[:hier_geo][:area].blank? && api_result[:hier_geo][:country].present? && self.subject.hierarchical_geographic.present?
         self.mods(0).subject.each_with_index do |ignored, subject_index|
           if self.mods(0).subject(subject_index).authority == ['tgn']
             if self.mods(0).subject(subject_index).hierarchical_geographic(0).country == [api_result[:hier_geo][:country]]
@@ -1315,6 +1324,8 @@ module Bplmodels
           self.mods(0).subject(subject_index).authorityURI = 'http://id.loc.gov/vocabulary/graphicMaterials'
         elsif authority == 'lcsh'
           self.mods(0).subject(subject_index).authorityURI = 'http://id.loc.gov/authorities/subjects'
+        elsif authority == 'aat'
+          self.mods(0).subject(subject_index).authorityURI = 'http://vocab.getty.edu/aat/'
         end
 
       end
