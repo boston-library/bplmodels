@@ -589,6 +589,9 @@ module Bplmodels
       doc['note_resp_tsim'] = []
       doc['note_date_tsim'] = []
       doc['note_performers_tsim'] = []
+      doc['note_acquisition_tsim'] = []
+      doc['note_ownership_tsim'] = []
+      doc['note_citation_tsim'] = []
 
       0.upto self.descMetadata.note.length-1 do |index|
         if self.descMetadata.note(index).type_at.first == 'statement of responsibility'
