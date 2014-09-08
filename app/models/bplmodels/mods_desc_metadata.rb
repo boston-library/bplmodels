@@ -783,7 +783,8 @@ module Bplmodels
       subject_index = self.mods(0).subject.count
 
       self.mods(0).subject(subject_index).authority = "tgn"
-      self.mods(0).subject(subject_index).valueURI = tgn_id
+      self.mods(0).subject(subject_index).valueURI = "http://vocab.getty.edu/tgn/#{tgn_id}"
+      self.mods(0).subject(subject_index).authorityURI = 'http://vocab.getty.edu/tgn/'
 
       #Insert geographic text
       if api_result[:non_hier_geo] != nil
