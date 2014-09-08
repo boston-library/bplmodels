@@ -589,6 +589,9 @@ module Bplmodels
       doc['note_resp_tsim'] = []
       doc['note_date_tsim'] = []
       doc['note_performers_tsim'] = []
+      doc['note_acquisition_tsim'] = []
+      doc['note_ownership_tsim'] = []
+      doc['note_citation_tsim'] = []
 
       0.upto self.descMetadata.note.length-1 do |index|
         if self.descMetadata.note(index).type_at.first == 'statement of responsibility'
@@ -597,6 +600,12 @@ module Bplmodels
           doc['note_date_tsim'].append(self.descMetadata.mods(0).note(index).first)
         elsif self.descMetadata.note(index).type_at.first == 'performers'
           doc['note_performers_tsim'].append(self.descMetadata.mods(0).note(index).first)
+        elsif self.descMetadata.note(index).type_at.first == 'acquisition'
+          doc['note_acquisition_tsim'].append(self.descMetadata.mods(0).note(index).first)
+        elsif self.descMetadata.note(index).type_at.first == 'ownership'
+          doc['note_ownership_tsim'].append(self.descMetadata.mods(0).note(index).first)
+        elsif self.descMetadata.note(index).type_at.first == 'preferred citation'
+          doc['note_citation_tsim'].append(self.descMetadata.mods(0).note(index).first)
         else
           doc['note_tsim'].append(self.descMetadata.mods(0).note(index).first)
         end
