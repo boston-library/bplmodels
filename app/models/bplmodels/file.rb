@@ -58,7 +58,19 @@ module Bplmodels
         when 'video/avi'
           #transform_datastream :productionMaster, { :mp4 => {format: 'mp4'}, :webm => {format: 'webm'} }, processor: :video
         when 'image/tiff', 'image/png', 'image/jpg'
-          transform_datastream :productionMaster, { :testJP2k => { recipe: :default, datastream: 'accessMaster'  } }, processor: 'jpeg2k_image'
+          begin
+            transform_datastream :productionMaster, { :testJP2k => { recipe: :default, datastream: 'accessMaster'  } }, processor: 'jpeg2k_image'
+          rescue => error
+            if error.message.include?('compressed TIFF files')
+              Magick::limit_resource(:memory, 5500000000)
+              Magick::limit_resource(:map, 5500000000)
+              jp2_img =  Magick::Image.read("#{self.fedora_connection[0].options[:url]}/objects/#{self.pid}datastreams/productionMaster/content").first
+              self.accessMaster.content = jp2_img.to_blob { self.format = "jp2" }
+              self.accessMaster.mimeType = 'image/jpeg2000'
+            else
+              raise error
+            end
+          end
           transform_datastream :productionMaster, { :thumb => {size: "300x300>", datastream: 'thumbnail300', format: 'jpg'} }
           self.accessMaster.dsLabel = self.productionMaster.label
           self.thumbnail300.dsLabel = self.productionMaster.label
