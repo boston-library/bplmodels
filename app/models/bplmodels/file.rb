@@ -67,7 +67,8 @@ module Bplmodels
               #jp2_img =  Magick::Image.read("#{self.fedora_connection[0].options[:url]}/objects/#{self.pid}datastreams/productionMaster/content").first
               jp2_img =  Magick::Image.from_blob(self.productionMaster.content).first
               self.accessMaster.content = jp2_img.to_blob { self.format = "jp2" }
-              self.accessMaster.mimeType = 'image/jpeg2000'
+              self.accessMaster.mimeType = 'image/jp2'
+              jp2_img.destroy!
             else
               raise error
             end
