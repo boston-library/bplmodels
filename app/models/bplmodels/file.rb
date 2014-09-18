@@ -44,6 +44,8 @@ module Bplmodels
         doc['marked_for_deletion_reason_ssi']  =  self.workflowMetadata.marked_for_deletion.reason.first
       end
 
+      doc['checksum_file_md5_ssi'] = self.productionMaster.checksum
+
       doc
 
     end
