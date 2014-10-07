@@ -214,7 +214,22 @@ module Bplmodels
       doc['genre_basic_ssim'] = self.descMetadata.genre_basic
       doc['genre_specific_ssim'] = self.descMetadata.genre_specific
 
-      doc['identifier_local_other_tsim'] = self.descMetadata.local_other
+      # will need to make this more generic when we have more id fields with @invalid
+      if self.descMetadata.local_other
+        doc['identifier_local_other_tsim'] = []
+        doc['identifier_local_other_invalid_tsim'] = []
+        self.descMetadata.identifier.each_with_index do |id_val, index|
+          if self.obj.descMetadata.identifier(index).type_at[0] == 'local-other'
+            if self.descMetadata.identifier(index).invalid[0]
+              doc['identifier_local_other_invalid_tsim'].append(id_val)
+            else
+              doc['identifier_local_other_tsim'].append(id_val)
+            end
+          end
+        end
+      end
+
+
       doc['identifier_local_call_tsim'] = self.descMetadata.local_call
       doc['identifier_local_barcode_tsim'] = self.descMetadata.local_barcode
 
