@@ -1596,23 +1596,13 @@ module Bplmodels
 
     end
 
+    def insert_identifier(identifier=nil, type=nil, display_label=nil, invalid=nil)
+      identifier_index = self.mods(0).identifier.count
 
-    define_template :identifier do |xml, identifier, type, display_label|
-      if display_label == nil
-        xml.identifier(:type=>type) {
-          xml.text identifier
-        }
-      else
-        xml.identifier(:type=>type, :displayLabel=>display_label) {
-          xml.text identifier
-        }
-      end
-    end
-
-    def insert_identifier(identifier=nil, type=nil, display_label=nil)
-      if identifier.length > 0
-        add_child_node(ng_xml.root, :identifier, identifier, type, display_label)
-      end
+      self.mods(0).identifier(identifier_index, identifier) unless identifier.blank?
+      self.mods(0).identifier(identifier_index).type_at = type unless type.blank?
+      self.mods(0).identifier(identifier_index).displayLabel = display_label unless display_label.blank?
+      self.mods(0).identifier(identifier_index).invalid = 'yes' if (invalid.present? && invalid == 'yes')
     end
 
     def remove_identifier(index)
