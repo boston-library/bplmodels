@@ -219,7 +219,7 @@ module Bplmodels
         doc['identifier_local_other_tsim'] = []
         doc['identifier_local_other_invalid_tsim'] = []
         self.descMetadata.identifier.each_with_index do |id_val, index|
-          if self.obj.descMetadata.identifier(index).type_at[0] == 'local-other'
+          if self.descMetadata.identifier(index).type_at[0] == 'local-other'
             if self.descMetadata.identifier(index).invalid[0]
               doc['identifier_local_other_invalid_tsim'].append(id_val)
             else
