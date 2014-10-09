@@ -442,6 +442,53 @@ module Bplmodels
       end
       # doc['subject_coordinates_geospatial'] = self.descMetadata.subject.cartographics.coordinates # use this if we want to mix bbox and point data
 
+      # geographic data as GeoJSON
+      doc['subject_geojson_ssm'] = []
+      0.upto self.descMetadata.subject.length-1 do |subject_index|
+
+        this_subject = self.descMetadata.mods(0).subject(subject_index)
+
+        # TGN-id-derived geo subjects. assumes longlat points, not bboxes
+        if this_subject.authority[0] == 'tgn'
+          geojson_hash = {type: 'Feature', geometry: {type: 'Point'}}
+          # get the coordinates
+          geojson_hash[:geometry][:coordinates] = this_subject.cartographics.coordinates[0].split(',').reverse.map { |v| v.to_f }
+          # get the hierGeo elements
+          hiergeo_tags = {}
+          Bplmodels::ModsDescMetadata.terminology.retrieve_node(:subject,:hierarchical_geographic).children.each do |hgterm|
+            hiergeo_tags[hgterm[0].to_sym] = ''
+          end
+          hiergeo_tags.each_key do |k|
+            hiergeo_tags[k] = this_subject.hierarchical_geographic.send(k)[0].presence
+          end
+          geojson_hash[:properties] = hiergeo_tags.reject {|k,v| !v }
+
+          doc['subject_geojson_ssm'].append(geojson_hash.to_json)
+        end
+
+        # coordinates or bboxes with no hierGeo elements
+        if this_subject.cartographics.coordinates.any? && this_subject.hierarchical_geographic.blank?
+          geojson_hash = {type: 'Feature', geometry: {coordinates: []}}
+          coords = this_subject.cartographics.coordinates[0]
+          if coords.scan(/[\s]/).length == 3 #bbox
+            coords_array = coords.split(' ').map { |v| v.to_f }
+            geojson_hash[:bbox] = coords_array
+            geojson_hash[:geometry][:type] = 'Polygon'
+            geojson_hash[:geometry][:coordinates] = [[[coords_array[0],coords_array[1]],
+                                                      [coords_array[2],coords_array[1]],
+                                                      [coords_array[2],coords_array[3]],
+                                                      [coords_array[0],coords_array[3]],
+                                                      [coords_array[0],coords_array[1]]]]
+          else
+            geojson_hash[:geometry][:type] = 'Point'
+            geojson_hash[:geometry][:coordinates] = coords.split(',').reverse
+          end
+          doc['subject_geojson_ssm'].append(geojson_hash.to_json)
+        end
+
+      end
+
+=begin
       new_logger = Logger.new('log/geo_log')
       new_logger.level = Logger::ERROR
 
@@ -468,7 +515,7 @@ module Bplmodels
          doc['subject_blacklight_maps_ssim'] = "#{place_name}-|-#{self.descMetadata.mods(0).subject(subject_index).cartographics.coordinates[0].split(',').first}-|-#{self.descMetadata.mods(0).subject(subject_index).cartographics.coordinates[0].split(',').last}"
        end
       end
-
+=end
       #Blacklight-maps coords only
 =begin
       best_coords_found = false
