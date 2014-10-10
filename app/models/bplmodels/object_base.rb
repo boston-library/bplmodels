@@ -448,11 +448,15 @@ module Bplmodels
 
         this_subject = self.descMetadata.mods(0).subject(subject_index)
 
-        # TGN-id-derived geo subjects. assumes longlat points, not bboxes
-        if this_subject.authority[0] == 'tgn'
+        # TGN-id-derived geo subjects. assumes only longlat points, no bboxes
+        if this_subject.cartographics.coordinates.any? && this_subject.hierarchical_geographic.any?
           geojson_hash = {type: 'Feature', geometry: {type: 'Point'}}
           # get the coordinates
-          geojson_hash[:geometry][:coordinates] = this_subject.cartographics.coordinates[0].split(',').reverse.map { |v| v.to_f }
+          coords = this_subject.cartographics.coordinates[0]
+          if coords.match(/^[-]?[\d]+[\.]?[\d]*,[-]?[\d]+[\.]?[\d]*$/)
+            geojson_hash[:geometry][:coordinates] = coords.split(',').reverse.map { |v| v.to_f }
+          end
+
           # get the hierGeo elements
           hiergeo_tags = {}
           Bplmodels::ModsDescMetadata.terminology.retrieve_node(:subject,:hierarchical_geographic).children.each do |hgterm|
@@ -463,14 +467,14 @@ module Bplmodels
           end
           geojson_hash[:properties] = hiergeo_tags.reject {|k,v| !v }
 
-          doc['subject_geojson_ssm'].append(geojson_hash.to_json)
+          doc['subject_geojson_ssm'].append(geojson_hash.to_json) if geojson_hash[:geometry][:coordinates].is_a?(Array)
         end
 
         # coordinates or bboxes with no hierGeo elements
         if this_subject.cartographics.coordinates.any? && this_subject.hierarchical_geographic.blank?
-          geojson_hash = {type: 'Feature', geometry: {coordinates: []}}
+          geojson_hash = {type: 'Feature', geometry: {type: '', coordinates: []}}
           coords = this_subject.cartographics.coordinates[0]
-          if coords.scan(/[\s]/).length == 3 #bbox
+          if coords.scan(/[\s]/).length == 3 #bbox TODO: better checking for bbox syntax
             coords_array = coords.split(' ').map { |v| v.to_f }
             geojson_hash[:bbox] = coords_array
             geojson_hash[:geometry][:type] = 'Polygon'
@@ -479,11 +483,11 @@ module Bplmodels
                                                       [coords_array[2],coords_array[3]],
                                                       [coords_array[0],coords_array[3]],
                                                       [coords_array[0],coords_array[1]]]]
-          else
+          elsif coords.match(/^[-]?[\d]+[\.]?[\d]*,[-]?[\d]+[\.]?[\d]*$/)
             geojson_hash[:geometry][:type] = 'Point'
-            geojson_hash[:geometry][:coordinates] = coords.split(',').reverse
+            geojson_hash[:geometry][:coordinates] = coords.split(',').reverse.map { |v| v.to_f }
           end
-          doc['subject_geojson_ssm'].append(geojson_hash.to_json)
+          doc['subject_geojson_ssm'].append(geojson_hash.to_json) if geojson_hash[:geometry][:coordinates].is_a?(Array)
         end
 
       end
