@@ -19,6 +19,7 @@ module Bplmodels
     GENRE_LOOKUP['Periodicals'] = {:id=>'tgm007641', :authority=>'gmgpc'}
     GENRE_LOOKUP['Books'] = {:id=>'tgm001221', :authority=>'gmgpc'}
     GENRE_LOOKUP['Albums'] = {:id=>'tgm000229', :authority=>'gmgpc'}
+    GENRE_LOOKUP['Musical notation'] = {:id=>'tgm006926', :authority=>'gmgpc'}
 
     COUNTRY_TGN_LOOKUP = {}
     COUNTRY_TGN_LOOKUP['United States'] = {:tgn_id=>7012149, :tgn_country_name=>'United States'}
