@@ -430,17 +430,17 @@ module Bplmodels
 
       # coordinates / bbox
       if self.descMetadata.subject.cartographics.coordinates.length > 0
+        doc['subject_coordinates_geospatial'] = self.descMetadata.subject.cartographics.coordinates # includes both bbox and point data
         self.descMetadata.subject.cartographics.coordinates.each do |coordinates|
           if coordinates.scan(/[\s]/).length == 3
-            doc['subject_bounding_box_geospatial'] ||= []
-            doc['subject_bounding_box_geospatial'] << coordinates
+            doc['subject_bbox_geospatial'] ||= []
+            doc['subject_bbox_geospatial'] << coordinates
           else
-            doc['subject_coordinates_geospatial'] ||= []
-            doc['subject_coordinates_geospatial'] << coordinates
+            doc['subject_point_geospatial'] ||= []
+            doc['subject_point_geospatial'] << coordinates
           end
         end
       end
-      # doc['subject_coordinates_geospatial'] = self.descMetadata.subject.cartographics.coordinates # use this if we want to mix bbox and point data
 
       # geographic data as GeoJSON
       doc['subject_geojson_ssm'] = []
