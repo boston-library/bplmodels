@@ -245,12 +245,12 @@ module Bplmodels
             elsif value.match(/\A[01]?[1-9][-\/][12]\d\d\d\z/) # mm-yyyy || m-yyyy || mm/yyyy
               value = '0' + value if value.match(/\A[1-9][-\/][12]\d\d\d\z/) # m-yyyy || m/yyyy
               date_data[:single_date] = value[3..6] + '-' + value[0..1]
-            elsif value.match(/\A[A-Za-z]{3,} [12]\d\d\d\z/) # April 1987 || Apr. 1987
+            elsif value.match(/\A[A-Za-z]{3,9}[\.]? [12]\d\d\d\z/) # April 1987 || Apr. 1987
               value = value.split(' ')
-              if value[0].length == 3
-                value_month = '%02d' % Date::ABBR_MONTHNAMES.index(value[0])
+              if value[0].match(/\A[A-Za-z]{3}[\.]?\z/)
+                value_month = '%02d' % Date::ABBR_MONTHNAMES.index(value[0]) if Date::ABBR_MONTHNAMES.index(value[0])
               else
-                value_month = '%02d' % Date::MONTHNAMES.index(value[0])
+                value_month = '%02d' % Date::MONTHNAMES.index(value[0]) if Date::MONTHNAMES.index(value[0])
               end
               date_data[:single_date] = value_month ? value[1] + '-' + value_month : value[1]
             elsif value.match(/\A[12]\d\d\d\z/) # 1999
