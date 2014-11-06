@@ -728,7 +728,6 @@ module Bplmodels
 
       ActiveFedora::Base.find_in_batches('is_exemplary_image_of_ssim'=>"info:fedora/#{self.pid}") do |group|
         group.each { |exemplary_solr|
-          doc['exemplary_image_ss'] = exemplary_solr['id']
           doc['exemplary_image_ssi'] = exemplary_solr['id']
         }
       end
