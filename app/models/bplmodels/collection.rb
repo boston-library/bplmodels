@@ -75,7 +75,6 @@ module Bplmodels
       end
 
       if self.exemplary_image.first != nil
-        doc['exemplary_image_ss'] = self.exemplary_image.first.pid
         doc['exemplary_image_ssi'] = self.exemplary_image.first.pid
       end
 

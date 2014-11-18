@@ -648,7 +648,17 @@ module Bplmodels
 
       doc['active_fedora_model_suffix_ssi'] = self.rels_ext.model.class.to_s.gsub(/\A[\w]*::/,'')
 
-      doc['use_and_reproduction_ssm'] = self.descMetadata.use_and_reproduction
+      doc['rights_ssm'] = []
+      doc['license_ssm'] = []
+      0.upto self.descMetadata.use_and_reproduction.length-1 do |index|
+        case self.descMetadata.use_and_reproduction(index).displayLabel.first
+          when 'rights'
+            doc['rights_ssm'] << self.descMetadata.use_and_reproduction(index).first
+          when 'license'
+            doc['license_ssm'] << self.descMetadata.use_and_reproduction(index).first
+        end
+      end
+
       doc['restrictions_on_access_ssm'] = self.descMetadata.restriction_on_access
 
       doc['note_tsim'] = []
@@ -718,7 +728,6 @@ module Bplmodels
 
       ActiveFedora::Base.find_in_batches('is_exemplary_image_of_ssim'=>"info:fedora/#{self.pid}") do |group|
         group.each { |exemplary_solr|
-          doc['exemplary_image_ss'] = exemplary_solr['id']
           doc['exemplary_image_ssi'] = exemplary_solr['id']
         }
       end
