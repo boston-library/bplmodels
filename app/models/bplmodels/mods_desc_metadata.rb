@@ -68,9 +68,8 @@ module Bplmodels
         }
       }
 
-=begin
       # ACCESS_CONDITION -----------------------------------------------------------------------
-      t.accessCondition(:path => 'mods/oxns:accessCondition') {
+      t.accessCondition(:path => 'accessCondition') {
         t.displayLabel :path=>{:attribute=>'displayLabel'}
         t.type_at :path=>{:attribute=>"type"}
         ::Mods::LANG_ATTRIBS.each { |attr_name|
@@ -78,6 +77,7 @@ module Bplmodels
         }
       }
 
+=begin
       # CLASSIFICATION -------------------------------------------------------------------------
       t.classification(:path => 'mods/oxns:classification') {
         t.displayLabel :path=>{:attribute=>'displayLabel'}
@@ -630,18 +630,12 @@ module Bplmodels
       self.find_by_terms(:language).slice(index.to_i).remove
     end
 
-    define_template :rights do |xml, value, type|
-      xml.accessCondition(:type=>type) {
-        xml.text value
-      }
-    end
 
-    def insert_rights(value=nil, type=nil)
-      add_child_node(ng_xml.root, :rights, value, type)
-    end
-
-    def remove_rights(index)
-      self.find_by_terms(:rights).slice(index.to_i).remove
+    def insert_rights(value=nil, type=nil, displayLabel=nil)
+      access_index = self.mods(0).accessCondition.count
+      self.mods(0).accessCondition(access_index, value) unless value.blank?
+      self.mods(0).accessCondition(access_index).type_at = type unless type.blank?
+      self.mods(0).accessCondition(access_index).displayLabel = displayLabel unless displayLabel.blank?
     end
 
 
