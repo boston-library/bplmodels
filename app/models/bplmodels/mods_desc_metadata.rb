@@ -688,6 +688,8 @@ module Bplmodels
 
       if authority == 'gmgpc' || authority == 'lctgm'
         self.mods(0).genre(genre_index).authorityURI = 'http://id.loc.gov/vocabulary/graphicMaterials'
+      elsif authority == 'lcsh'
+        self.mods(0).genre(genre_index).authorityURI = 'http://id.loc.gov/authorities/subjects'
       end
 
       self.mods(0).genre(genre_index).valueURI = value_uri unless value_uri.blank?
