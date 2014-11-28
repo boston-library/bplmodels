@@ -991,7 +991,9 @@ module Bplmodels
     def insert_date(date_type, dateStarted=nil, dateEnding=nil, dateQualifier=nil, dateOther=nil)
       #begin
 
-      date_index = self.mods(0).date.count
+      #date_index = self.mods(0).date.count
+      date_index = 0
+
       #This is horrid. Can't use count as other elements use origin_info at the same depth....
       keydate = true if (self.mods(0).date.dates_created.key_date.blank? and self.mods(0).date.dates_issued.key_date.blank? and self.mods(0).date.dates_copyright.key_date.blank?)
       keydate ||= false
