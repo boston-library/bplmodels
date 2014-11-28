@@ -984,83 +984,8 @@ module Bplmodels
 
     end
 
-    define_template :date do |xml, dateStarted, dateEnding, dateQualifier, dateOther|
 
-      if dateStarted != nil && dateStarted.length > 0 && dateEnding != nil && dateEnding.length > 0 && dateQualifier!= nil && dateQualifier.length > 0
-        xml.originInfo {
-          xml.dateCreated(:encoding=>"w3cdtf", :keyDate=>"yes", :point=>"start", :qualifier=>dateQualifier) {
-            xml.text dateStarted
-          }
-          xml.dateCreated(:encoding=>"w3cdtf", :point=>"end", :qualifier=>dateQualifier) {
-            xml.text dateEnding
-          }
-        }
-      elsif dateStarted != nil && dateStarted.length > 0 && dateEnding != nil && dateEnding.length > 0
-        xml.originInfo {
-          xml.dateCreated(:encoding=>"w3cdtf", :keyDate=>"yes", :point=>"start") {
-            xml.text dateStarted
-          }
-          xml.dateCreated(:encoding=>"w3cdtf", :point=>"end") {
-            xml.text dateEnding
-          }
-        }
-      elsif dateStarted != nil && dateStarted.length > 0 && dateQualifier!= nil && dateQualifier.length > 0
-        xml.originInfo {
-          xml.dateCreated(:encoding=>"w3cdtf", :keyDate=>"yes", :qualifier=>dateQualifier) {
-            xml.text dateStarted
-          }
-        }
-      elsif dateStarted != nil && dateStarted.length > 0
-        xml.originInfo {
-          xml.dateCreated(:encoding=>"w3cdtf", :keyDate=>"yes") {
-            xml.text dateStarted
-          }
-        }
-      elsif dateOther != nil && dateOther.length > 0
-        xml.originInfo {
-          xml.dateOther {
-            xml.text dateOther
-          }
-        }
-      else
-        #puts "error in dates?"
 
-      end
-    end
-
-    define_template :date_partial do |xml, dateStarted, dateEnding, dateQualifier, dateOther|
-
-      if dateStarted != nil && dateStarted.length > 0 && dateEnding != nil && dateEnding.length > 0 && dateQualifier!= nil && dateQualifier.length > 0
-          xml.dateCreated(:encoding=>"w3cdtf", :keyDate=>"yes", :point=>"start", :qualifier=>dateQualifier) {
-            xml.text dateStarted
-          }
-          xml.dateCreated(:encoding=>"w3cdtf", :point=>"end", :qualifier=>dateQualifier) {
-            xml.text dateEnding
-          }
-      elsif dateStarted != nil && dateStarted.length > 0 && dateEnding != nil && dateEnding.length > 0
-          xml.dateCreated(:encoding=>"w3cdtf", :keyDate=>"yes", :point=>"start") {
-            xml.text dateStarted
-          }
-          xml.dateCreated(:encoding=>"w3cdtf", :point=>"end") {
-            xml.text dateEnding
-          }
-      elsif dateStarted != nil && dateStarted.length > 0 && dateQualifier!= nil && dateQualifier.length > 0
-          xml.dateCreated(:encoding=>"w3cdtf", :keyDate=>"yes", :qualifier=>dateQualifier) {
-            xml.text dateStarted
-          }
-      elsif dateStarted != nil && dateStarted.length > 0
-          xml.dateCreated(:encoding=>"w3cdtf", :keyDate=>"yes") {
-            xml.text dateStarted
-          }
-      elsif dateOther != nil && dateOther.length > 0
-          xml.dateOther {
-            xml.text dateOther
-          }
-      else
-        #puts "error in dates?"
-
-      end
-    end
 
 
     def insert_date(date_type, dateStarted=nil, dateEnding=nil, dateQualifier=nil, dateOther=nil)
@@ -1082,7 +1007,7 @@ module Bplmodels
         self.mods(0).date(date_index).send(date_type.to_sym, 0).point = 'start'
         self.mods(0).date(date_index).send(date_type.to_sym, 0).encoding = 'w3cdtf'
         self.mods(0).date(date_index).send(date_type.to_sym, 0).qualifier = dateQualifier unless dateQualifier.blank?
-        self.mods(0).date(date_index).send(date_type.to_sym, 0).key_date = keydate unless keydate == false
+        self.mods(0).date(date_index).send(date_type.to_sym, 0).key_date = "yes" unless keydate == false
 
         self.mods(0).date(date_index).send(date_type.to_sym, 1).point = 'end'
         self.mods(0).date(date_index).send(date_type.to_sym, 1).encoding = 'w3cdtf'
@@ -1093,7 +1018,7 @@ module Bplmodels
       elsif dateStarted.present?
         self.mods(0).date(date_index).send(date_type.to_sym, 0).encoding = 'w3cdtf'
         self.mods(0).date(date_index).send(date_type.to_sym, 0).qualifier = dateQualifier unless dateQualifier.blank?
-        self.mods(0).date(date_index).send(date_type.to_sym, 0).key_date = keydate unless keydate == false
+        self.mods(0).date(date_index).send(date_type.to_sym, 0).key_date = "yes" unless keydate == false
         self.mods(0).date(date_index).send(date_type_with_equal.to_sym, dateStarted)
       elsif dateOther.present?
         self.mods(0).date(date_index).send(date_type_with_equal.to_sym, dateOther)
