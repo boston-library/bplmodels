@@ -1063,25 +1063,46 @@ module Bplmodels
     end
 
 
-    def insert_date(dateStarted=nil, dateEnding=nil, dateQualifier=nil, dateOther=nil)
+    def insert_date(date_type, dateStarted=nil, dateEnding=nil, dateQualifier=nil, dateOther=nil)
       #begin
 
-        if self.find_by_terms(:origin_info) != nil && self.find_by_terms(:origin_info).slice(0) != nil
-          add_child_node(self.find_by_terms(:origin_info).slice(0), :date_partial, dateStarted, dateEnding, dateQualifier, dateOther)
-        else
-          add_child_node(ng_xml.root, :date, dateStarted, dateEnding, dateQualifier, dateOther)
-        end
+      date_index = self.mods(0).date.count
+      keydate = true if date_index == 0
+      keydate ||= false
 
-      #rescue OM::XML::Terminology::BadPointerError
-        #add_child_node(ng_xml.root, :date, dateStarted, dateEnding, dateQualifier, dateOther)
-      #end
+      date_type = 'dates_created' if date_type == 'dateCreated'
+      date_type = 'dates_copyright' if date_type == 'copyrightDate'
+      date_type = 'dates_issued' if date_type == 'dateIssued'
+      date_type = 'date_other' if date_type == 'dateOther'
+
+      date_type_with_equal = date_type + '='
+
+      #Range case - broken...fixme ... under same mods:originInfo ?
+      if dateStarted.present? and dateEnding.present?
+        self.mods(0).date(date_index).send(date_type.to_sym, 0).point = 'start'
+        self.mods(0).date(date_index).send(date_type.to_sym, 0).encoding = 'w3cdtf'
+        self.mods(0).date(date_index).send(date_type.to_sym, 0).qualifier = dateQualifier unless dateQualifier.blank?
+        self.mods(0).date(date_index).send(date_type.to_sym, 0).key_date = keydate unless keydate == false
+
+        self.mods(0).date(date_index).send(date_type.to_sym, 1).point = 'end'
+        self.mods(0).date(date_index).send(date_type.to_sym, 1).encoding = 'w3cdtf'
+        self.mods(0).date(date_index).send(date_type.to_sym, 1).qualifier = dateQualifier unless dateQualifier.blank?
+
+        #Hackish way to set the node values....
+        self.mods(0).date(date_index).send(date_type_with_equal.to_sym, [dateStarted, dateEnding])
+      elsif dateStarted.present?
+        self.mods(0).date(date_index).send(date_type.to_sym, 0).encoding = 'w3cdtf'
+        self.mods(0).date(date_index).send(date_type.to_sym, 0).qualifier = dateQualifier unless dateQualifier.blank?
+        self.mods(0).date(date_index).send(date_type.to_sym, 0).key_date = keydate unless keydate == false
+        self.mods(0).date(date_index).send(date_type_with_equal.to_sym, dateStarted)
+      elsif dateOther.present?
+        self.mods(0).date(date_index).send(date_type_with_equal.to_sym, dateOther)
+      end
 
 
     end
 
-    def remove_date(index)
-      self.find_by_terms(:date).slice(index.to_i).remove
-    end
+
 
     define_template :date_issued do |xml, dateStarted, dateEnding, dateQualifier|
 
@@ -1165,6 +1186,7 @@ module Bplmodels
 
 
     end
+
 
 
 
