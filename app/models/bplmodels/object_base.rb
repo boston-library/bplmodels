@@ -69,6 +69,7 @@ module Bplmodels
       doc['date_end_tsim'] = []
       doc['date_facet_ssim'] = []
       doc['date_type_ssm'] = []
+      doc['date_start_qualifier_ssm'] = []
       dates_static = []
       dates_start = []
       dates_end = []
@@ -90,22 +91,18 @@ module Bplmodels
           self.descMetadata.date(0).dates_created.each_with_index do |date,index|
           #FIXME: Has to add "date.present" and the when '' case for oai-test:h415pc718
            if date.present?
-            case self.descMetadata.date(0).dates_created(index).point[0]
-              when nil
-                dates_static << date
-                doc['date_type_ssm'] << 'dateCreated'
-                doc['date_start_qualifier_ssm'] = self.descMetadata.date(0).dates_created(index).qualifier[0]
-              when ''
-                dates_static << date
-                doc['date_type_ssm'] << 'dateCreated'
-                doc['date_start_qualifier_ssm'] = self.descMetadata.date(0).dates_created(index).qualifier[0]
-              when 'start'
-                dates_start << date
-                doc['date_type_ssm'] << 'dateCreated'
-                doc['date_start_qualifier_ssm'] = self.descMetadata.date(0).dates_created(index).qualifier[0]
-              when 'end'
-                dates_end << date
-            end
+              case self.descMetadata.date(0).dates_created(index).point[0]
+                when nil, ''
+                  dates_static << date
+                  doc['date_type_ssm'] << 'dateCreated'
+                  doc['date_start_qualifier_ssm'].append(self.descMetadata.date(0).dates_created(index).qualifier[0].presence || 'nil')
+                when 'start'
+                  dates_start << date
+                  doc['date_type_ssm'] << 'dateCreated'
+                  doc['date_start_qualifier_ssm'].append(self.descMetadata.date(0).dates_created(index).qualifier[0].presence || 'nil')
+                when 'end'
+                  dates_end << date
+              end
             end
           end
         end
@@ -116,11 +113,11 @@ module Bplmodels
               when nil
                 dates_static << date
                 doc['date_type_ssm'] << 'dateIssued'
-                doc['date_start_qualifier_ssm'] = self.descMetadata.date(0).dates_issued(index).qualifier[0]
+                doc['date_start_qualifier_ssm'].append(self.descMetadata.date(0).dates_issued(index).qualifier[0].presence || 'nil')
               when 'start'
                 dates_start << date
                 doc['date_type_ssm'] << 'dateIssued'
-                doc['date_start_qualifier_ssm'] = self.descMetadata.date(0).dates_issued(index).qualifier[0]
+                doc['date_start_qualifier_ssm'].append(self.descMetadata.date(0).dates_issued(index).qualifier[0].presence || 'nil')
               when 'end'
                 dates_end << date
             end
@@ -133,11 +130,11 @@ module Bplmodels
               when nil
                 dates_static << date
                 doc['date_type_ssm'] << 'copyrightDate'
-                doc['date_start_qualifier_ssm'] = self.descMetadata.date(0).dates_copyright(index).qualifier[0]
+                doc['date_start_qualifier_ssm'].append(self.descMetadata.date(0).dates_copyright(index).qualifier[0].presence || 'nil')
               when 'start'
                 dates_start << date
                 doc['date_type_ssm'] << 'copyrightDate'
-                doc['date_start_qualifier_ssm'] = self.descMetadata.date(0).dates_copyright(index).qualifier[0]
+                doc['date_start_qualifier_ssm'].append(self.descMetadata.date(0).dates_copyright(index).qualifier[0].presence || 'nil')
               when 'end'
                 dates_end << date
             end
