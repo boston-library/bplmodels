@@ -731,7 +731,7 @@ module Bplmodels
         return false
       end
 
-      api_result = Bplgeo::Genames.get_geonames_data(geonames_id)
+      api_result = Bplgeo::Geonames.get_geonames_data(geonames_id)
 
       puts 'API Result is: ' + api_result.to_s
 
