@@ -723,6 +723,35 @@ module Bplmodels
       self.find_by_terms(:access_links).slice(index.to_i).remove
     end
 
+    def insert_geonames(geonames_id)
+      puts 'TGN ID is: ' + geonames_id
+
+      #Duplicate Geonames value?
+      if self.subject.valueURI.include?(geonames_id)
+        return false
+      end
+
+      api_result = Bplgeo::Genames.get_geonames_data(geonames_id)
+
+      puts 'API Result is: ' + api_result.to_s
+
+
+      subject_index = self.mods(0).subject.count
+
+      self.mods(0).subject(subject_index).authority = "geonames"
+      self.mods(0).subject(subject_index).valueURI = "http://sws.geonames.org/#{geonames_id}"
+      self.mods(0).subject(subject_index).authorityURI = 'http://sws.geonames.org'
+
+
+      self.mods(0).subject(subject_index).geographic = api_result[:hier_geo].values[-1]
+
+
+      #Insert Coordinates
+      if api_result[:coords] != nil
+        self.mods(0).subject(subject_index).cartographics.coordinates = api_result[:coords][:latitude] + "," + api_result[:coords][:longitude]
+      end
+    end
+
     def insert_tgn(tgn_id)
       puts 'TGN ID is: ' + tgn_id
 
