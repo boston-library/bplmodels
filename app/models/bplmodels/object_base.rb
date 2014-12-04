@@ -385,11 +385,11 @@ module Bplmodels
 
       doc['subject_topic_tsim'] = self.descMetadata.subject.topic
 
-      # subject - geographic
+      # subject - geographic (non hierarchicalGeographic)
       subject_geo = self.descMetadata.subject.geographic
-      doc['subject_geographic_tsim'] = subject_geo
+      doc['subject_geo_nonhier_ssim'] = subject_geo
 
-      # hierarchical geo
+      # subject - hierarchicalGeographic
       country = self.descMetadata.subject.hierarchical_geographic.country
       province = self.descMetadata.subject.hierarchical_geographic.province
       region = self.descMetadata.subject.hierarchical_geographic.region
@@ -401,26 +401,32 @@ module Bplmodels
       island = self.descMetadata.subject.hierarchical_geographic.island
       area = self.descMetadata.subject.hierarchical_geographic.area
 
-      doc['subject_geo_country_tsim'] = country
       doc['subject_geo_country_ssim'] = country
-      doc['subject_geo_province_tsim'] = province
       doc['subject_geo_province_ssim'] = province
-      doc['subject_geo_region_tsim'] = region
       doc['subject_geo_region_ssim'] = region
-      doc['subject_geo_state_tsim'] = state
       doc['subject_geo_state_ssim'] = state
-      doc['subject_geo_territory_tsim'] = territory
       doc['subject_geo_territory_ssim'] = territory
-      doc['subject_geo_county_tsim'] = county
       doc['subject_geo_county_ssim'] = county
-      doc['subject_geo_city_tsim'] = city
       doc['subject_geo_city_ssim'] = city
-      doc['subject_geo_citysection_tsim'] = city_section
       doc['subject_geo_citysection_ssim'] = city_section
-      doc['subject_geo_island_tsim'] = island
       doc['subject_geo_island_ssim'] = island
-      doc['subject_geo_area_tsim'] = area
       doc['subject_geo_area_ssim'] = area
+
+      geo_subjects = (country + province + region + state + territory + area + island + city + city_section + subject_geo).uniq # all except 'county'
+
+      # add all subject-geo values to subject-geo text field for searching (remove dupes)
+      doc['subject_geographic_tsim'] = geo_subjects + county.uniq
+
+      # add " (county)" to county values for better faceting
+      county_facet = []
+      if county.length > 0
+        county.each do |county_value|
+          county_facet << county_value + ' (county)'
+        end
+      end
+
+      # add all subject-geo values to subject-geo facet field (remove dupes)
+      doc['subject_geographic_ssim'] = geo_subjects + county_facet.uniq
 
       # scale
       doc['subject_scale_tsim'] = self.descMetadata.subject.cartographics.scale
@@ -439,35 +445,48 @@ module Bplmodels
         end
       end
 
-      # geographic data as GeoJSON
-      doc['subject_geojson_ssm'] = []
+      # geographic data as GeoJSON (2 fields)
+      # subject_geojson_facet_ssim = for map-based faceting + display
+      # subject_hiergeo_geojson_ssm = for display of hiergeo metadata
+      doc['subject_geojson_facet_ssim'] = []
+      doc['subject_hiergeo_geojson_ssm'] = []
       0.upto self.descMetadata.subject.length-1 do |subject_index|
 
         this_subject = self.descMetadata.mods(0).subject(subject_index)
 
         # TGN-id-derived geo subjects. assumes only longlat points, no bboxes
         if this_subject.cartographics.coordinates.any? && this_subject.hierarchical_geographic.any?
-          geojson_hash = {type: 'Feature', geometry: {type: 'Point'}}
+          geojson_hash_base = {type: 'Feature', geometry: {type: 'Point'}}
           # get the coordinates
           coords = this_subject.cartographics.coordinates[0]
           if coords.match(/^[-]?[\d]+[\.]?[\d]*,[-]?[\d]+[\.]?[\d]*$/)
-            geojson_hash[:geometry][:coordinates] = coords.split(',').reverse.map { |v| v.to_f }
+            geojson_hash_base[:geometry][:coordinates] = coords.split(',').reverse.map { |v| v.to_f }
           end
 
-          # get the hierGeo elements
-          hiergeo_tags = {}
-          Bplmodels::ModsDescMetadata.terminology.retrieve_node(:subject,:hierarchical_geographic).children.each do |hgterm|
-            hiergeo_tags[hgterm[0].to_sym] = ''
-          end
-          hiergeo_tags.each_key do |k|
-            hiergeo_tags[k] = this_subject.hierarchical_geographic.send(k)[0].presence
-          end
-          geojson_hash[:properties] = hiergeo_tags.reject {|k,v| !v }
+          facet_geojson_hash = geojson_hash_base.dup
+          hiergeo_geojson_hash = geojson_hash_base.dup
 
-          doc['subject_geojson_ssm'].append(geojson_hash.to_json) if geojson_hash[:geometry][:coordinates].is_a?(Array)
+          # get the hierGeo elements, except 'continent'
+          hiergeo_hash = {}
+          ModsDescMetadata.terminology.retrieve_node(:subject,:hierarchical_geographic).children.each do |hgterm|
+            hiergeo_hash[hgterm[0]] = '' unless hgterm[0].to_s == 'continent'
+          end
+          hiergeo_hash.each_key do |k|
+            hiergeo_hash[k] = this_subject.hierarchical_geographic.send(k)[0].presence
+          end
+          hiergeo_hash.reject! {|k,v| !v } # remove any nil values
+
+          hiergeo_geojson_hash[:properties] = hiergeo_hash
+          facet_geojson_hash[:properties] = {placename: DatastreamInputFuncs.render_display_placename(hiergeo_hash)}
+
+          if geojson_hash_base[:geometry][:coordinates].is_a?(Array)
+            doc['subject_hiergeo_geojson_ssm'].append(hiergeo_geojson_hash.to_json)
+            doc['subject_geojson_facet_ssim'].append(facet_geojson_hash.to_json)
+          end
+
         end
 
-        # coordinates or bboxes with no hierGeo elements
+        # coordinates or bboxes w/o hierGeo elements, but maybe non-hierGeo geographic strings
         if this_subject.cartographics.coordinates.any? && this_subject.hierarchical_geographic.blank?
           geojson_hash = {type: 'Feature', geometry: {type: '', coordinates: []}}
           coords = this_subject.cartographics.coordinates[0]
@@ -484,7 +503,10 @@ module Bplmodels
             geojson_hash[:geometry][:type] = 'Point'
             geojson_hash[:geometry][:coordinates] = coords.split(',').reverse.map { |v| v.to_f }
           end
-          doc['subject_geojson_ssm'].append(geojson_hash.to_json) if geojson_hash[:geometry][:coordinates].is_a?(Array)
+
+          geojson_hash[:propeties] = {placename: this_subject.geographic[0]} if this_subject.geographic[0]
+
+          doc['subject_geojson_facet_ssim'].append(geojson_hash.to_json) if geojson_hash[:geometry][:coordinates].is_a?(Array)
         end
 
       end
@@ -534,17 +556,6 @@ module Bplmodels
         end
       end
 =end
-
-      # add " (county)" to county values for better faceting
-      county_facet = []
-      if county.length > 0
-        county.each do |county_value|
-          county_facet << county_value + ' (county)'
-        end
-      end
-
-      # add all subject-geo values to subject-geo facet field (remove dupes)
-      doc['subject_geographic_ssim'] = (country + province + region + state + territory + area + island + county_facet + city + city_section + subject_geo).uniq
 
       # name subjects
       doc['subject_name_personal_tsim'] = []
