@@ -385,9 +385,8 @@ module Bplmodels
 
       doc['subject_topic_tsim'] = self.descMetadata.subject.topic
 
-      # subject - geographic (non hierarchicalGeographic)
+      # subject - geographic
       subject_geo = self.descMetadata.subject.geographic
-      doc['subject_geo_nonhier_ssim'] = subject_geo
 
       # subject - hierarchicalGeographic
       country = self.descMetadata.subject.hierarchical_geographic.country
@@ -450,6 +449,7 @@ module Bplmodels
       # subject_hiergeo_geojson_ssm = for display of hiergeo metadata
       doc['subject_geojson_facet_ssim'] = []
       doc['subject_hiergeo_geojson_ssm'] = []
+      doc['subject_geo_nonhier_ssim'] = [] # other non-hierarchical geo subjects
       0.upto self.descMetadata.subject.length-1 do |subject_index|
 
         this_subject = self.descMetadata.mods(0).subject(subject_index)
@@ -464,6 +464,7 @@ module Bplmodels
           end
 
           facet_geojson_hash = geojson_hash_base.dup
+
           hiergeo_geojson_hash = geojson_hash_base.dup
 
           # get the hierGeo elements, except 'continent'
@@ -475,6 +476,8 @@ module Bplmodels
             hiergeo_hash[k] = this_subject.hierarchical_geographic.send(k)[0].presence
           end
           hiergeo_hash.reject! {|k,v| !v } # remove any nil values
+
+          hiergeo_hash[:other] = this_subject.geographic[0] if this_subject.geographic[0]
 
           hiergeo_geojson_hash[:properties] = hiergeo_hash
           facet_geojson_hash[:properties] = {placename: DatastreamInputFuncs.render_display_placename(hiergeo_hash)}
@@ -504,9 +507,17 @@ module Bplmodels
             geojson_hash[:geometry][:coordinates] = coords.split(',').reverse.map { |v| v.to_f }
           end
 
-          geojson_hash[:propeties] = {placename: this_subject.geographic[0]} if this_subject.geographic[0]
+          if this_subject.geographic[0]
+            doc['subject_geo_nonhier_ssim'] << this_subject.geographic[0]
+            geojson_hash[:properties] = {placename: this_subject.geographic[0]}
+          end
 
           doc['subject_geojson_facet_ssim'].append(geojson_hash.to_json) if geojson_hash[:geometry][:coordinates].is_a?(Array)
+        end
+
+        # non-hierarchical geo subjects w/o coordinates
+        if this_subject.cartographics.coordinates.empty? && this_subject.hierarchical_geographic.blank? && this_subject.geographic[0]
+          doc['subject_geo_nonhier_ssim'] << this_subject.geographic[0]
         end
 
       end
