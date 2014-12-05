@@ -687,6 +687,7 @@ module Bplmodels
       doc['note_acquisition_tsim'] = []
       doc['note_ownership_tsim'] = []
       doc['note_citation_tsim'] = []
+      doc['note_reference_tsim'] = []
 
       0.upto self.descMetadata.note.length-1 do |index|
         if self.descMetadata.note(index).type_at.first == 'statement of responsibility'
@@ -701,6 +702,8 @@ module Bplmodels
           doc['note_ownership_tsim'].append(self.descMetadata.mods(0).note(index).first)
         elsif self.descMetadata.note(index).type_at.first == 'preferred citation'
           doc['note_citation_tsim'].append(self.descMetadata.mods(0).note(index).first)
+        elsif self.descMetadata.note(index).type_at.first == 'citation/reference'
+          doc['note_reference_tsim'].append(self.descMetadata.mods(0).note(index).first)
         else
           doc['note_tsim'].append(self.descMetadata.mods(0).note(index).first)
         end
@@ -719,8 +722,12 @@ module Bplmodels
       self.descMetadata.mods(0).title.each_with_index do |title_value,index|
         title_prefix = self.descMetadata.mods(0).title_info(index).nonSort[0] ? self.descMetadata.mods(0).title_info(index).nonSort[0] + ' ' : ''
         if self.descMetadata.mods(0).title_info(index).usage[0] == 'primary'
-          doc['title_info_primary_tsi'] = title_prefix + title_value
-          doc['title_info_primary_ssort'] = title_value
+          if self.descMetadata.mods(0).title_info(index).type[0] == 'translated'
+            doc['title_info_primary_trans_tsi'] = title_prefix + title_value
+          else
+            doc['title_info_primary_tsi'] = title_prefix + title_value
+            doc['title_info_primary_ssort'] = title_value
+          end
           if self.descMetadata.mods(0).title_info(index).supplied[0] == 'yes'
             doc['supplied_title_bs'] = 'true'
           end
