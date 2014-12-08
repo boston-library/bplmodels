@@ -911,5 +911,36 @@ module Bplmodels
       true if Float(string) rescue false
     end
 
+    # returns a well-formatted placename for display on a map
+    # hiergeo_hash = hash of <mods:hierarchicahlGeographic> elements
+    def self.render_display_placename(hiergeo_hash)
+      placename = []
+      case hiergeo_hash[:country]
+        when 'United States','Canada'
+          if hiergeo_hash[:state] || hiergeo_hash[:province]
+            placename[0] = hiergeo_hash[:city_section].presence || hiergeo_hash[:city].presence || hiergeo_hash[:island].presence || hiergeo_hash[:other].presence
+            if placename[0].nil? && hiergeo_hash[:county]
+              placename[0] = hiergeo_hash[:county] + ' (county)'
+            end
+            if placename[0]
+              placename[1] = Constants::STATE_ABBR.key(hiergeo_hash[:state]) || hiergeo_hash[:province].presence
+            else
+              placename[1] = hiergeo_hash[:state].presence || hiergeo_hash[:province].presence
+            end
+          else
+            placename[0] = hiergeo_hash[:area].presence || hiergeo_hash[:region].presence || hiergeo_hash[:territory].presence || hiergeo_hash[:country].presence || hiergeo_hash[:other].presence
+          end
+        else
+          placename[0] = hiergeo_hash[:city_section].presence || hiergeo_hash[:city].presence || hiergeo_hash[:island].presence || hiergeo_hash[:state].presence || hiergeo_hash[:province].presence || hiergeo_hash[:area].presence || hiergeo_hash[:region].presence || hiergeo_hash[:territory].presence || hiergeo_hash[:other].presence
+          placename[1] = hiergeo_hash[:country]
+      end
+
+      if !placename.blank?
+        placename.join(', ').gsub(/(\A,\s)|(,\s\z)/,'')
+      else
+        nil
+      end
+    end
+
   end
 end
