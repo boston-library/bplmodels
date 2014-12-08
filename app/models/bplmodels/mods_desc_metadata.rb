@@ -320,6 +320,7 @@ module Bplmodels
         }
         t.issuance(:path=>"issuance")
         t.edition(:path=>"edition")
+        t.event_type(:path=>{:attribute=>"eventType"})
       }
 
       t.item_location(:path=>"location") {
@@ -724,7 +725,7 @@ module Bplmodels
     end
 
     def insert_geonames(geonames_id)
-      puts 'TGN ID is: ' + geonames_id
+      puts 'Geonames ID is: ' + geonames_id
 
       #Duplicate Geonames value?
       if self.subject.valueURI.include?(geonames_id)
@@ -750,6 +751,12 @@ module Bplmodels
       if api_result[:coords] != nil
         self.mods(0).subject(subject_index).cartographics.coordinates = api_result[:coords][:latitude] + "," + api_result[:coords][:longitude]
       end
+    end
+
+    def insert_origin_event(event_type)
+      #Currently only supporting one elements...
+      origin_index = 0
+      self.mods(0).origin_info(origin_index).event_type = event_type unless event_type.blank?
     end
 
     def insert_tgn(tgn_id)
