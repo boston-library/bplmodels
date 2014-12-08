@@ -844,7 +844,7 @@ module Bplmodels
     end
 
     #usage=nil,  supplied=nil, subtitle=nil, language=nil, type=nil, authority=nil, authorityURI=nil, valueURI=nil
-    def insert_title(nonSort=nil, main_title=nil, usage=nil, supplied=nil, type=nil, subtitle=nil, args={})
+    def insert_title(nonSort=nil, main_title=nil, usage=nil, supplied=nil, type=nil, subtitle=nil, language=nil, args={})
       title_index = self.mods(0).title_info.count
       self.mods(0).title_info(title_index).nonSort = nonSort unless nonSort.blank?
       self.mods(0).title_info(title_index).main_title = main_title unless main_title.blank?
@@ -854,7 +854,18 @@ module Bplmodels
 
       self.mods(0).title_info(title_index).type = type unless type.blank?
 
+      #Need to update previous titles to be translated now as well....
+      if type == 'translated'
+        0.upto title_index-1 do |pos|
+          if self.mods(0).title_info(pos).usage[0] == 'primary'
+            self.mods(0).title_info(pos).type = type
+          end
+        end
+      end
+
       self.mods(0).title_info(title_index).subtitle = subtitle unless subtitle.blank?
+
+      self.mods(0).title_info(title_index).language = language unless language.blank?
 
       if args.present?
         raise 'broken args in Active Fedora 7'
