@@ -279,6 +279,7 @@ module Bplmodels
 
       t.title_info(:path=>'titleInfo') {
         t.usage(:path=>{:attribute=>"usage"})
+        t.display_label(:path=>{:attribute=>"displayLabel"})
         t.nonSort(:path=>"nonSort", :index_as=>[:searchable, :displayable])
         t.main_title(:path=>"title", :label=>"title")
         t.language(:index_as=>[:facetable],:path=>{:attribute=>"lang"})
@@ -861,6 +862,9 @@ module Bplmodels
             self.mods(0).title_info(pos).type = type
           end
         end
+      #Currently only main title has a blank title.... may want to pass this instead eventually if that changes.
+      elsif type.blank?
+        self.mods(0).title_info(title_index).display_label = 'primary_display'
       end
 
       self.mods(0).title_info(title_index).subtitle = subtitle unless subtitle.blank?
