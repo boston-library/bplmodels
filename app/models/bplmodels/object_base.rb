@@ -723,10 +723,10 @@ module Bplmodels
         title_prefix = self.descMetadata.mods(0).title_info(index).nonSort[0] ? self.descMetadata.mods(0).title_info(index).nonSort[0] + ' ' : ''
         if self.descMetadata.mods(0).title_info(index).usage[0] == 'primary'
           if self.descMetadata.mods(0).title_info(index).type[0] == 'translated'
-            if index == 0
+            if self.descMetadata.mods(0).title_info(index).display_label[0] == 'primary_display'
               doc['title_info_primary_tsi'] = title_prefix + title_value
             else
-              doc['title_info_primary_trans_tsi'] = title_prefix + title_value
+              doc['title_info_primary_trans_tsim'] = title_prefix + title_value
             end
           else
             doc['title_info_primary_tsi'] = title_prefix + title_value
