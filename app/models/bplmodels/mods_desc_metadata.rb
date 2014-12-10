@@ -772,47 +772,59 @@ module Bplmodels
 
       puts 'API Result is: ' + api_result.to_s
 
+      #FIXME: Only works for hier_geo places....
       #Get rid of less specific matches... city level information should trump state level information.
-      if api_result[:hier_geo][:city].present? && self.subject.hierarchical_geographic.present?
-        self.mods(0).subject.each_with_index do |ignored, subject_index|
-          if self.mods(0).subject(subject_index).authority == ['tgn']
-            if self.mods(0).subject(subject_index).hierarchical_geographic(0).city.blank? && self.mods(0).subject(subject_index).hierarchical_geographic(0).state == [api_result[:hier_geo][:state]]
-              self.mods(0).subject(subject_index, nil)
+      if api_result[:hier_geo].present?
+        if api_result[:hier_geo][:city].present? && self.subject.hierarchical_geographic.present?
+          self.mods(0).subject.each_with_index do |ignored, subject_index|
+            if self.mods(0).subject(subject_index).authority == ['tgn']
+              if self.mods(0).subject(subject_index).hierarchical_geographic(0).city.blank? && self.mods(0).subject(subject_index).hierarchical_geographic(0).state == [api_result[:hier_geo][:state]]
+                self.mods(0).subject(subject_index, nil)
+              end
             end
           end
-        end
 
-        #Exit if same city match
-        self.mods(0).subject.each_with_index do |ignored, subject_index|
-          if self.mods(0).subject(subject_index).authority == ['tgn']
-            if self.mods(0).subject(subject_index).hierarchical_geographic(0).city == [api_result[:hier_geo][:city]]
-              return false
+          #Exit if same city match
+          self.mods(0).subject.each_with_index do |ignored, subject_index|
+            if self.mods(0).subject(subject_index).authority == ['tgn']
+              if self.mods(0).subject(subject_index).hierarchical_geographic(0).city == [api_result[:hier_geo][:city]]
+                return false
+              end
+            end
+          end
+          #Exit check if trying to insert same state twice with no city
+        elsif api_result[:hier_geo][:city].blank? && api_result[:hier_geo][:state].present? && self.subject.hierarchical_geographic.present?
+          self.mods(0).subject.each_with_index do |ignored, subject_index|
+            if self.mods(0).subject(subject_index).authority == ['tgn']
+              if self.mods(0).subject(subject_index).hierarchical_geographic(0).state == [api_result[:hier_geo][:state]]
+                return false
+              end
+            end
+          end
+          #Exit check if trying to insert the same area...
+        elsif api_result[:hier_geo][:city].blank? && api_result[:hier_geo][:area].present? && self.subject.hierarchical_geographic.present?
+          self.mods(0).subject.each_with_index do |ignored, subject_index|
+            if self.mods(0).subject(subject_index).authority == ['tgn']
+              if self.mods(0).subject(subject_index).hierarchical_geographic(0).area == [api_result[:hier_geo][:area]]
+                return false
+              end
+            end
+          end
+          #Finally exit if inserting the same country...
+        elsif api_result[:hier_geo][:city].blank? && api_result[:hier_geo][:state].blank? && api_result[:hier_geo][:area].blank? && api_result[:hier_geo][:country].present? && self.subject.hierarchical_geographic.present?
+          self.mods(0).subject.each_with_index do |ignored, subject_index|
+            if self.mods(0).subject(subject_index).authority == ['tgn']
+              if self.mods(0).subject(subject_index).hierarchical_geographic(0).country == [api_result[:hier_geo][:country]]
+                return false
+              end
             end
           end
         end
-      #Exit check if trying to insert same state twice with no city
-      elsif api_result[:hier_geo][:city].blank? && api_result[:hier_geo][:state].present? && self.subject.hierarchical_geographic.present?
+      else
+        #Exit if same place match currently....
         self.mods(0).subject.each_with_index do |ignored, subject_index|
           if self.mods(0).subject(subject_index).authority == ['tgn']
-            if self.mods(0).subject(subject_index).hierarchical_geographic(0).state == [api_result[:hier_geo][:state]]
-              return false
-            end
-          end
-        end
-      #Exit check if trying to insert the same area...
-      elsif api_result[:hier_geo][:city].blank? && api_result[:hier_geo][:area].present? && self.subject.hierarchical_geographic.present?
-        self.mods(0).subject.each_with_index do |ignored, subject_index|
-          if self.mods(0).subject(subject_index).authority == ['tgn']
-            if self.mods(0).subject(subject_index).hierarchical_geographic(0).area == [api_result[:hier_geo][:area]]
-              return false
-            end
-          end
-        end
-      #Finally exit if inserting the same country...
-      elsif api_result[:hier_geo][:city].blank? && api_result[:hier_geo][:state].blank? && api_result[:hier_geo][:area].blank? && api_result[:hier_geo][:country].present? && self.subject.hierarchical_geographic.present?
-        self.mods(0).subject.each_with_index do |ignored, subject_index|
-          if self.mods(0).subject(subject_index).authority == ['tgn']
-            if self.mods(0).subject(subject_index).hierarchical_geographic(0).country == [api_result[:hier_geo][:country]]
+            if self.mods(0).subject(subject_index).geographic == [api_result[:non_hier_geo]]
               return false
             end
           end
