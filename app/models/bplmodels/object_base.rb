@@ -725,6 +725,7 @@ module Bplmodels
           if self.descMetadata.mods(0).title_info(index).type[0] == 'translated'
             if self.descMetadata.mods(0).title_info(index).display_label[0] == 'primary_display'
               doc['title_info_primary_tsi'] = title_prefix + title_value
+              doc['title_info_primary_ssort'] = title_value
             else
               doc['title_info_primary_trans_tsim'] = title_prefix + title_value
             end
