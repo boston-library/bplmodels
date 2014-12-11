@@ -892,7 +892,7 @@ module Bplmodels
         datastream = file[:datastream]
 
 
-        image_file.send(datastream).content = File.open(file[:file_path])
+        image_file.send(datastream).content = ::File.open(file[:file_path])
 
         if file[:file_name].split('.').last.downcase == 'tif'
           image_file.send(datastream).mimeType = 'image/tiff'
