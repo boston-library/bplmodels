@@ -30,11 +30,6 @@ module Bplmodels
     def to_solr(doc = {} )
       doc = super(doc)
 
-      # title fields
-      main_title = self.descMetadata.title_info(0).main_title[0]
-      doc['title_info_primary_tsi'] = main_title
-      doc['title_info_primary_ssort'] = main_title
-
       # description
       doc['abstract_tsim'] = self.descMetadata.abstract
 
