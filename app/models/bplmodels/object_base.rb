@@ -502,7 +502,7 @@ module Bplmodels
                                                       [coords_array[2],coords_array[3]],
                                                       [coords_array[0],coords_array[3]],
                                                       [coords_array[0],coords_array[1]]]]
-          elsif coords.match(/^[-]?[\d]+[\.]?[\d]*,[-]?[\d]+[\.]?[\d]*$/)
+          elsif coords.match(/^[-]?[\d]+[\.]?[\d]*,[\s]?[-]?[\d]+[\.]?[\d]*$/)
             geojson_hash[:geometry][:type] = 'Point'
             geojson_hash[:geometry][:coordinates] = coords.split(',').reverse.map { |v| v.to_f }
           end
