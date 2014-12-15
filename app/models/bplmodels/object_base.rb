@@ -512,7 +512,7 @@ module Bplmodels
             geojson_hash[:properties] = {placename: this_subject.geographic[0]}
           end
 
-          doc['subject_geojson_facet_ssim'].append(geojson_hash.to_json) if geojson_hash[:geometry][:coordinates].is_a?(Array)
+          doc['subject_geojson_facet_ssim'].append(geojson_hash.to_json) if geojson_hash[:geometry][:coordinates].length > 1
         end
 
         # non-hierarchical geo subjects w/o coordinates
