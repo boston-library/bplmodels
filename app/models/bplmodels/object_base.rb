@@ -494,14 +494,27 @@ module Bplmodels
           geojson_hash = {type: 'Feature', geometry: {type: '', coordinates: []}}
           coords = this_subject.cartographics.coordinates[0]
           if coords.scan(/[\s]/).length == 3 #bbox TODO: better checking for bbox syntax
-            coords_array = coords.split(' ').map { |v| v.to_f }
-            geojson_hash[:bbox] = coords_array
-            geojson_hash[:geometry][:type] = 'Polygon'
-            geojson_hash[:geometry][:coordinates] = [[[coords_array[0],coords_array[1]],
-                                                      [coords_array[2],coords_array[1]],
-                                                      [coords_array[2],coords_array[3]],
-                                                      [coords_array[0],coords_array[3]],
-                                                      [coords_array[0],coords_array[1]]]]
+            unless coords == '-180.0 -90.0 180.0 90.0' # don't want 'whole world' bboxes
+              coords_array = coords.split(' ').map { |v| v.to_f }
+              if coords_array[0] > coords_array[2] # bbox that crosses dateline
+                if coords_array[0] > 0
+                  degrees_to_add = 180-coords_array[0]
+                  coords_array[0] = -(180 + degrees_to_add)
+                elsif coords_array[0] < 0 && coords_array[2] < 0
+                  degrees_to_add = 180+coords_array[2]
+                  coords_array[2] = 180 + degrees_to_add
+                else
+                  Rails.logger.error("This bbox format was not parsed correctly: '#{coords}'")
+                end
+              end
+              geojson_hash[:bbox] = coords_array
+              geojson_hash[:geometry][:type] = 'Polygon'
+              geojson_hash[:geometry][:coordinates] = [[[coords_array[0],coords_array[1]],
+                                                        [coords_array[2],coords_array[1]],
+                                                        [coords_array[2],coords_array[3]],
+                                                        [coords_array[0],coords_array[3]],
+                                                        [coords_array[0],coords_array[1]]]]
+            end
           elsif coords.match(/^[-]?[\d]+[\.]?[\d]*,[\s]?[-]?[\d]+[\.]?[\d]*$/)
             geojson_hash[:geometry][:type] = 'Point'
             geojson_hash[:geometry][:coordinates] = coords.split(',').reverse.map { |v| v.to_f }
@@ -512,7 +525,7 @@ module Bplmodels
             geojson_hash[:properties] = {placename: this_subject.geographic[0]}
           end
 
-          if geojson_hash[:geometry][:coordinates].is_a?(Array) && !geojson_hash[:geometry][:coordinates].blank?
+          unless geojson_hash[:geometry][:coordinates].blank?
             doc['subject_geojson_facet_ssim'].append(geojson_hash.to_json)
           end
         end
