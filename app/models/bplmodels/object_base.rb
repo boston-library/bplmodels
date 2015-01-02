@@ -459,7 +459,7 @@ module Bplmodels
           geojson_hash_base = {type: 'Feature', geometry: {type: 'Point'}}
           # get the coordinates
           coords = this_subject.cartographics.coordinates[0]
-          if coords.match(/^[-]?[\d]+[\.]?[\d]*,[-]?[\d]+[\.]?[\d]*$/)
+          if coords.match(/^[-]?[\d]*[\.]?[\d]*,[-]?[\d]*[\.]?[\d]*$/)
             geojson_hash_base[:geometry][:coordinates] = coords.split(',').reverse.map { |v| v.to_f }
           end
 
