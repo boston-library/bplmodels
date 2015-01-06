@@ -733,7 +733,7 @@ module Bplmodels
         return false
       end
 
-      api_result = Bplgeo::Geonames.get_geonames_data(geonames_id)
+      api_result = Geomash::Geonames.get_geonames_data(geonames_id)
 
       puts 'API Result is: ' + api_result.to_s
 
@@ -768,7 +768,7 @@ module Bplmodels
         return false
       end
 
-      api_result = Bplgeo::TGN.get_tgn_data(tgn_id)
+      api_result = Geomash::TGN.get_tgn_data(tgn_id)
 
       puts 'API Result is: ' + api_result.to_s
 
