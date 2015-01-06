@@ -49,6 +49,12 @@ module Bplmodels
         doc['active_fedora_model_suffix_ssi'] = self.class.superclass.to_s.gsub(/\A[\w]*::/,'')
       end
 
+      # title fields
+      title_prefix = self.descMetadata.mods(0).title_info(0).nonSort[0] ? self.descMetadata.mods(0).title_info(0).nonSort[0] + ' ' : ''
+      main_title = self.descMetadata.mods(0).title_info(0).main_title[0]
+      doc['title_info_primary_tsi'] = title_prefix + main_title
+      doc['title_info_primary_ssort'] = main_title
+
       if self.workflowMetadata
         doc['workflow_state_ssi'] = self.workflowMetadata.item_status.state
       end

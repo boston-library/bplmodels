@@ -30,11 +30,6 @@ module Bplmodels
     def to_solr(doc = {} )
       doc = super(doc)
 
-      # title fields
-      main_title = self.descMetadata.title_info(0).main_title[0]
-      doc['title_info_primary_tsi'] = main_title
-      doc['title_info_primary_ssort'] = main_title
-
       # description
       doc['abstract_tsim'] = self.descMetadata.abstract
 
@@ -51,15 +46,10 @@ module Bplmodels
       city = self.descMetadata.subject.hierarchical_geographic.city
       city_section = self.descMetadata.subject.hierarchical_geographic.city_section
 
-      doc['subject_geo_country_tsim'] = country
       doc['subject_geo_country_ssim'] = country
-      doc['subject_geo_state_tsim'] = state
       doc['subject_geo_state_ssim'] = state
-      doc['subject_geo_county_tsim'] = county
       doc['subject_geo_county_ssim'] = county
-      doc['subject_geo_city_tsim'] = city
       doc['subject_geo_city_ssim'] = city
-      doc['subject_geo_citysection_tsim'] = city_section
       doc['subject_geo_citysection_ssim'] = city_section
 
       # add " (county)" to county values for better faceting
@@ -70,11 +60,60 @@ module Bplmodels
         end
       end
 
+      # add hierarchical geo to subject-geo text field
+      doc['subject_geographic_tsim'] = country + state + county + city + city_section
+
       # add hierarchical geo to subject-geo facet field
-      doc['subject_geographic_ssim'] = state + county_facet + city + city_section
+      doc['subject_geographic_ssim'] = country + state + county_facet + city + city_section
 
       # coordinates
-      doc['subject_coordinates_geospatial'] = self.descMetadata.subject.cartographics.coordinates
+      coords = self.descMetadata.subject.cartographics.coordinates
+      doc['subject_coordinates_geospatial'] = coords
+      doc['subject_point_geospatial'] = coords
+
+      # TODO: DRY this out with Bplmodels::ObjectBase
+      # geographic data as GeoJSON
+      # subject_geojson_facet_ssim = for map-based faceting + display
+      # subject_hiergeo_geojson_ssm = for display of hiergeo metadata
+      doc['subject_geojson_facet_ssim'] = []
+      doc['subject_hiergeo_geojson_ssm'] = []
+      0.upto self.descMetadata.subject.length-1 do |subject_index|
+
+        this_subject = self.descMetadata.mods(0).subject(subject_index)
+
+        # TGN-id-derived geo subjects. assumes only longlat points, no bboxes
+        if this_subject.cartographics.coordinates.any? && this_subject.hierarchical_geographic.any?
+          geojson_hash_base = {type: 'Feature', geometry: {type: 'Point'}}
+          # get the coordinates
+          coords = coords[0]
+          if coords.match(/^[-]?[\d]*[\.]?[\d]*,[-]?[\d]*[\.]?[\d]*$/)
+            geojson_hash_base[:geometry][:coordinates] = coords.split(',').reverse.map { |v| v.to_f }
+          end
+
+          facet_geojson_hash = geojson_hash_base.dup
+          hiergeo_geojson_hash = geojson_hash_base.dup
+
+          # get the hierGeo elements, except 'continent'
+          hiergeo_hash = {}
+          ModsDescMetadata.terminology.retrieve_node(:subject,:hierarchical_geographic).children.each do |hgterm|
+            hiergeo_hash[hgterm[0]] = '' unless hgterm[0].to_s == 'continent'
+          end
+          hiergeo_hash.each_key do |k|
+            hiergeo_hash[k] = this_subject.hierarchical_geographic.send(k)[0].presence
+          end
+          hiergeo_hash.reject! {|k,v| !v } # remove any nil values
+
+          hiergeo_hash[:other] = this_subject.geographic[0] if this_subject.geographic[0]
+
+          hiergeo_geojson_hash[:properties] = hiergeo_hash
+          facet_geojson_hash[:properties] = {placename: DatastreamInputFuncs.render_display_placename(hiergeo_hash)}
+
+          if geojson_hash_base[:geometry][:coordinates].is_a?(Array)
+            doc['subject_hiergeo_geojson_ssm'].append(hiergeo_geojson_hash.to_json)
+            doc['subject_geojson_facet_ssim'].append(facet_geojson_hash.to_json)
+          end
+        end
+      end
 
       doc['institution_pid_si'] = self.pid
       doc['institution_pid_ssi'] = self.pid
