@@ -589,6 +589,13 @@ module Bplmodels
       return builder.doc
     end
 
+    def identifier=(values)
+      ng_xml.search(identifier.xpath).each do |n|
+        n.remove
+      end
+      identifier(0).nom = values
+    end
+
     #def insert_physical_description(media_type=nil, digital_origin=nil, media_type2=nil, note=nil)
 
     def insert_digital_origin(digital_origin=nil)
