@@ -590,7 +590,7 @@ module Bplmodels
     end
 
     def identifier=(values)
-      ng_xml.search(identifier.xpath).each do |n|
+      ng_xml.search(identifier.xpath, {oxns:"http://www.loc.gov/mods/v3"}).each do |n|
         n.remove
       end
       identifier(0).nom = values
