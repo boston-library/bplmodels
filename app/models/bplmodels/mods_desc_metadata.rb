@@ -593,7 +593,9 @@ module Bplmodels
       ng_xml.search(identifier.xpath, {oxns:"http://www.loc.gov/mods/v3"}).each do |n|
         n.remove
       end
-      identifier(0).nom = values
+
+      self.identifier = values if values.present?
+
     end
 
     #def insert_physical_description(media_type=nil, digital_origin=nil, media_type2=nil, note=nil)
