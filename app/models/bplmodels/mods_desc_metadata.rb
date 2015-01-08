@@ -594,7 +594,7 @@ module Bplmodels
         n.remove
       end
 
-      super(values) if values.present?
+      super(values)
 
     end
 
