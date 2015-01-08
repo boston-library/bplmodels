@@ -594,7 +594,7 @@ module Bplmodels
         n.remove
       end
 
-      self.identifier = values if values.present?
+      super(values) if values.present?
 
     end
 
