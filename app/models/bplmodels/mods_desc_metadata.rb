@@ -589,6 +589,7 @@ module Bplmodels
       return builder.doc
     end
 
+=begin
     def identifier=(values)
       ng_xml.search(identifier.xpath, {oxns:"http://www.loc.gov/mods/v3"}).each do |n|
         n.remove
@@ -597,6 +598,7 @@ module Bplmodels
       super(values)
 
     end
+=end
 
     #def insert_physical_description(media_type=nil, digital_origin=nil, media_type2=nil, note=nil)
 
