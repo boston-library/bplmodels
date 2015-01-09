@@ -928,7 +928,7 @@ module Bplmodels
               placename[1] = hiergeo_hash[:state].presence || hiergeo_hash[:province].presence
             end
           else
-            placename[0] = hiergeo_hash[:area].presence || hiergeo_hash[:region].presence || hiergeo_hash[:territory].presence || hiergeo_hash[:country].presence || hiergeo_hash[:other].presence
+            placename[0] = hiergeo_hash[:city_section].presence || hiergeo_hash[:city].presence || hiergeo_hash[:area].presence || hiergeo_hash[:region].presence || hiergeo_hash[:territory].presence || hiergeo_hash[:country].presence || hiergeo_hash[:other].presence
           end
         else
           placename[0] = hiergeo_hash[:city_section].presence || hiergeo_hash[:city].presence || hiergeo_hash[:island].presence || hiergeo_hash[:state].presence || hiergeo_hash[:province].presence || hiergeo_hash[:area].presence || hiergeo_hash[:region].presence || hiergeo_hash[:territory].presence || hiergeo_hash[:other].presence
