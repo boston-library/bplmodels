@@ -868,7 +868,7 @@ module Bplmodels
     end
 
     #usage=nil,  supplied=nil, subtitle=nil, language=nil, type=nil, authority=nil, authorityURI=nil, valueURI=nil
-    def insert_title(nonSort=nil, main_title=nil, usage=nil, supplied=nil, type=nil, subtitle=nil, language=nil, args={})
+    def insert_title(nonSort=nil, main_title=nil, usage=nil, supplied=nil, type=nil, subtitle=nil, language=nil, display_label=nil, args={})
       title_index = self.mods(0).title_info.count
       self.mods(0).title_info(title_index).nonSort = nonSort unless nonSort.blank?
       self.mods(0).title_info(title_index).main_title = main_title unless main_title.blank?
@@ -893,6 +893,8 @@ module Bplmodels
       self.mods(0).title_info(title_index).subtitle = subtitle unless subtitle.blank?
 
       self.mods(0).title_info(title_index).language = language unless language.blank?
+
+      self.mods(0).title_info(title_index).display_label = display_label unless display_label.blank?
 
       if args.present?
         raise 'broken args in Active Fedora 7'
@@ -1410,6 +1412,18 @@ module Bplmodels
         self.mods(0).subject(subject_index).temporal(temporal_index).point = 'end' unless converted[:date_range][:end].blank?
       end
 
+    end
+
+    def insert_subject_date_fix_me(date_start, date_end)
+      subject_index = self.mods(0).subject.count
+
+        temporal_index = self.mods(0).subject(subject_index).temporal.length
+        self.mods(0).subject(subject_index).temporal(temporal_index, date_start) unless date_start.blank?
+        self.mods(0).subject(subject_index).temporal(temporal_index).point = 'start' unless date_start.blank?
+
+        temporal_index = self.mods(0).subject(subject_index).temporal.length
+        self.mods(0).subject(subject_index).temporal(temporal_index, date_end) unless date_end.blank?
+        self.mods(0).subject(subject_index).temporal(temporal_index).point = 'end' unless date_end.blank?
     end
 
     def insert_abstract(abstract=nil)
