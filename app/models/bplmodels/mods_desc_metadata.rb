@@ -345,9 +345,9 @@ module Bplmodels
       t.identifier_barcode :path => 'identifier', :attributes => { :type => "barcode" }
       t.identifier_bpldc :path => 'identifier', :attributes => { :type => "bpldc number" }
       t.identifier_other :path => 'identifier', :attributes => { :type => "other" }
-
+      t.isbn :path => 'identifier', :attributes => { :type => "isbn" }
       t.local_other :path => 'identifier', :attributes => { :type => "local-other" }
-
+      t.lccn :path => 'identifier', :attributes => { :type => "lccn" }
       t.local_accession :path => 'identifier', :attributes => { :type => "local-accession" }
       t.local_call :path => 'identifier', :attributes => { :type => "local-call" }
       t.local_barcode :path => 'identifier', :attributes => { :type => "local-barcode" }

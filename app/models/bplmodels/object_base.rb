@@ -229,6 +229,8 @@ module Bplmodels
 
       doc['identifier_local_call_tsim'] = self.descMetadata.local_call
       doc['identifier_local_barcode_tsim'] = self.descMetadata.local_barcode
+      doc['identifier_isbn_tsim'] = self.descMetadata.isbn
+      doc['identifier_lccn_tsim'] = self.descMetadata.lccn
 
       doc['identifier_ark_ssi'] = ''
 
@@ -734,6 +736,7 @@ module Bplmodels
       end
 
       doc['title_info_alternative_tsim'] = []
+      doc['title_info_uniform_tsim'] = []
       self.descMetadata.mods(0).title.each_with_index do |title_value,index|
         title_prefix = self.descMetadata.mods(0).title_info(index).nonSort[0] ? self.descMetadata.mods(0).title_info(index).nonSort[0] + ' ' : ''
         if self.descMetadata.mods(0).title_info(index).usage[0] == 'primary'
@@ -751,11 +754,14 @@ module Bplmodels
           if self.descMetadata.mods(0).title_info(index).supplied[0] == 'yes'
             doc['supplied_title_bs'] = 'true'
           end
-        else
+        elsif self.descMetadata.mods(0).title_info(index).type[0] == 'alternative'
           doc['title_info_alternative_tsim'] << title_prefix + title_value
           if self.descMetadata.mods(0).title_info(index).supplied[0] == 'yes'
             doc['supplied_alternative_title_bs'] = 'true'
           end
+          doc['title_info_alternative_label_ssm'] = self.descMetadata.mods(0).title_info(index).display_label
+        elsif self.descMetadata.mods(0).title_info(index).type[0] == 'uniform'
+          doc['title_info_uniform_tsim'] << title_prefix + title_value
         end
       end
 
