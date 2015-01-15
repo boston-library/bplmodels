@@ -790,7 +790,10 @@ module Bplmodels
           self.mods(0).subject.each_with_index do |ignored, subject_index|
             if self.mods(0).subject(subject_index).authority == ['tgn']
               if self.mods(0).subject(subject_index).hierarchical_geographic(0).city.blank? && self.mods(0).subject(subject_index).hierarchical_geographic(0).state == [api_result[:hier_geo][:state]]
-                self.mods(0).subject(subject_index, nil)
+                #Check to not remove non-hier geo cases... as actually more specific than just a state
+                if self.mods(0).subject(subject_index).geographic(0).blank?
+                  self.mods(0).subject(subject_index, nil)
+                end
               end
             end
           end
@@ -799,7 +802,12 @@ module Bplmodels
           self.mods(0).subject.each_with_index do |ignored, subject_index|
             if self.mods(0).subject(subject_index).authority == ['tgn']
               if self.mods(0).subject(subject_index).hierarchical_geographic(0).city == [api_result[:hier_geo][:city]]
-                return false
+                #Case of more specific in non_hier_geo...
+                if self.mods(0).subject(subject_index).geographic(0).blank? && api_result[:non_hier_geo].present?
+                  self.mods(0).subject(subject_index, nil)
+                else
+                  return false
+                end
               end
             end
           end
@@ -808,7 +816,12 @@ module Bplmodels
           self.mods(0).subject.each_with_index do |ignored, subject_index|
             if self.mods(0).subject(subject_index).authority == ['tgn']
               if self.mods(0).subject(subject_index).hierarchical_geographic(0).state == [api_result[:hier_geo][:state]]
-                return false
+                #Case of more specific in non_hier_geo...
+                if self.mods(0).subject(subject_index).geographic(0).blank? && api_result[:non_hier_geo].present?
+                  self.mods(0).subject(subject_index, nil)
+                else
+                  return false
+                end
               end
             end
           end
@@ -817,7 +830,12 @@ module Bplmodels
           self.mods(0).subject.each_with_index do |ignored, subject_index|
             if self.mods(0).subject(subject_index).authority == ['tgn']
               if self.mods(0).subject(subject_index).hierarchical_geographic(0).area == [api_result[:hier_geo][:area]]
-                return false
+                #Case of more specific in non_hier_geo...
+                if self.mods(0).subject(subject_index).geographic(0).blank? && api_result[:non_hier_geo].present?
+                  self.mods(0).subject(subject_index, nil)
+                else
+                  return false
+                end
               end
             end
           end
@@ -826,12 +844,19 @@ module Bplmodels
           self.mods(0).subject.each_with_index do |ignored, subject_index|
             if self.mods(0).subject(subject_index).authority == ['tgn']
               if self.mods(0).subject(subject_index).hierarchical_geographic(0).country == [api_result[:hier_geo][:country]]
-                return false
+                #Case of more specific in non_hier_geo...
+                if self.mods(0).subject(subject_index).geographic(0).blank? && api_result[:non_hier_geo].present?
+                  self.mods(0).subject(subject_index, nil)
+                else
+                  return false
+                end
               end
             end
           end
         end
-      else
+      end
+
+      if api_result[:non_hier_geo].present?
         #Exit if same place match currently....
         self.mods(0).subject.each_with_index do |ignored, subject_index|
           if self.mods(0).subject(subject_index).authority == ['tgn']
