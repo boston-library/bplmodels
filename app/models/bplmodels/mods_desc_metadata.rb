@@ -378,7 +378,9 @@ module Bplmodels
 
       t.subject  do
         t.topic
-        t.geographic
+        t.geographic(:path=>'geographic') {
+          t.display_label(:path=>{:attribute=>"displayLabel"})
+        }
         t.authority(:path=>{:attribute=>"authority"})
         t.valueURI(:path=>{:attribute=>"valueURI"})
         t.authorityURI(:path=>{:attribute=>"authorityURI"})
@@ -860,7 +862,7 @@ module Bplmodels
         #Exit if same place match currently....
         self.mods(0).subject.each_with_index do |ignored, subject_index|
           if self.mods(0).subject(subject_index).authority == ['tgn']
-            if self.mods(0).subject(subject_index).geographic == [api_result[:non_hier_geo]]
+            if self.mods(0).subject(subject_index).geographic == [api_result[:non_hier_geo][:value]]
               return false
             end
           end
@@ -874,8 +876,9 @@ module Bplmodels
       self.mods(0).subject(subject_index).authorityURI = 'http://vocab.getty.edu/tgn/'
 
       #Insert geographic text
-      if api_result[:non_hier_geo] != nil
-        self.mods(0).subject(subject_index).geographic = api_result[:non_hier_geo]
+      if api_result[:non_hier_geo].present?
+        self.mods(0).subject(subject_index).geographic = api_result[:non_hier_geo][:value]
+        self.mods(0).subject(subject_index).geographic.display_label = api_result[:non_hier_geo][:qualifier] unless api_result[:non_hier_geo][:qualifier].blank?
       end
 
       #Insert hierarchicalGeographic text
