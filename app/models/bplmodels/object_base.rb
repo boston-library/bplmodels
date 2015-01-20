@@ -17,6 +17,10 @@ module Bplmodels
       super()
     end
 
+    def delete_self_only
+      super.delete
+    end
+
     def delete
       Bplmodels::File.find_in_batches('is_file_of_ssim'=>"info:fedora/#{self.pid}") do |group|
         group.each { |solr_file|
