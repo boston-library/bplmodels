@@ -456,17 +456,18 @@ module Bplmodels
 
         this_subject = self.descMetadata.mods(0).subject(subject_index)
 
-        # TGN-id-derived geo subjects. assumes only longlat points, no bboxes
-        if this_subject.cartographics.coordinates.any? && this_subject.hierarchical_geographic.any?
+        # TGN-id-derived hierarchical geo subjects. assumes only longlat points, no bboxes
+        if this_subject.hierarchical_geographic.any?
           geojson_hash_base = {type: 'Feature', geometry: {type: 'Point'}}
-          # get the coordinates
-          coords = this_subject.cartographics.coordinates[0]
-          if coords.match(/^[-]?[\d]*[\.]?[\d]*,[-]?[\d]*[\.]?[\d]*$/)
-            geojson_hash_base[:geometry][:coordinates] = coords.split(',').reverse.map { |v| v.to_f }
+
+          if this_subject.cartographics.coordinates.any? # get the coordinates
+            coords = this_subject.cartographics.coordinates[0]
+            if coords.match(/^[-]?[\d]*[\.]?[\d]*,[-]?[\d]*[\.]?[\d]*$/)
+              geojson_hash_base[:geometry][:coordinates] = coords.split(',').reverse.map { |v| v.to_f }
+            end
           end
 
           facet_geojson_hash = geojson_hash_base.dup
-
           hiergeo_geojson_hash = geojson_hash_base.dup
 
           # get the hierGeo elements, except 'continent'
@@ -479,15 +480,19 @@ module Bplmodels
           end
           hiergeo_hash.reject! {|k,v| !v } # remove any nil values
 
-          hiergeo_hash[:other] = this_subject.geographic[0] if this_subject.geographic[0]
+          if this_subject.geographic[0]
+            other_geo_value = this_subject.geographic[0]
+            other_geo_value << " (#{this_subject.geographic.display_label[0]})" if this_subject.geographic.display_label[0]
+            hiergeo_hash[:other] = other_geo_value
+          end
 
           unless hiergeo_hash.empty?
             hiergeo_geojson_hash[:properties] = hiergeo_hash
             facet_geojson_hash[:properties] = {placename: DatastreamInputFuncs.render_display_placename(hiergeo_hash)}
           end
 
+          doc['subject_hiergeo_geojson_ssm'].append(hiergeo_geojson_hash.to_json)
           if geojson_hash_base[:geometry][:coordinates].is_a?(Array)
-            doc['subject_hiergeo_geojson_ssm'].append(hiergeo_geojson_hash.to_json)
             doc['subject_geojson_facet_ssim'].append(facet_geojson_hash.to_json)
           end
 

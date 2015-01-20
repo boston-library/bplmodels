@@ -409,15 +409,15 @@ module Bplmodels
         t.hierarchical_geographic(:path=>"hierarchicalGeographic") {
           t.continent
           t.country
-          t.province
           t.region
+          t.province
           t.state
           t.territory
           t.county
           t.city
           t.city_section(:path=>"citySection")
-          t.island
           t.area
+          t.island
           t.extarea(:path=>"extraterrestrialArea")
         }
         t.cartographics {
