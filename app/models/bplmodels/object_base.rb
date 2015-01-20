@@ -481,8 +481,10 @@ module Bplmodels
 
           hiergeo_hash[:other] = this_subject.geographic[0] if this_subject.geographic[0]
 
-          hiergeo_geojson_hash[:properties] = hiergeo_hash
-          facet_geojson_hash[:properties] = {placename: DatastreamInputFuncs.render_display_placename(hiergeo_hash)}
+          unless hiergeo_hash.empty?
+            hiergeo_geojson_hash[:properties] = hiergeo_hash
+            facet_geojson_hash[:properties] = {placename: DatastreamInputFuncs.render_display_placename(hiergeo_hash)}
+          end
 
           if geojson_hash_base[:geometry][:coordinates].is_a?(Array)
             doc['subject_hiergeo_geojson_ssm'].append(hiergeo_geojson_hash.to_json)
@@ -737,6 +739,7 @@ module Bplmodels
 
       doc['title_info_alternative_tsim'] = []
       doc['title_info_uniform_tsim'] = []
+      doc['title_info_primary_trans_tsim'] = []
       self.descMetadata.mods(0).title.each_with_index do |title_value,index|
         title_prefix = self.descMetadata.mods(0).title_info(index).nonSort[0] ? self.descMetadata.mods(0).title_info(index).nonSort[0] + ' ' : ''
         if self.descMetadata.mods(0).title_info(index).usage[0] == 'primary'
@@ -745,7 +748,7 @@ module Bplmodels
               doc['title_info_primary_tsi'] = title_prefix + title_value
               doc['title_info_primary_ssort'] = title_value
             else
-              doc['title_info_primary_trans_tsim'] = title_prefix + title_value
+              doc['title_info_primary_trans_tsim'] << title_prefix + title_value
             end
           else
             doc['title_info_primary_tsi'] = title_prefix + title_value
