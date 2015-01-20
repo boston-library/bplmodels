@@ -919,7 +919,7 @@ module Bplmodels
         when 'United States','Canada'
           if hiergeo_hash[:state] || hiergeo_hash[:province]
             placename[0] = hiergeo_hash[:other].presence || hiergeo_hash[:city_section].presence || hiergeo_hash[:city].presence || hiergeo_hash[:island].presence || hiergeo_hash[:area].presence
-                if placename[0].nil? && hiergeo_hash[:county]
+            if placename[0].nil? && hiergeo_hash[:county]
               placename[0] = hiergeo_hash[:county] + ' (county)'
             end
             if placename[0]
@@ -932,6 +932,9 @@ module Bplmodels
           end
         else
           placename[0] = hiergeo_hash[:other].presence || hiergeo_hash[:city_section].presence || hiergeo_hash[:city].presence || hiergeo_hash[:island].presence || hiergeo_hash[:area].presence || hiergeo_hash[:state].presence || hiergeo_hash[:province].presence || hiergeo_hash[:region].presence || hiergeo_hash[:territory].presence
+          if placename[0].nil? && hiergeo_hash[:county]
+            placename[0] = hiergeo_hash[:county] + ' (county)'
+          end
           placename[1] = hiergeo_hash[:country]
       end
 
