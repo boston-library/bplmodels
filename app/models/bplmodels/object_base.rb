@@ -14,7 +14,7 @@ module Bplmodels
     has_many :files, :class_name => "Bplmodels::File", :property=> :is_file_of
 
 
-    #alias :limited_delete :delete
+    alias :limited_delete :delete
 
     def save
       super()
