@@ -13,19 +13,22 @@ module Bplmodels
 
     has_many :files, :class_name => "Bplmodels::File", :property=> :is_file_of
 
-    alias :limited_delete :delete
+
+    #alias :limited_delete :delete
 
     def save
       super()
     end
 
     def delete
+=begin
       Bplmodels::File.find_in_batches('is_file_of_ssim'=>"info:fedora/#{self.pid}") do |group|
         group.each { |solr_file|
           file = Bplmodels::File.find(solr_file['id']).adapt_to_cmodel
           file.delete
         }
       end
+=end
       super()
     end
 
