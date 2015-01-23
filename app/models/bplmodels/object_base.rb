@@ -13,12 +13,10 @@ module Bplmodels
 
     has_many :files, :class_name => "Bplmodels::File", :property=> :is_file_of
 
+    alias :limited_delete :delete
+
     def save
       super()
-    end
-
-    def delete_self_only
-      super.delete
     end
 
     def delete
