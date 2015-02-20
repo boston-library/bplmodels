@@ -492,9 +492,9 @@ module Bplmodels
           unless hiergeo_hash.empty?
             hiergeo_geojson_hash[:properties] = hiergeo_hash
             facet_geojson_hash[:properties] = {placename: DatastreamInputFuncs.render_display_placename(hiergeo_hash)}
+            doc['subject_hiergeo_geojson_ssm'].append(hiergeo_geojson_hash.to_json)
           end
 
-          doc['subject_hiergeo_geojson_ssm'].append(hiergeo_geojson_hash.to_json)
           if geojson_hash_base[:geometry][:coordinates].is_a?(Array)
             doc['subject_geojson_facet_ssim'].append(facet_geojson_hash.to_json)
           end
