@@ -414,10 +414,10 @@ module Bplmodels
           t.state
           t.territory
           t.county
+          t.island
           t.city
           t.city_section(:path=>"citySection")
           t.area
-          t.island
           t.extarea(:path=>"extraterrestrialArea")
         }
         t.cartographics {
