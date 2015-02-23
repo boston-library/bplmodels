@@ -992,7 +992,8 @@ module Bplmodels
     #end
 
     def insert_oai_date(date)
-      converted = Bplmodels::DatastreamInputFuncs.convert_to_mods_date(date)
+      #converted = Bplmodels::DatastreamInputFuncs.convert_to_mods_date(date)
+      converted = BplEnrich::Dates.standardize(date)
 
       #date_index =  self.date.length
       date_index = 0
@@ -1051,7 +1052,9 @@ module Bplmodels
     end
 
     def insert_oai_date_issued(date)
-      converted = Bplmodels::DatastreamInputFuncs.convert_to_mods_date(date)
+      #converted = Bplmodels::DatastreamInputFuncs.convert_to_mods_date(date)
+      converted = BplEnrich::Dates.standardize(date)
+
 
       #date_index =  self.date.length
       date_index = 0
@@ -1424,7 +1427,9 @@ module Bplmodels
     end
 
     def insert_subject_temporal(date)
-      converted = Bplmodels::DatastreamInputFuncs.convert_to_mods_date(date)
+      #converted = Bplmodels::DatastreamInputFuncs.convert_to_mods_date(date)
+      converted = BplEnrich::Dates.standardize(date)
+
       subject_index = self.mods(0).subject.count
 
       if converted.has_key?(:single_date)

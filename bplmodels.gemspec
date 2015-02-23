@@ -18,7 +18,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency "rails"
   s.add_dependency "mods"
-  s.add_dependency "timeliness"
+  s.add_dependency "timeliness" #TODO: REMOVE THIS, in Bpl_enrich now
   s.add_dependency "hydra-derivatives"
   # s.add_dependency "jquery-rails"
 

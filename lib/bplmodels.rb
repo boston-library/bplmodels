@@ -4,11 +4,6 @@ require "bplmodels/finder"
 require "bplmodels/constants"
 require "timeliness"
 
-# add some formats to Timeliness gem for better parsing
-Timeliness.add_formats(:date, 'm-d-yy', :before => 'd-m-yy')
-Timeliness.add_formats(:date, 'mmm[\.]? d[a-z]?[a-z]?[,]? yyyy')
-Timeliness.add_formats(:date, 'yyyy mmm d')
-
 module Bplmodels
   def self.environment
     if defined?(DERIVATIVE_CONFIG_GLOBAL) && DERIVATIVE_CONFIG_GLOBAL.present? && DERIVATIVE_CONFIG_GLOBAL['environment'].present?
