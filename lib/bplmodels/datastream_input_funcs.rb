@@ -818,13 +818,13 @@ module Bplmodels
       title = title
 
       if title[0..1].downcase == "a " && (title[0..2].downcase != "a ." && title[0..2].downcase != "a &")
-        nonSort = title[0]
+        nonSort = title[0..1]
         title = title[2..title.length]
       elsif title[0..3].downcase == "the "
-        nonSort = title[0..2]
+        nonSort = title[0..3]
         title = title[4..title.length]
       elsif title[0..2].downcase == "an "
-        nonSort = title[0..1]
+        nonSort = title[0..2]
         title = title[3..title.length]
         #elsif title[0..6].downcase == "in the "
         #return [title[0..5], title[7..title.length]]
