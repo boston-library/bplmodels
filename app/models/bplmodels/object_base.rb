@@ -749,7 +749,7 @@ module Bplmodels
       doc['title_info_uniform_tsim'] = []
       doc['title_info_primary_trans_tsim'] = []
       self.descMetadata.mods(0).title.each_with_index do |title_value,index|
-        title_prefix = self.descMetadata.mods(0).title_info(index).nonSort[0] ? self.descMetadata.mods(0).title_info(index).nonSort[0] + ' ' : ''
+        title_prefix = self.descMetadata.mods(0).title_info(index).nonSort[0] ? self.descMetadata.mods(0).title_info(index).nonSort[0] + ' ' : '' # shouldn't be adding space; see Trac ticket #101
         if self.descMetadata.mods(0).title_info(index).usage[0] == 'primary'
           if self.descMetadata.mods(0).title_info(index).type[0] == 'translated'
             if self.descMetadata.mods(0).title_info(index).display_label[0] == 'primary_display'
