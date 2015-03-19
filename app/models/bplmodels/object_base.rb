@@ -1140,5 +1140,18 @@ module Bplmodels
       return true
     end
 
+    def oai_thumbnail_service(is_new, urls, system_type, thumbnail_url=nil)
+      response = Typhoeus::Request.post(DERIVATIVE_CONFIG_GLOBAL['url'] + "/processor/oaithumbnail.json", :params => {:pid=>self.pid, :new=>is_new, :environment=>Bplmodels.environment, :image_urls=>urls, :system_type=>system_type, :thumbnail_url=>thumbnail_url})
+      as_json = JSON.parse(response.body)
+
+      if as_json['result'] == "false"
+        pid = self.object.pid
+        self.delete
+        raise "Error Generating OAI Thumbnail For Object: " + pid
+      end
+
+      return true
+    end
+
   end
 end

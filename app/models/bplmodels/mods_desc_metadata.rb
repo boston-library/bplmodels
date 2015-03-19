@@ -1660,12 +1660,31 @@ module Bplmodels
       self.mods(0).item_location(location_index).holding_simple(0).copy_information(0).shelf_locator = shelf_locator unless shelf_locator.blank?
     end
 
+=begin
     def insert_location_url(url=nil, access=nil, usage=nil)
       location_index = self.mods(0).item_location.count
 
       self.mods(0).item_location(location_index).url = url unless url.blank?
       self.mods(0).item_location(location_index).url(0).usage = usage unless usage.blank?
       self.mods(0).item_location(location_index).url(0).access = access unless access.blank?
+
+    end
+=end
+
+    def insert_location_url(url=nil, access=nil, usage=nil)
+      location_index = self.mods(0).item_location.count
+
+      for index in 0..self.mods(0).item_location.count-1
+        if self.mods(0).item_location(index).url.present?
+          location_index = index
+        end
+      end
+
+      url_index = self.mods(0).item_location(location_index).url.count
+
+      self.mods(0).item_location(location_index).url(url_index, url) unless url.blank?
+      self.mods(0).item_location(location_index).url(url_index).usage = usage unless usage.blank?
+      self.mods(0).item_location(location_index).url(url_index).access = access unless access.blank?
 
     end
 
