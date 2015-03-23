@@ -860,7 +860,11 @@ module Bplmodels
       return object
     end
 
-    def generate_thumbnail_url
+    def generate_thumbnail_url(config_hash=nil)
+      if config_hash.present?
+        return config_hash['url'] + '/ark:/' + config_hash["namespace_commonwealth_ark"].to_s + "/" + self.pid.split(':').last.to_s + "/thumbnail"
+      end
+
       return ARK_CONFIG_GLOBAL['url'] + '/ark:/' + ARK_CONFIG_GLOBAL["namespace_commonwealth_ark"].to_s + "/" + self.pid.split(':').last.to_s + "/thumbnail"
     end
 
