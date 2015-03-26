@@ -709,7 +709,7 @@ module Bplmodels
         self.mods(0).genre(genre_index).authorityURI = 'http://vocab.getty.edu/aat'
       end
 
-      if value_uri.match(/^http/).blank? && value_uri.present?
+      if value_uri.present? && value_uri.match(/^http/).blank?
         if authority == 'marcgt'
           value_uri = value_url
         elsif authority == 'aat'
