@@ -961,6 +961,8 @@ module Bplmodels
 
       if role.present?
         role_split = role.split('{|}') #new split var - see Arnold ticket
+
+        role_uri = '{|}{|}{|}{|}{|}' if role_uri.nil? #Very hackish...
         role_uri_split = role_uri.split('{|}') #new split var - see Arnold ticket
 
         role_split.each_with_index do |single_role, role_index|
