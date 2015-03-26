@@ -705,6 +705,18 @@ module Bplmodels
         self.mods(0).genre(genre_index).authorityURI = 'http://id.loc.gov/vocabulary/graphicMaterials'
       elsif authority == 'lcsh'
         self.mods(0).genre(genre_index).authorityURI = 'http://id.loc.gov/authorities/subjects'
+      elsif authority == 'aat'
+        self.mods(0).genre(genre_index).authorityURI = 'http://vocab.getty.edu/aat'
+      end
+
+      if value_uri.match(/^http/).blank? && value_uri.present?
+        if authority == 'marcgt'
+          value_uri = value_url
+        elsif authority == 'aat'
+          value_uri = 'http://vocab.getty.edu/aat/' + value_uri
+        elsif authority == 'gmgpc' || authority == 'lctgm'
+          value_uri = 'http://id.loc.gov/vocabulary/graphicMaterials/' + value_uri
+        end
       end
 
       self.mods(0).genre(genre_index).valueURI = value_uri unless value_uri.blank?
@@ -1375,7 +1387,7 @@ module Bplmodels
 
 
     def insert_subject_topic(topic=nil, valueURI=nil, authority=nil)
-      if topic.present? && !self.mods(0).subject.topic.include?(topic)
+      if topic.present? && !self.mods(0).subject.topic.any?{ |top| top == topic }
         subject_index = self.mods(0).subject.count
         self.mods(0).subject(subject_index).topic = topic unless topic.blank?
         self.mods(0).subject(subject_index).valueURI = valueURI unless valueURI.blank?
@@ -1428,21 +1440,35 @@ module Bplmodels
 
     def insert_subject_temporal(date)
       #converted = Bplmodels::DatastreamInputFuncs.convert_to_mods_date(date)
+      duplicate = false
       converted = BplEnrich::Dates.standardize(date)
 
       subject_index = self.mods(0).subject.count
 
       if converted.has_key?(:single_date)
+        #Check for duplicates
+        (0..self.descMetadata.mods(0).subject.length-1).each do |index|
+          if self.mods(0).subject(index).temporal == [converted[:single_date]]
+            duplicate = true
+          end
+        end
         temporal_index = self.mods(0).subject(subject_index).temporal.length
-        self.mods(0).subject(subject_index).temporal(temporal_index, converted[:single_date]) unless converted[:single_date].blank?
+        self.mods(0).subject(subject_index).temporal(temporal_index, converted[:single_date]) unless converted[:single_date].blank? || duplicate
       elsif converted.has_key?(:date_range)
-        temporal_index = self.mods(0).subject(subject_index).temporal.length
-        self.mods(0).subject(subject_index).temporal(temporal_index, converted[:date_range][:start]) unless converted[:date_range][:start].blank?
-        self.mods(0).subject(subject_index).temporal(temporal_index).point = 'start' unless converted[:date_range][:start].blank?
+        #Check for duplicates, FIXME: Is there case this doesn't work?
+        (0..self.descMetadata.mods(0).subject.length-1).each do |index|
+          if self.mods(0).subject(index).temporal == [converted[:date_range][:start], converted[:date_range][:end]]
+            duplicate = true
+          end
+        end
 
         temporal_index = self.mods(0).subject(subject_index).temporal.length
-        self.mods(0).subject(subject_index).temporal(temporal_index, converted[:date_range][:end]) unless converted[:date_range][:end].blank?
-        self.mods(0).subject(subject_index).temporal(temporal_index).point = 'end' unless converted[:date_range][:end].blank?
+        self.mods(0).subject(subject_index).temporal(temporal_index, converted[:date_range][:start]) unless converted[:date_range][:start].blank? || duplicate
+        self.mods(0).subject(subject_index).temporal(temporal_index).point = 'start' unless converted[:date_range][:start].blank? || duplicate
+
+        temporal_index = self.mods(0).subject(subject_index).temporal.length
+        self.mods(0).subject(subject_index).temporal(temporal_index, converted[:date_range][:end]) unless converted[:date_range][:end].blank? || duplicate
+        self.mods(0).subject(subject_index).temporal(temporal_index).point = 'end' unless converted[:date_range][:end].blank? || duplicate
       end
 
     end
@@ -1503,7 +1529,7 @@ module Bplmodels
 
 
     def insert_subject_geographic(geographic=nil, valueURI=nil, authority=nil, coordinates=nil)
-      if geographic.present?
+      if geographic.present? && !self.mods(0).subject.geographic.any? {|geo| geo==geographic}
         subject_index = self.mods(0).subject.count
         self.mods(0).subject(subject_index).geographic = geographic unless geographic.blank?
         self.mods(0).subject(subject_index).valueURI = valueURI unless valueURI.blank?
