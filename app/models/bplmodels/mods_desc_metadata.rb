@@ -1447,7 +1447,7 @@ module Bplmodels
 
       if converted.has_key?(:single_date)
         #Check for duplicates
-        (0..self.descMetadata.mods(0).subject.length-1).each do |index|
+        (0..self.mods(0).subject.length-1).each do |index|
           if self.mods(0).subject(index).temporal == [converted[:single_date]]
             duplicate = true
           end
@@ -1456,7 +1456,7 @@ module Bplmodels
         self.mods(0).subject(subject_index).temporal(temporal_index, converted[:single_date]) unless converted[:single_date].blank? || duplicate
       elsif converted.has_key?(:date_range)
         #Check for duplicates, FIXME: Is there case this doesn't work?
-        (0..self.descMetadata.mods(0).subject.length-1).each do |index|
+        (0..self.mods(0).subject.length-1).each do |index|
           if self.mods(0).subject(index).temporal == [converted[:date_range][:start], converted[:date_range][:end]]
             duplicate = true
           end
