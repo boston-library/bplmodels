@@ -1120,7 +1120,7 @@ module Bplmodels
 
       #This is horrid. Can't use count as other elements use origin_info at the same depth....
       if keydate.blank?
-        keydate = true if (self.mods(0).date.dates_created.key_date.blank? and self.mods(0).date.dates_issued.key_date.blank? and self.mods(0).date.dates_copyright.key_date.blank?)
+        keydate = true if (self.mods(0).date.dates_created.key_date.blank? and self.mods(0).date.dates_issued.key_date.blank? and self.mods(0).date.dates_copyright.key_date.blank? and self.mods(0).date.date_other.key_date.blank?)
         keydate ||= false
       end
 
