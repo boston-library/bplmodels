@@ -952,7 +952,7 @@ module Bplmodels
     #image.descMetadata.find_by_terms(:name).slice(0).set_attribute("new", "true")
 
 
-    def insert_name(name=nil, type=nil, authority=nil, value_uri=nil, role=nil, role_uri=nil, args={})
+    def insert_name(name=nil, type=nil, authority=nil, value_uri=nil, role=nil, role_uri=nil, date=nil, args={})
 
       name_index = self.mods(0).name.count
       self.mods(0).name(name_index).type = type unless type.blank?
@@ -981,10 +981,13 @@ module Bplmodels
         name_array.each_with_index do |name_value, array_pos|
           self.mods(0).name(name_index).namePart(array_pos, name_value)
         end
-      elsif type=='personal'
+      elsif type=='personal' && date.blank?
         name_hash = Bplmodels::DatastreamInputFuncs.persNamePartSplitter(name)
         self.mods(0).name(name_index).namePart = name_hash[:namePart]
         self.mods(0).name(name_index).date = name_hash[:datePart] unless name_hash[:datePart].blank?
+      elsif date.present?
+        self.mods(0).name(name_index).namePart = name
+        self.mods(0).name(name_index).date = date
       else
         self.mods(0).name(name_index).namePart = name
       end
