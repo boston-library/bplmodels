@@ -325,7 +325,9 @@ module Bplmodels
       }
 
       t.item_location(:path=>"location") {
-        t.physical_location(:path=>"physicalLocation")
+        t.physical_location(:path=>"physicalLocation") {
+          t.type(:path=>{:attribute=>"type"})
+        }
         t.holding_simple(:path=>"holdingSimple") {
           t.copy_information(:path=>"copyInformation") {
             t.sub_location(:path=>"subLocation")
@@ -695,33 +697,37 @@ module Bplmodels
 
 
     def insert_genre(value=nil, value_uri=nil, authority=nil, display_label='specific')
-      genre_index = self.mods(0).genre.count
+      #Prevent duplicates
+      if value.present? && !self.mods(0).genre.any?{ |genre| genre == value}
+        genre_index = self.mods(0).genre.count
 
-      self.mods(0).genre(genre_index, value) unless value.blank?
+        self.mods(0).genre(genre_index, value) unless value.blank?
 
-      self.mods(0).genre(genre_index).authority = authority unless authority.blank?
+        self.mods(0).genre(genre_index).authority = authority unless authority.blank?
 
-      if authority == 'gmgpc' || authority == 'lctgm'
-        self.mods(0).genre(genre_index).authorityURI = 'http://id.loc.gov/vocabulary/graphicMaterials'
-      elsif authority == 'lcsh'
-        self.mods(0).genre(genre_index).authorityURI = 'http://id.loc.gov/authorities/subjects'
-      elsif authority == 'aat'
-        self.mods(0).genre(genre_index).authorityURI = 'http://vocab.getty.edu/aat'
-      end
-
-      if value_uri.present? && value_uri.match(/^http/).blank?
-        if authority == 'marcgt'
-          value_uri = value_url
+        if authority == 'gmgpc' || authority == 'lctgm'
+          self.mods(0).genre(genre_index).authorityURI = 'http://id.loc.gov/vocabulary/graphicMaterials'
+        elsif authority == 'lcsh'
+          self.mods(0).genre(genre_index).authorityURI = 'http://id.loc.gov/authorities/subjects'
         elsif authority == 'aat'
-          value_uri = 'http://vocab.getty.edu/aat/' + value_uri
-        elsif authority == 'gmgpc' || authority == 'lctgm'
-          value_uri = 'http://id.loc.gov/vocabulary/graphicMaterials/' + value_uri
+          self.mods(0).genre(genre_index).authorityURI = 'http://vocab.getty.edu/aat'
         end
+
+        if value_uri.present? && value_uri.match(/^http/).blank?
+          if authority == 'marcgt'
+            value_uri = value_url
+          elsif authority == 'aat'
+            value_uri = 'http://vocab.getty.edu/aat/' + value_uri
+          elsif authority == 'gmgpc' || authority == 'lctgm'
+            value_uri = 'http://id.loc.gov/vocabulary/graphicMaterials/' + value_uri
+          end
+        end
+
+        self.mods(0).genre(genre_index).valueURI = value_uri unless value_uri.blank?
+
+        self.mods(0).genre(genre_index).displayLabel = display_label unless display_label.blank?
       end
 
-      self.mods(0).genre(genre_index).valueURI = value_uri unless value_uri.blank?
-
-      self.mods(0).genre(genre_index).displayLabel = display_label unless display_label.blank?
 
     end
 
@@ -910,6 +916,7 @@ module Bplmodels
     #usage=nil,  supplied=nil, subtitle=nil, language=nil, type=nil, authority=nil, authorityURI=nil, valueURI=nil
     def insert_title(nonSort=nil, main_title=nil, usage=nil, supplied=nil, type=nil, subtitle=nil, language=nil, display_label=nil, args={})
       title_index = self.mods(0).title_info.count
+
       self.mods(0).title_info(title_index).nonSort = nonSort unless nonSort.blank?
       self.mods(0).title_info(title_index).main_title = main_title unless main_title.blank?
 
@@ -1676,7 +1683,7 @@ module Bplmodels
       self.find_by_terms(:physical_location).slice(index.to_i).remove
     end
 
-    def insert_physical_location(location=nil, sublocation=nil,shelf_locator=nil)
+    def insert_physical_location(location=nil, sublocation=nil,shelf_locator=nil, location_type=nil)
       #Create a new tag unless there is a non-url tag already...
       location_index = self.mods(0).item_location.count
 
@@ -1689,6 +1696,7 @@ module Bplmodels
       physical_location_index = 0
 
       self.mods(0).item_location(location_index).physical_location(physical_location_index, location) unless location.blank?
+      self.mods(0).item_location(location_index).physical_location(physical_location_index).type = location_type unless location.blank?
       self.mods(0).item_location(location_index).holding_simple(0).copy_information(0).sub_location = sublocation unless sublocation.blank?
       self.mods(0).item_location(location_index).holding_simple(0).copy_information(0).shelf_locator = shelf_locator unless shelf_locator.blank?
     end
