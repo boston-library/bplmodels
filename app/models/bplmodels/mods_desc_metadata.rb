@@ -593,6 +593,11 @@ module Bplmodels
       return builder.doc
     end
 
+    #Required for Active Fedora 9
+    def prefix(path=nil)
+      return ''
+    end
+
 =begin
     def identifier=(values)
       ng_xml.search(identifier.xpath, {oxns:"http://www.loc.gov/mods/v3"}).each do |n|

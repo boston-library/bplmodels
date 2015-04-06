@@ -59,6 +59,11 @@ module Bplmodels
       end.doc
     end
 
+    #Required for Active Fedora 9
+    def prefix(path=nil)
+      return ''
+    end
+
 
     def insert_file_path(value=nil)
       ingest_filepath_index = self.item_source.ingest_filepath.count

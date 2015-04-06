@@ -51,6 +51,12 @@ module Bplmodels
       end.doc
     end
 
+    #Required for Active Fedora 9
+    def prefix(path=nil)
+      return ''
+    end
+
+
     define_template :original_record do |xml, content|
         xml.original_record {
           xml.cdata content
