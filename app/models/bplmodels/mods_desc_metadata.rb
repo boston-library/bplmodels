@@ -926,7 +926,7 @@ module Bplmodels
       self.mods(0).title_info(title_index).type = type unless type.blank?
 
       #Need to update previous titles to be translated now as well....
-      if type == 'translated'
+      if type == 'translated' && usage == 'primary'
         0.upto title_index-1 do |pos|
           if self.mods(0).title_info(pos).usage[0] == 'primary'
             self.mods(0).title_info(pos).type = type
