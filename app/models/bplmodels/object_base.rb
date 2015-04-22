@@ -640,6 +640,8 @@ module Bplmodels
         subject_date_range_start = []
         subject_date_range_end = []
         self.descMetadata.subject.temporal.each_with_index do |value,index|
+          puts 'value is: ' + value + ' with point of: ' + self.descMetadata.subject.temporal.point[index]
+          puts self.descMetadata.to_yml
           if self.descMetadata.subject.temporal.point[index] != 'end'
             subject_temporal_start = value
             doc['subject_temporal_start_tsim'].append(subject_temporal_start)
