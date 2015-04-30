@@ -692,6 +692,12 @@ module Bplmodels
         doc['subject_facet_ssim'].concat(doc['subject_title_tsim'])
       end
 
+      # de-dupe various subject fields (needed for LCSH-style subjects from MODS OAI feeds)
+      subjs_to_dedupe = %w(subject_topic_tsim subject_geo_nonhier_ssim subject_hiergeo_geojson_ssm subject_name_corporate_tsim subject_name_personal_tsim subject_name_conference_tsim subject_temporal_facet_ssim subject_title_tsim)
+      subjs_to_dedupe.each do |subj_to_dedupe|
+        doc[subj_to_dedupe] = doc[subj_to_dedupe].uniq if doc[subj_to_dedupe]
+      end
+
       doc['active_fedora_model_suffix_ssi'] = self.rels_ext.model.class.to_s.gsub(/\A[\w]*::/,'')
 
       doc['rights_ssm'] = []
