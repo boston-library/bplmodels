@@ -20,12 +20,14 @@ module Bplmodels
       super()
     end
 
-    def delete
-      Bplmodels::File.find_in_batches('is_file_of_ssim'=>"info:fedora/#{self.pid}") do |group|
-        group.each { |solr_file|
-          file = Bplmodels::File.find(solr_file['id']).adapt_to_cmodel
-          file.delete
-        }
+    def delete(delete_files=true)
+      if delete_files
+        Bplmodels::File.find_in_batches('is_file_of_ssim'=>"info:fedora/#{self.pid}") do |group|
+          group.each { |solr_file|
+            file = Bplmodels::File.find(solr_file['id']).adapt_to_cmodel
+            file.delete
+          }
+        end
       end
       super()
     end
