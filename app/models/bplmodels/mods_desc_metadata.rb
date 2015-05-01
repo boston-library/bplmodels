@@ -433,6 +433,11 @@ module Bplmodels
         t.title_info(:ref=>[:title_info]) {
           t.title
         }
+        t.genre {
+          t.authority(:path=>{:attribute=>"authority"})
+          t.authority_uri(:path=>{:attribute=>"authorityURI"})
+          t.value_uri(:path=>{:attribute=>"valueURI"})
+        }
 
       end
 
@@ -591,6 +596,11 @@ module Bplmodels
         }
       end
       return builder.doc
+    end
+
+    #Required for Active Fedora 9
+    def prefix(path=nil)
+      return ''
     end
 
 =begin

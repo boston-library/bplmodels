@@ -2,8 +2,9 @@ module Bplmodels
   class FitsDatastream < ActiveFedora::OmDatastream
     include OM::XML::Document
 
-    def prefix
-      ""
+    #Required for Active Fedora 9
+    def prefix(path=nil)
+      return ''
     end
 
     set_terminology do |t|
