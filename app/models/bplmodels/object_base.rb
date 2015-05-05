@@ -702,6 +702,18 @@ module Bplmodels
         doc[subj_to_dedupe] = doc[subj_to_dedupe].uniq if doc[subj_to_dedupe]
       end
 
+      # remove values from subject_geo_nonhier_ssim
+      # that are represented in subject_hiergeo_geojson_ssm
+      if doc['subject_geo_nonhier_ssim'] && doc['subject_hiergeo_geojson_ssm']
+        doc['subject_geo_nonhier_ssim'].each do |non_hier_geo_subj|
+          doc['subject_hiergeo_geojson_ssm'].each do |hiergeo_geojson_feature|
+            if hiergeo_geojson_feature.match(/#{non_hier_geo_subj}/)
+              doc['subject_geo_nonhier_ssim'].delete(non_hier_geo_subj)
+            end
+          end
+        end
+      end
+
       doc['active_fedora_model_suffix_ssi'] = self.rels_ext.model.class.to_s.gsub(/\A[\w]*::/,'')
 
       doc['rights_ssm'] = []
