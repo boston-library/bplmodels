@@ -16,9 +16,11 @@ module Bplmodels
 
     #alias :limited_delete :delete
 
+=begin
     def save
       super()
     end
+=end
 
     def delete(delete_files=true)
       if delete_files
