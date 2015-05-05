@@ -93,9 +93,10 @@ module Bplmodels
       tmpname
     end
 
-    def save
-      super()
-    end
+    #def save
+      #super()
+      #super
+    #end
 
     def to_solr(doc = {} )
       doc = super(doc)
