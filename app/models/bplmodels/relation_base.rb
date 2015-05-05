@@ -62,9 +62,11 @@ module Bplmodels
       doc
     end
 
+=begin
     def save
       super()
     end
+=end
 
     def assert_content_model
       super()
