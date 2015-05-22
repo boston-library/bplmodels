@@ -16,6 +16,8 @@ module Bplmodels
 
     has_file_datastream 'thumbnail300', versionable: false,  label:'thumbnail300 datastream'
 
+    has_file_datastream 'access800', versionable: false,  label:'access800 datastream'
+
     belongs_to :object, :class_name => "Bplmodels::ObjectBase", :property => :is_image_of
 
     belongs_to :exemplary, :class_name => "Bplmodels::ObjectBase", :property => :is_exemplary_image_of
@@ -50,8 +52,21 @@ module Bplmodels
 
     end
 
-
     def generate_derivatives
+      case self.productionMaster.mimeType
+        when 'application/pdf'
+          #transform_datastream :productionMaster, { :thumb => "100x100>" }
+        when 'audio/wav'
+          #transform_datastream :productionMaster, { :mp3 => {format: 'mp3'}, :ogg => {format: 'ogg'} }, processor: :audio
+        when 'video/avi'
+          #transform_datastream :productionMaster, { :mp4 => {format: 'mp4'}, :webm => {format: 'webm'} }, processor: :video
+        when 'image/tiff', 'image/png', 'image/jpg'
+          transform_datastream :productionMaster, { :thumb => {size: "x800>", datastream: 'access800', format: 'jpg'} }
+          self.access800.dsLabel = self.productionMaster.label
+      end
+    end
+
+    def generate_derivatives_full
       case self.productionMaster.mimeType
         when 'application/pdf'
           #transform_datastream :productionMaster, { :thumb => "100x100>" }
@@ -76,8 +91,10 @@ module Bplmodels
             end
           end
           transform_datastream :productionMaster, { :thumb => {size: "300x300>", datastream: 'thumbnail300', format: 'jpg'} }
+          transform_datastream :productionMaster, { :thumb => {size: "x800>", datastream: 'access800', format: 'jpg'} }
           self.accessMaster.dsLabel = self.productionMaster.label
           self.thumbnail300.dsLabel = self.productionMaster.label
+          self.access800.dsLabel = self.productionMaster.label
         when 'image/jpeg' #FIXME
           Magick::limit_resource(:memory, 5500000000)
           Magick::limit_resource(:map, 5500000000)
@@ -89,17 +106,17 @@ module Bplmodels
     end
 
     def derivative_service(is_new)
-      response = Typhoeus::Request.post(DERIVATIVE_CONFIG_GLOBAL['url'] + "/processor.json", :params => {:pid=>self.pid, :new=>is_new})
+      response = Typhoeus::Request.post(DERIVATIVE_CONFIG_GLOBAL['url'] + "/processor/byfile.json", :params => {:pid=>self.pid, :new=>is_new, :environment=>Bplmodels.environment})
+      puts response.body.to_s
       as_json = JSON.parse(response.body)
 
       if as_json['result'] == "false"
-        pid = self.object.pid
-        self.delete
         raise "Error Generating Derivatives For Object: " + pid
       end
 
       return true
     end
+
 
     #Expects the following args:
     #parent_pid => id of the parent object
