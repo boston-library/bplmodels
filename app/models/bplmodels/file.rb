@@ -61,20 +61,6 @@ module Bplmodels
         when 'video/avi'
           #transform_datastream :productionMaster, { :mp4 => {format: 'mp4'}, :webm => {format: 'webm'} }, processor: :video
         when 'image/tiff', 'image/png', 'image/jpg'
-          transform_datastream :productionMaster, { :thumb => {size: "x800>", datastream: 'access800', format: 'jpg'} }
-          self.access800.dsLabel = self.productionMaster.label
-      end
-    end
-
-    def generate_derivatives_full
-      case self.productionMaster.mimeType
-        when 'application/pdf'
-          #transform_datastream :productionMaster, { :thumb => "100x100>" }
-        when 'audio/wav'
-          #transform_datastream :productionMaster, { :mp3 => {format: 'mp3'}, :ogg => {format: 'ogg'} }, processor: :audio
-        when 'video/avi'
-          #transform_datastream :productionMaster, { :mp4 => {format: 'mp4'}, :webm => {format: 'webm'} }, processor: :video
-        when 'image/tiff', 'image/png', 'image/jpg'
           begin
             transform_datastream :productionMaster, { :testJP2k => { recipe: :default, datastream: 'accessMaster'  } }, processor: 'jpeg2k_image'
           rescue => error

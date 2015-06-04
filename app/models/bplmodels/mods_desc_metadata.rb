@@ -965,7 +965,7 @@ module Bplmodels
             self.mods(0).title_info(pos).type = type
           end
         end
-      #Currently only main title has a blank title.... may want to pass this instead eventually if that changes.
+      #Currently only main title has a blank type.... may want to pass this instead eventually if that changes.
       elsif type.blank?
         self.mods(0).title_info(title_index).display_label = 'primary_display'
       end
