@@ -60,7 +60,7 @@ module Bplmodels
           #transform_datastream :productionMaster, { :mp3 => {format: 'mp3'}, :ogg => {format: 'ogg'} }, processor: :audio
         when 'video/avi'
           #transform_datastream :productionMaster, { :mp4 => {format: 'mp4'}, :webm => {format: 'webm'} }, processor: :video
-        when 'image/tiff', 'image/png', 'image/jpg', 'image/jpeg'
+        when 'image/tiff', 'image/png', 'image/jpg'
           begin
             transform_datastream :productionMaster, { :testJP2k => { recipe: :default, datastream: 'accessMaster'  } }, processor: 'jpeg2k_image'
           rescue => error
@@ -81,7 +81,6 @@ module Bplmodels
           self.accessMaster.dsLabel = self.productionMaster.label
           self.thumbnail300.dsLabel = self.productionMaster.label
           self.access800.dsLabel = self.productionMaster.label
-=begin
         when 'image/jpeg' #FIXME
           Magick::limit_resource(:memory, 5500000000)
           Magick::limit_resource(:map, 5500000000)
@@ -89,7 +88,12 @@ module Bplmodels
           self.accessMaster.content = jp2_img.to_blob { self.format = "jp2" }
           self.accessMaster.mimeType = 'image/jp2'
           jp2_img.destroy!
-=end
+
+          transform_datastream :productionMaster, { :thumb => {size: "300x300>", datastream: 'thumbnail300', format: 'jpg'} }
+          transform_datastream :productionMaster, { :thumb => {size: "x800>", datastream: 'access800', format: 'jpg'} }
+          self.accessMaster.dsLabel = self.productionMaster.label
+          self.thumbnail300.dsLabel = self.productionMaster.label
+          self.access800.dsLabel = self.productionMaster.label
       end
     end
 
