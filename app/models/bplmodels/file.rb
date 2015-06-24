@@ -60,7 +60,7 @@ module Bplmodels
           #transform_datastream :productionMaster, { :mp3 => {format: 'mp3'}, :ogg => {format: 'ogg'} }, processor: :audio
         when 'video/avi'
           #transform_datastream :productionMaster, { :mp4 => {format: 'mp4'}, :webm => {format: 'webm'} }, processor: :video
-        when 'image/jpg'
+        when 'image/tiff', 'image/png', 'image/jpg'
           begin
             transform_datastream :productionMaster, { :testJP2k => { recipe: :default, datastream: 'accessMaster'  } }, processor: 'jpeg2k_image'
           rescue => error
