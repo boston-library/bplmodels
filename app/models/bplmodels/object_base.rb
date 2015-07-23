@@ -22,6 +22,9 @@ module Bplmodels
     belongs_to :collection, :class_name => 'Bplmodels::Collection', :property => :is_member_of_collection
 
     belongs_to :organization, :class_name => 'Bplmodels::Collection', :property => :is_member_of_collection
+
+    belongs_to :admin_set, :class_name => 'Bplmodels::Collection', :property => :administrative_set
+
     has_and_belongs_to_many :members, :class_name=> "Bplmodels::Collection", :property=> :hasSubset
 
     has_metadata :name => "descMetadata", :type => ModsDescMetadata
@@ -310,6 +313,12 @@ module Bplmodels
           end
         end
 
+      end
+
+      if self.admin_set
+        doc['admin_set_name_ssim'] = self.admin_set.label.to_s
+        doc['admin_set_name_tsim'] = self.admin_set.label.to_s
+        doc['admin_set_pid_ssm'] = self.admin_set.pid
       end
 
 
@@ -926,6 +935,8 @@ module Bplmodels
       object = self.new(:pid=>as_json["pid"])
 
       object.add_relationship(:is_member_of_collection, "info:fedora/" + args[:parent_pid])
+      object.add_relationship(:administrative_set, "info:fedora/" + args[:parent_pid])
+
       object.add_oai_relationships
 
       object.label = args[:label] if args[:label].present?
