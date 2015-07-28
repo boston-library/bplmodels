@@ -907,13 +907,15 @@ module Bplmodels
     #local_id_type => type of that local ID
     #label => label of the object
     #institution_pid => instituional access of this file
+    #secondary_parent_pids => optional array of additional parent pids
     def self.mint(args)
 
       #TODO: Duplication check here to prevent over-writes?
 
       args[:namespace_id] ||= ARK_CONFIG_GLOBAL['namespace_commonwealth_pid']
+      args[:secondary_parent_pids] ||= []
 
-      response = Typhoeus::Request.post(ARK_CONFIG_GLOBAL['url'] + "/arks.json", :params => {:ark=>{:parent_pid=>args[:parent_pid], :namespace_ark => ARK_CONFIG_GLOBAL['namespace_commonwealth_ark'], :namespace_id=>args[:namespace_id], :url_base => ARK_CONFIG_GLOBAL['ark_commonwealth_base'], :model_type => self.name, :local_original_identifier=>args[:local_id], :local_original_identifier_type=>args[:local_id_type]}})
+      response = Typhoeus::Request.post(ARK_CONFIG_GLOBAL['url'] + "/arks.json", :params => {:ark=>{:parent_pid=>args[:parent_pid], :secondary_parent_pids=>args[:secondary_parent_pids], :namespace_ark => ARK_CONFIG_GLOBAL['namespace_commonwealth_ark'], :namespace_id=>args[:namespace_id], :url_base => ARK_CONFIG_GLOBAL['ark_commonwealth_base'], :model_type => self.name, :local_original_identifier=>args[:local_id], :local_original_identifier_type=>args[:local_id_type]}})
       as_json = JSON.parse(response.body)
 
       puts as_json['pid']
@@ -936,6 +938,10 @@ module Bplmodels
 
       object.add_relationship(:is_member_of_collection, "info:fedora/" + args[:parent_pid])
       object.add_relationship(:administrative_set, "info:fedora/" + args[:parent_pid])
+
+      args[:secondary_parent_pids].each do |other_collection_pid|
+        object.add_relationship(:is_member_of_collection, "info:fedora/" + other_collection_pid)
+      end
 
       object.add_oai_relationships
 
