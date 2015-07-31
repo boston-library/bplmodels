@@ -302,6 +302,7 @@ module Bplmodels
       doc['local_accession_id_tsim'] = self.descMetadata.local_accession[0].to_s
 
       #Assign collection, admin, and institution labels
+      object_institution_pid = nil
       object_collections = self.relationships(:is_member_of_collection)
       object_collections.each do |collection_ident|
         solr_response_collection = ActiveFedora::Base.find_with_conditions("id"=>collection_ident.gsub('info:fedora/','')).first
@@ -309,11 +310,14 @@ module Bplmodels
         doc['collection_name_tsim'] = solr_response_collection["label_ssim"].first.to_s
         doc['collection_pid_ssm'] = solr_response_collection["id"].to_s
 
-        object_institution_pid = doc['institution_pid_ssi']
-        solr_response_institution = ActiveFedora::Base.find_with_conditions("id"=>object_institution_pid).first
-        doc['institution_name_ssim'] = solr_response_institution["label_ssim"].first.to_s
-        doc['institution_name_tsim'] = solr_response_institution["label_ssim"].first.to_s
-        doc['institution_pid_ssi'] = solr_response_institution["id"].to_s
+        if object_institution_pid.blank?
+          object_institution_pid = doc['institution_pid_ssi']
+          solr_response_institution = ActiveFedora::Base.find_with_conditions("id"=>object_institution_pid).first
+          doc['institution_name_ssim'] = solr_response_institution["label_ssim"].first.to_s
+          doc['institution_name_tsim'] = solr_response_institution["label_ssim"].first.to_s
+          doc['institution_pid_ssi'] = solr_response_institution["id"].to_s
+          doc['institution_pid_si'] = solr_response_institution["id"].to_s
+        end
       end
 
       object_admin_set = self.relationships(:administrative_set).first
@@ -325,6 +329,8 @@ module Bplmodels
       else
         raise "Potential problem setting administrative set?"
       end
+
+
 
 
       #self.descMetadata.identifier_uri.each do |identifier|
@@ -872,11 +878,6 @@ module Bplmodels
 
       doc['subtitle_tsim'] = self.descMetadata.title_info.subtitle
 
-      if self.collection
-        if self.collection.institutions
-          doc['institution_pid_si'] = self.collection.institutions.pid
-        end
-      end
 
       if self.workflowMetadata
         doc['workflow_state_ssi'] = self.workflowMetadata.item_status.state
