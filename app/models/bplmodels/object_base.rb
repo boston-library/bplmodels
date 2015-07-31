@@ -300,27 +300,32 @@ module Bplmodels
       doc['identifier_ark_ssi'] = ''
 
       doc['local_accession_id_tsim'] = self.descMetadata.local_accession[0].to_s
-      if self.collection
-        doc['collection_name_ssim'] = self.collection.label.to_s
-        doc['collection_name_tsim'] = self.collection.label.to_s
-        doc['collection_pid_ssm'] = self.collection.pid
 
-        if self.collection
-          if self.collection.institutions
-            doc['institution_name_ssim'] = self.collection.institutions.label.to_s
-            doc['institution_name_tsim'] = self.collection.institutions.label.to_s
-            doc['institution_pid_ssi'] = self.collection.institutions.pid
-          end
-        end
+      #Assign collection, admin, and institution labels
+      object_collections = self.relationships(:is_member_of_collection)
+      object_collections.each do |collection_ident|
+        solr_response_collection = ActiveFedora::Base.find_with_conditions("id"=>collection_ident.gsub('info:fedora/',''))
+        doc['collection_name_ssim'] = solr_response_collection["label_ssim"].first.to_s
+        doc['collection_name_tsim'] = solr_response_collection["label_ssim"].first.to_s
+        doc['collection_pid_ssm'] = solr_response_collection["id"].to_s
 
+        object_institution_pid = doc['institution_pid_ssi']
+        solr_response_institution = ActiveFedora::Base.find_with_conditions("id"=>object_institution_pid)
+        doc['institution_name_ssim'] = solr_response_institution["label_ssim"].first.to_s
+        doc['institution_name_tsim'] = solr_response_institution["label_ssim"].first.to_s
+        doc['institution_pid_ssi'] = solr_response_institution["id"].to_s
       end
 
-      if self.admin_set
-        doc['admin_set_name_ssim'] = self.admin_set.label.to_s
-        doc['admin_set_name_tsim'] = self.admin_set.label.to_s
-        doc['admin_set_pid_ssm'] = self.admin_set.pid
+      object_admin_set = self.relationships(:administrative_set).first
+      if object_admin_set.present?
+        solr_response_admin = ActiveFedora::Base.find_with_conditions("id"=>object_admin_set.gsub('info:fedora/',''))
+        doc['admin_set_name_ssim'] = solr_response_admin["label_ssim"].first.to_s
+        doc['admin_set_name_tsim'] = solr_response_admin["label_ssim"].first.to_s
+        doc['admin_set_pid_ssm'] = solr_response_admin["id"].to_s
+      else
+        raise "Potential problem setting administrative set?"
       end
-
+      
 
       #self.descMetadata.identifier_uri.each do |identifier|
       #if idenfifier.include?("ark")
