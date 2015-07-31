@@ -302,13 +302,17 @@ module Bplmodels
       doc['local_accession_id_tsim'] = self.descMetadata.local_accession[0].to_s
 
       #Assign collection, admin, and institution labels
+      doc['collection_name_ssim'] = []
+      doc['collection_name_tsim'] = []
+      doc['collection_pid_ssm'] = []
+
       object_institution_pid = nil
       object_collections = self.relationships(:is_member_of_collection)
       object_collections.each do |collection_ident|
         solr_response_collection = ActiveFedora::Base.find_with_conditions("id"=>collection_ident.gsub('info:fedora/','')).first
-        doc['collection_name_ssim'] = solr_response_collection["label_ssim"].first.to_s
-        doc['collection_name_tsim'] = solr_response_collection["label_ssim"].first.to_s
-        doc['collection_pid_ssm'] = solr_response_collection["id"].to_s
+        doc['collection_name_ssim'] << solr_response_collection["label_ssim"].first.to_s
+        doc['collection_name_tsim'] << solr_response_collection["label_ssim"].first.to_s
+        doc['collection_pid_ssm'] << solr_response_collection["id"].to_s
 
         if object_institution_pid.blank?
           object_institution_pid = doc['institution_pid_ssi']
