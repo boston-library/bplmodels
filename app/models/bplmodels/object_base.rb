@@ -19,9 +19,9 @@ module Bplmodels
 
     belongs_to :institution, :class_name => 'Bplmodels::Institution', :property => :is_member_of
 
-    belongs_to :collection, :class_name => 'Bplmodels::Collection', :property => :is_member_of_collection
+    has_and_belongs_to_many :collection, :class_name => 'Bplmodels::Collection', :property => :is_member_of_collection
 
-    belongs_to :organization, :class_name => 'Bplmodels::Collection', :property => :is_member_of_collection
+    has_and_belongs_to_many :organization, :class_name => 'Bplmodels::Collection', :property => :is_member_of_collection
 
     belongs_to :admin_set, :class_name => 'Bplmodels::Collection', :property => :administrative_set
 
