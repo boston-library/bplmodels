@@ -304,13 +304,13 @@ module Bplmodels
       #Assign collection, admin, and institution labels
       object_collections = self.relationships(:is_member_of_collection)
       object_collections.each do |collection_ident|
-        solr_response_collection = ActiveFedora::Base.find_with_conditions("id"=>collection_ident.gsub('info:fedora/',''))
+        solr_response_collection = ActiveFedora::Base.find_with_conditions("id"=>collection_ident.gsub('info:fedora/','')).first
         doc['collection_name_ssim'] = solr_response_collection["label_ssim"].first.to_s
         doc['collection_name_tsim'] = solr_response_collection["label_ssim"].first.to_s
         doc['collection_pid_ssm'] = solr_response_collection["id"].to_s
 
         object_institution_pid = doc['institution_pid_ssi']
-        solr_response_institution = ActiveFedora::Base.find_with_conditions("id"=>object_institution_pid)
+        solr_response_institution = ActiveFedora::Base.find_with_conditions("id"=>object_institution_pid).first
         doc['institution_name_ssim'] = solr_response_institution["label_ssim"].first.to_s
         doc['institution_name_tsim'] = solr_response_institution["label_ssim"].first.to_s
         doc['institution_pid_ssi'] = solr_response_institution["id"].to_s
@@ -318,14 +318,14 @@ module Bplmodels
 
       object_admin_set = self.relationships(:administrative_set).first
       if object_admin_set.present?
-        solr_response_admin = ActiveFedora::Base.find_with_conditions("id"=>object_admin_set.gsub('info:fedora/',''))
+        solr_response_admin = ActiveFedora::Base.find_with_conditions("id"=>object_admin_set.gsub('info:fedora/','')).first
         doc['admin_set_name_ssim'] = solr_response_admin["label_ssim"].first.to_s
         doc['admin_set_name_tsim'] = solr_response_admin["label_ssim"].first.to_s
         doc['admin_set_pid_ssm'] = solr_response_admin["id"].to_s
       else
         raise "Potential problem setting administrative set?"
       end
-      
+
 
       #self.descMetadata.identifier_uri.each do |identifier|
       #if idenfifier.include?("ark")
