@@ -315,7 +315,7 @@ module Bplmodels
         doc['collection_pid_ssm'] << solr_response_collection["id"].to_s
 
         if object_institution_pid.blank?
-          object_institution_pid = doc['institution_pid_ssi']
+          object_institution_pid = solr_response_collection['institution_pid_ssi']
           solr_response_institution = ActiveFedora::Base.find_with_conditions("id"=>object_institution_pid).first
           doc['institution_name_ssim'] = solr_response_institution["label_ssim"].first.to_s
           doc['institution_name_tsim'] = solr_response_institution["label_ssim"].first.to_s
