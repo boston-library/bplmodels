@@ -920,6 +920,13 @@ module Bplmodels
     #secondary_parent_pids => optional array of additional parent pids
     def self.mint(args)
 
+      expected_aguments = [:parent_pid, :local_id, :local_id_type, :label, :institution_pid, :secondary_parent_pids]
+      expected_aguments.each do |arg|
+        if !args.keys.include?(arg)
+          raise "Mint called but missing parameter: #{arg}"
+        end
+       end
+
       #TODO: Duplication check here to prevent over-writes?
 
       args[:namespace_id] ||= ARK_CONFIG_GLOBAL['namespace_commonwealth_pid']
