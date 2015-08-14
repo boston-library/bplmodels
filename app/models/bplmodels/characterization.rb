@@ -24,7 +24,9 @@ module Bplmodels
     end
 
     def fits_config_values
-      return {:file_title => :title, :file_author => :creator }
+      #This is to add that to the end metadata record from FITS...
+      #return {:file_title => :title, :file_author => :creator }
+      return {}
     end
 
     def width
