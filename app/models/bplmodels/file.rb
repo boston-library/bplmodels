@@ -29,6 +29,8 @@ module Bplmodels
 
     has_metadata :name => "workflowMetadata", :type => WorkflowMetadata
 
+    has_metadata :name => "bookMetadata", :type => BookMetadata
+
     def apply_default_permissions
       self.datastreams["rightsMetadata"].update_permissions( "group"=>{"Repository Administrators"=>"edit"} )
       self.save
@@ -46,6 +48,12 @@ module Bplmodels
         doc['marked_for_deletion_reason_ssi']  =  self.workflowMetadata.marked_for_deletion.reason.first
       end
 
+      if self.bookMetadata.present?
+        doc['page_type_ssi'] = self.bookMetadata.book.page_data.page.page_type.first
+        doc['hand_side_ssi'] = self.bookMetadata.book.page_data.page.hand_side.first
+        doc['page_number_ssi'] = self.bookMetadata.book.page_data.page.page_number.first
+      end
+
       doc['checksum_file_md5_ssi'] = self.productionMaster.checksum
 
       doc
@@ -60,7 +68,7 @@ module Bplmodels
           #transform_datastream :productionMaster, { :mp3 => {format: 'mp3'}, :ogg => {format: 'ogg'} }, processor: :audio
         when 'video/avi'
           #transform_datastream :productionMaster, { :mp4 => {format: 'mp4'}, :webm => {format: 'webm'} }, processor: :video
-        when 'image/tiff', 'image/png', 'image/jpg'
+        when 'image/tiff', 'image/png', 'image/jpg', 'image/jp2'
           begin
             transform_datastream :productionMaster, { :testJP2k => { recipe: :default, datastream: 'accessMaster'  } }, processor: 'jpeg2k_image'
           rescue => error
