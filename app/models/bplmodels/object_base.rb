@@ -1112,7 +1112,7 @@ module Bplmodels
           image_file.send(datastream).mimeType = 'image/jpeg'
         end
 
-        image_file.send(datastream).dsLabel = file[:file_name].gsub('.tif', '').gsub('.jpg', '').gsub('.jpeg', '').gsub('.jp2', '')
+        image_file.send(datastream).dsLabel = file_name.gsub('.tif', '').gsub('.jpg', '').gsub('.jpeg', '').gsub('.jp2', '')
 
         #FIXME!!!
         image_file.workflowMetadata.insert_file_source(zip_file,file_name,datastream)
