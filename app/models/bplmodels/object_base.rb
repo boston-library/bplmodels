@@ -1096,7 +1096,7 @@ module Bplmodels
         return true
       end
 
-      files_hash.each_with_index do |file, file_index|
+
         datastream = 'productionMaster'
 
 
@@ -1120,7 +1120,7 @@ module Bplmodels
         image_file.workflowMetadata.item_status.state_comment = "Added via the Internet Archive image object base method on " + Time.new.year.to_s + "/" + Time.new.month.to_s + "/" + Time.new.day.to_s
 
 
-      end
+
 
 
       other_images_exist = false
