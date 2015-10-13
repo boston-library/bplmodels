@@ -83,7 +83,7 @@ module Bplmodels
           #transform_datastream :productionMaster, { :mp3 => {format: 'mp3'}, :ogg => {format: 'ogg'} }, processor: :audio
         when 'video/avi'
           #transform_datastream :productionMaster, { :mp4 => {format: 'mp4'}, :webm => {format: 'webm'} }, processor: :video
-        when 'image/tiff', 'image/png', 'image/jpg', 'image/jp2'
+        when 'image/tiff', 'image/png', 'image/jpg'
           begin
             transform_datastream :productionMaster, { :testJP2k => { recipe: :default, datastream: 'accessMaster'  } }, processor: 'jpeg2k_image'
           rescue => error
@@ -117,7 +117,16 @@ module Bplmodels
           self.accessMaster.dsLabel = self.productionMaster.label
           self.thumbnail300.dsLabel = self.productionMaster.label
           self.access800.dsLabel = self.productionMaster.label
+        when 'image/jp2'
+          self.accessMaster.content = self.productionMaster.content
+          self.accessMaster.mimeType = 'image/jp2'
+          transform_datastream :productionMaster, { :thumb => {size: "300x300>", datastream: 'thumbnail300', format: 'jpg'} }
+          transform_datastream :productionMaster, { :thumb => {size: "x800>", datastream: 'access800', format: 'jpg'} }
+          self.accessMaster.dsLabel = self.productionMaster.label
+          self.thumbnail300.dsLabel = self.productionMaster.label
+          self.access800.dsLabel = self.productionMaster.label
       end
+
     end
 
     def derivative_service(is_new)
