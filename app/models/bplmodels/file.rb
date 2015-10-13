@@ -18,6 +18,10 @@ module Bplmodels
 
     has_file_datastream 'access800', versionable: false,  label:'access800 datastream'
 
+    has_file_datastream 'ocrMaster', versionable: false,  label:'OCR master datastream'
+    has_file_datastream 'djvuCoords', versionable: false,  label:'djvu coordinate json datastream'
+
+
     belongs_to :object, :class_name => "Bplmodels::ObjectBase", :property => :is_image_of
 
     belongs_to :exemplary, :class_name => "Bplmodels::ObjectBase", :property => :is_exemplary_image_of
@@ -51,7 +55,18 @@ module Bplmodels
       if self.bookMetadata.present?
         doc['page_type_ssi'] = self.bookMetadata.book.page_data.page.page_type.first
         doc['hand_side_ssi'] = self.bookMetadata.book.page_data.page.hand_side.first
-        doc['page_number_ssi'] = self.bookMetadata.book.page_data.page.page_number.first
+        doc['page_number_ssi'] = self.bookMetadata.book.page_data.page.page_number.first if self.bookMetadata.book.page_data.page.page_number.present?
+        doc['has_ocr_master_ssi'] = self.bookMetadata.book.page_data.page.has_ocrMaster.first
+        doc['has_djvu_json_ssi'] = self.bookMetadata.book.page_data.page.has_djvu.first
+
+        if self.bookMetadata.book.page_data.page.has_ocrMaster.first == true || self.bookMetadata.book.page_data.page.has_ocrMaster.first == "true"
+          doc['full_ocr_ssi'] = self.ocrMaster.content
+          doc['compressed_ocr_ssi'] = self.ocrMaster.content.squish
+        end
+
+        if self.bookMetadata.book.page_data.page.has_djvu.first == true || self.bookMetadata.book.page_data.page.has_djvu.first == "true"
+          doc['djvu_json_ssi'] = djvuCoords
+        end
       end
 
       doc['checksum_file_md5_ssi'] = self.productionMaster.checksum

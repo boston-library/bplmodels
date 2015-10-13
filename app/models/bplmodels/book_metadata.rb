@@ -18,8 +18,10 @@ module Bplmodels
       t.page_data(:path=>"pageData") {
         t.page(:path=>"page") {
           t.page_type(:path=>'pageType')
-          t.hand_size(:path=>'handSize')
+          t.hand_side(:path=>'handSide')
           t.page_number(:path=>'pageNumber')
+          t.has_djvu(:path=>'hasDJVU')
+          t.has_ocrMaster(:path=>'hasOCRMaster')
         }
 
 
@@ -28,6 +30,7 @@ module Bplmodels
     end
 
     def self.xml_template
+=begin
       builder = Nokogiri::XML::Builder.new(:encoding => "UTF-8") do |xml|
         xml.book(OAI_PARAMS) {
           xml.parent.namespace = xml.parent.namespace_definitions.find{|ns|ns.prefix=="book"}
@@ -35,6 +38,12 @@ module Bplmodels
         }
       end
       return builder.doc
+=end
+      Nokogiri::XML::Builder.new do |xml|
+        xml.book(OAI_PARAMS) {
+
+        }
+      end.doc
 
     end
 
@@ -43,20 +52,5 @@ module Bplmodels
       return ''
     end
 
-
-    define_template :original_record do |xml, content|
-        xml.original_record {
-          xml.cdata content
-        }
-    end
-
-
-    def insert_original_record(content)
-        add_child_node(ng_xml.root, :original_record, content)
-    end
-
-    def remove_original_record(index)
-      self.find_by_terms(:original_record).slice(index.to_i).remove
-    end
   end
 end

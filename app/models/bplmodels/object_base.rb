@@ -894,6 +894,21 @@ module Bplmodels
         }
       end
 
+      ocr_text_normal = ''
+      ocr_text_squished = ''
+      ActiveFedora::Base.find_in_batches('is_image_file_of_ssim'=>"info:fedora/#{self.pid}") do |group|
+        group.each { |image_file|
+          if image_file['has_ocr_master_ssi'] == 'true' || image_file['has_ocr_master_ssi'] == true
+            ocr_text_normal += image_file['full_ocr_ssi']
+            ocr_text_squished += image_file['compressed_ocr_ssi']
+          end
+
+        }
+      end
+
+      doc['full_ocr_ssi'] = ocr_text_normal if ocr_text_normal.present?
+      doc['compressed_ocr_ssi'] = ocr_text_squished if ocr_text_squished.present?
+
       if self.workflowMetadata.marked_for_deletion.present?
         doc['marked_for_deletion_bsi']  =  self.workflowMetadata.marked_for_deletion.first
         doc['marked_for_deletion_reason_ssi']  =  self.workflowMetadata.marked_for_deletion.reason.first
@@ -1084,9 +1099,7 @@ module Bplmodels
       image_file
     end
 
-    def insert_book_page(page_content, file_name, zip_file, institution_pid)
-      puts 'processing book image of: ' + self.pid.to_s
-
+    def insert_book_page(file_path, file_name, zip_file, institution_pid)
       image_file = Bplmodels::ImageFile.mint(:parent_pid=>self.pid, :local_id=>file_name, :local_id_type=>'File Name', :label=>file_name, :institution_pid=>institution_pid)
 
       if image_file.is_a?(String)
@@ -1096,11 +1109,14 @@ module Bplmodels
         return true
       end
 
+      puts 'Page object has a pid of: ' + image_file.pid
+
 
         datastream = 'productionMaster'
 
 
-        image_file.send(datastream).content = page_content
+        image_file.send(datastream).content = ::File.open(file_path)
+
 
         if file_name.split('.').last.downcase == 'tif'
           image_file.send(datastream).mimeType = 'image/tiff'
@@ -1114,13 +1130,11 @@ module Bplmodels
 
         image_file.send(datastream).dsLabel = file_name.gsub('.tif', '').gsub('.jpg', '').gsub('.jpeg', '').gsub('.jp2', '')
 
+
         #FIXME!!!
         image_file.workflowMetadata.insert_file_source(zip_file,file_name,datastream)
         image_file.workflowMetadata.item_status.state = "published"
         image_file.workflowMetadata.item_status.state_comment = "Added via the Internet Archive image object base method on " + Time.new.year.to_s + "/" + Time.new.month.to_s + "/" + Time.new.day.to_s
-
-
-
 
 
       other_images_exist = false
