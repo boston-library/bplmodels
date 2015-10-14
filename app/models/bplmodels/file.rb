@@ -55,17 +55,16 @@ module Bplmodels
       if self.bookMetadata.present?
         doc['page_type_ssi'] = self.bookMetadata.book.page_data.page.page_type.first
         doc['hand_side_ssi'] = self.bookMetadata.book.page_data.page.hand_side.first
-        doc['page_number_ssi'] = self.bookMetadata.book.page_data.page.page_number.first if self.bookMetadata.book.page_data.page.page_number.present?
-        doc['has_ocr_master_ssi'] = self.bookMetadata.book.page_data.page.has_ocrMaster.first
-        doc['has_djvu_json_ssi'] = self.bookMetadata.book.page_data.page.has_djvu.first
+        doc['page_num_label_ssi'] = self.bookMetadata.book.page_data.page.page_number.first if self.bookMetadata.book.page_data.page.page_number.present?
+        #doc['has_ocr_master_ssi'] = self.bookMetadata.book.page_data.page.has_ocrMaster.first
+        #doc['has_djvu_json_ssi'] = self.bookMetadata.book.page_data.page.has_djvu.first
 
-        if self.bookMetadata.book.page_data.page.has_ocrMaster.first == true || self.bookMetadata.book.page_data.page.has_ocrMaster.first == "true"
-          doc['full_ocr_ssi'] = self.ocrMaster.content
-          doc['compressed_ocr_ssi'] = self.ocrMaster.content.squish
+        if self.ocrMaster.present?
+          doc['ocr_tsiv'] = self.ocrMaster.content.squish
         end
 
-        if self.bookMetadata.book.page_data.page.has_djvu.first == true || self.bookMetadata.book.page_data.page.has_djvu.first == "true"
-          doc['djvu_json_ssi'] = djvuCoords
+        if self.djvuCoords.present?
+          doc['has_djvu_json_ssi'] = 'true'
         end
       end
 

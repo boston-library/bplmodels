@@ -30,6 +30,12 @@ module Bplmodels
     has_metadata :name => "descMetadata", :type => ModsDescMetadata
     has_metadata :name => "workflowMetadata", :type => WorkflowMetadata
 
+    has_file_datastream 'marc', versionable: false, label: 'MARC metadata'
+    has_file_datastream 'scanData', versionable: false, label: 'Internet Archive scanData metadata'
+    has_file_datastream 'plainText', versionable: false, label: 'Plain Text representation of this object'
+    has_file_datastream 'djvuXML', versionable: false, label: 'XML version of DJVU output'
+    has_file_datastream 'abbyy', versionable: false, label: 'Abbyy OCR of this object'
+
     # Uses the Hydra Rights Metadata Schema for tracking access permissions & copyright
     has_metadata :name => "rightsMetadata", :type => Hydra::Datastream::RightsMetadata
 
@@ -894,11 +900,12 @@ module Bplmodels
         }
       end
 
+=begin
       ocr_text_normal = ''
       ocr_text_squished = ''
-      ActiveFedora::Base.find_in_batches('is_image_file_of_ssim'=>"info:fedora/#{self.pid}") do |group|
+      ActiveFedora::Base.find_in_batches('is_image_of_ssim'=>"info:fedora/#{self.pid}") do |group|
         group.each { |image_file|
-          if image_file['has_ocr_master_ssi'] == 'true' || image_file['has_ocr_master_ssi'] == true
+          if image_file['has_ocr_master_ssi'] == 'true'
             ocr_text_normal += image_file['full_ocr_ssi']
             ocr_text_squished += image_file['compressed_ocr_ssi']
           end
@@ -906,8 +913,22 @@ module Bplmodels
         }
       end
 
-      doc['full_ocr_ssi'] = ocr_text_normal if ocr_text_normal.present?
-      doc['compressed_ocr_ssi'] = ocr_text_squished if ocr_text_squished.present?
+      doc['full_ocr_si'] = ocr_text_normal[0..10000] if ocr_text_normal.present?
+      doc['full_ocr_ssi'] = ocr_text_normal[0..10000] if ocr_text_normal.present?
+      doc['compressed_ocr_si'] = ocr_text_squished[0..10000] if ocr_text_squished.present?
+      doc['compressed_ocr_ssi'] = ocr_text_squished[0..10000] if ocr_text_squished.present?
+=end
+
+=begin
+      doc['ocr_tiv'] = self.plainText.content.squish if self.plainText.present?
+      if self.scanData.present?
+        scan_data_xml = Nokogiri::XML(self.scanData.content)
+        doc['text_direction_ssi'] = scan_data_xml.xpath("//globalHandedness/page-progression").first.text
+      end
+=end
+
+
+
 
       if self.workflowMetadata.marked_for_deletion.present?
         doc['marked_for_deletion_bsi']  =  self.workflowMetadata.marked_for_deletion.first
@@ -1001,6 +1022,31 @@ module Bplmodels
       return ARK_CONFIG_GLOBAL['url'] + '/ark:/' + ARK_CONFIG_GLOBAL["namespace_commonwealth_ark"].to_s + "/" + self.pid.split(':').last.to_s
     end
 
+    def insert_marc(file_content)
+      self.marc.content = file_content
+      self.marc.mimeType = 'application/marc'
+    end
+
+    def insert_scan_data(file_content)
+      self.scanData.content = file_content
+      self.scanData.mimeType = 'application/xml'
+    end
+
+    def insert_plain_text(file_content)
+      self.plainText.content = file_content
+      self.plainText.mimeType = 'text/plain'
+    end
+
+    def insert_djvu_xml(file_content)
+      self.djvuXML.content = file_content
+      self.djvuXML.mimeType = 'application/xml'
+    end
+
+    def insert_abbyy(file_content)
+      self.abbyy.content = file_content
+      self.abbyy.mimeType = 'application/xml'
+    end
+
     # Expects a hash of the following keys
     # :file_path -> The path to the file
     # :datastream -> The datastream for the file
@@ -1016,23 +1062,30 @@ module Bplmodels
         self.descMetadata.insert_media_type('image/tiff')
         self.descMetadata.insert_media_type('image/jpeg')
         self.descMetadata.insert_media_type('image/jp2')
-        self.insert_new_image_file(files_hash, institution_pid)
+        inserted_obj = self.insert_new_image_file(files_hash, institution_pid)
+      elsif production_master[:file_name].include?('.jp2')
+          self.descMetadata.insert_media_type('image/jpeg')
+          self.descMetadata.insert_media_type('image/jp2')
+          inserted_obj = self.insert_new_image_file(files_hash, institution_pid)
       elsif production_master[:file_name].include?('.mp3')
         self.descMetadata.insert_media_type('audio/mpeg')
-        self.insert_new_audio_file(files_hash, institution_pid)
+        inserted_obj = self.insert_new_audio_file(files_hash, institution_pid)
       elsif production_master[:file_name].include?('.pdf')
         self.descMetadata.insert_media_type('application/pdf')
-        self.insert_new_document_file(files_hash, institution_pid)
+        inserted_obj = self.insert_new_document_file(files_hash, institution_pid)
       else
         self.descMetadata.insert_media_type('image/jpeg')
         self.descMetadata.insert_media_type('image/jp2')
-        self.insert_new_image_file(files_hash, institution_pid)
+        inserted_obj = self.insert_new_image_file(files_hash, institution_pid)
       end
 
       self.workflowMetadata.item_source.ingest_origin = file_ingest_source
       files_hash.each do |file|
-        self.workflowMetadata.insert_file_source(file[:file_path],file[:file_name],file[:datastream])
+        original_file_location = file[:original_file_location]
+        original_file_location ||= file[:file_path]
+        self.workflowMetadata.insert_file_source(original_file_location,file[:file_name],file[:datastream])
       end
+      inserted_obj
     end
 
     def insert_new_image_file(files_hash, institution_pid)
@@ -1051,7 +1104,8 @@ module Bplmodels
       if image_file.is_a?(String)
         #Bplmodels::ImageFile.find(last_image_file).delete
         #last_image_file = Bplmodels::ImageFile.mint(:parent_pid=>self.pid, :local_id=>final_file_name, :local_id_type=>'File Name', :label=>final_file_name, :institution_pid=>institution_pid)
-        return true
+        #return true
+        return Bplmodels::ImageFile.find(image_file)
       end
 
       files_hash.each_with_index do |file, file_index|
@@ -1071,7 +1125,9 @@ module Bplmodels
         image_file.send(datastream).dsLabel = file[:file_name].gsub('.tif', '').gsub('.jpg', '').gsub('.jpeg', '')
 
         #FIXME!!!
-        image_file.workflowMetadata.insert_file_source(file[:file_path],file[:file_name],datastream)
+        original_file_location = file[:original_file_location]
+        original_file_location ||= file[:file_path]
+        image_file.workflowMetadata.insert_file_source(original_file_location,file[:file_name],datastream)
         image_file.workflowMetadata.item_status.state = "published"
         image_file.workflowMetadata.item_status.state_comment = "Added via the ingest image object base method on " + Time.new.year.to_s + "/" + Time.new.month.to_s + "/" + Time.new.day.to_s
 
@@ -1206,6 +1262,60 @@ module Bplmodels
       current_audio_file.save
 
       current_audio_file
+    end
+
+    def refactor_new_document_file(file_path, file_name, zip_file, institution_pid)
+      image_file = Bplmodels::DocumentFile.mint(:parent_pid=>self.pid, :local_id=>file_name, :local_id_type=>'File Name', :label=>file_name, :institution_pid=>institution_pid)
+
+      if image_file.is_a?(String)
+        Bplmodels::DocumentFile.find(image_file).delete
+        image_file = Bplmodels::DocumentFile.mint(:parent_pid=>self.pid, :local_id=>file_name, :local_id_type=>'File Name', :label=>file_name, :institution_pid=>institution_pid)
+        #last_image_file = Bplmodels::ImageFile.mint(:parent_pid=>self.pid, :local_id=>final_file_name, :local_id_type=>'File Name', :label=>final_file_name, :institution_pid=>institution_pid)
+        return true
+      end
+
+      puts 'Document object has a pid of: ' + image_file.pid
+
+
+      datastream = 'productionMaster'
+
+
+      image_file.send(datastream).content = ::File.open(file_path)
+
+
+      if file_name.split('.').last.downcase == 'pdf'
+        image_file.send(datastream).mimeType = 'application/pdf'
+      else
+        image_file.send(datastream).mimeType = 'application/pdf'
+      end
+
+      image_file.send(datastream).dsLabel = file_name.gsub('.pdf', '')
+
+
+      #FIXME!!!
+      image_file.workflowMetadata.insert_file_source(zip_file,file_name,datastream)
+      image_file.workflowMetadata.item_status.state = "published"
+      image_file.workflowMetadata.item_status.state_comment = "Added via the Internet Archive image object base method on " + Time.new.year.to_s + "/" + Time.new.month.to_s + "/" + Time.new.day.to_s
+
+
+      other_images_exist = false
+      Bplmodels::ImageFile.find_in_batches('is_document_of_ssim'=>"info:fedora/#{self.pid}", 'is_preceding_document_of_ssim'=>'') do |group|
+        group.each { |image_id|
+          other_images_exist = true
+          preceding_image = Bplmodels::DocumentFile.find(image_id['id'])
+          preceding_image.add_relationship(:is_preceding_document_of, "info:fedora/#{image_file.pid}", true)
+          preceding_image.save
+          image_file.add_relationship(:is_following_document_of, "info:fedora/#{image_id['id']}", true)
+        }
+      end
+
+      image_file.add_relationship(:is_document_of, "info:fedora/" + self.pid)
+      image_file.add_relationship(:is_file_of, "info:fedora/" + self.pid)
+      #image_file.add_relationship(:is_exemplary_image_of, "info:fedora/" + self.pid) unless other_images_exist
+
+      image_file.save
+
+      image_file
     end
 
     #FIXME: NOT UPDATED!
