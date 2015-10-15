@@ -919,13 +919,13 @@ module Bplmodels
       doc['compressed_ocr_ssi'] = ocr_text_squished[0..10000] if ocr_text_squished.present?
 =end
 
-=begin
+
       doc['ocr_tiv'] = self.plainText.content.squish if self.plainText.present?
       if self.scanData.present?
         scan_data_xml = Nokogiri::XML(self.scanData.content)
         doc['text_direction_ssi'] = scan_data_xml.xpath("//globalHandedness/page-progression").first.text
       end
-=end
+
 
 
 
