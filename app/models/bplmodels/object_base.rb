@@ -1157,6 +1157,63 @@ module Bplmodels
       image_file
     end
 
+    def insert_new_ereader_file(files_hash, institution_pid)
+      puts 'processing ereader of: ' + self.pid.to_s + ' with file_hash: ' + files_hash.to_s
+
+      production_master = files_hash.select{ |hash| hash[:datastream] == 'productionMaster' }.first
+
+      epub_file = Bplmodels::EreaderFile.mint(:parent_pid=>self.pid, :local_id=>production_master[:file_name], :local_id_type=>'File Name', :label=>production_master[:file_name], :institution_pid=>institution_pid)
+
+      if epub_file.is_a?(String)
+        #Bplmodels::ImageFile.find(last_image_file).delete
+        #last_image_file = Bplmodels::ImageFile.mint(:parent_pid=>self.pid, :local_id=>final_file_name, :local_id_type=>'File Name', :label=>final_file_name, :institution_pid=>institution_pid)
+        #return true
+        return Bplmodels::EreaderFile.find(epub_file)
+      end
+
+      files_hash.each_with_index do |file, file_index|
+        datastream = file[:datastream]
+
+
+        epub_file.send(datastream).content = ::File.open(file[:file_path])
+
+        if file[:file_name].split('.').last.downcase == 'epub'
+          epub_file.send(datastream).mimeType = 'application/epub+zip'
+        else
+          epub_file.send(datastream).mimeType = 'application/epub+zip'
+        end
+
+        epub_file.send(datastream).dsLabel = file[:file_name].gsub('.epub', '')
+
+        #FIXME!!!
+        original_file_location = file[:original_file_location]
+        original_file_location ||= file[:file_path]
+        epub_file.workflowMetadata.insert_file_source(original_file_location,file[:file_name],datastream)
+        epub_file.workflowMetadata.item_status.state = "published"
+        epub_file.workflowMetadata.item_status.state_comment = "Added via the ingest image object base method on " + Time.new.year.to_s + "/" + Time.new.month.to_s + "/" + Time.new.day.to_s
+
+
+      end
+
+
+      Bplmodels::EreaderFile.find_in_batches('is_ereader_of_ssim'=>"info:fedora/#{self.pid}", 'is_preceding_ereader_of_ssim'=>'') do |group|
+        group.each { |ereader_id|
+          other_images_exist = true
+          preceding_ereader = Bplmodels::EreaderFile.find(ereader_id['id'])
+          preceding_ereader.add_relationship(:is_preceding_ereader_of, "info:fedora/#{epub_file.pid}", true)
+          preceding_ereader.save
+          epub_file.add_relationship(:is_following_ereader_of, "info:fedora/#{ereader_id['id']}", true)
+        }
+      end
+
+      epub_file.add_relationship(:is_ereader_of, "info:fedora/" + self.pid)
+      epub_file.add_relationship(:is_file_of, "info:fedora/" + self.pid)
+
+      epub_file.save
+
+      epub_file
+    end
+
     def insert_book_page(file_path, file_name, zip_file, institution_pid)
       image_file = Bplmodels::ImageFile.mint(:parent_pid=>self.pid, :local_id=>file_name, :local_id_type=>'File Name', :label=>file_name, :institution_pid=>institution_pid)
 

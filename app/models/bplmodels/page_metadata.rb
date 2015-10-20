@@ -1,9 +1,9 @@
 module Bplmodels
-  class BookMetadata < ActiveFedora::OmDatastream
+  class PageMetadata < ActiveFedora::OmDatastream
     include OM::XML::Document
 
-    OAI_NS = 'http://www.bpl.org/repository/xml/ns/book'
-    OAI_SCHEMA = 'http://www.bpl.org/repository/xml/xsd/book.xsd'
+    OAI_NS = 'http://www.bpl.org/repository/xml/ns/page'
+    OAI_SCHEMA = 'http://www.bpl.org/repository/xml/xsd/page.xsd'
     OAI_PARAMS = {
         "version"            => "0.0.1",
         "xmlns:xlink"        => "http://www.w3.org/1999/xlink",
@@ -13,16 +13,16 @@ module Bplmodels
     }
 
     set_terminology do |t|
-      t.root :path => 'book', :xmlns => OAI_NS
+      t.root :path => 'pageData', :xmlns => OAI_NS
 
-      t.page_data(:path=>"pageData") {
-        t.page(:path=>"page") {
-          t.page_type(:path=>'pageType')
-          t.hand_side(:path=>'handSide')
-          t.page_number(:path=>'pageNumber')
-          t.has_djvu(:path=>'hasDJVU')
-          t.has_ocrMaster(:path=>'hasOCRMaster')
+      t.page(:path=>"page") {
+        t.page_type(:path=>'pageType')
+        t.hand_side(:path=>'handSide')
+        t.page_number(:path=>'pageNumber') {
+          t.sequence(:path=>{:attribute=>"sequence"})
         }
+        t.has_djvu(:path=>'hasDJVU')
+        t.has_ocrMaster(:path=>'hasOCRMaster')
 
 
       }
@@ -40,7 +40,7 @@ module Bplmodels
       return builder.doc
 =end
       Nokogiri::XML::Builder.new do |xml|
-        xml.book(OAI_PARAMS) {
+        xml.pageData(OAI_PARAMS) {
 
         }
       end.doc

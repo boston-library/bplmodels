@@ -33,7 +33,7 @@ module Bplmodels
 
     has_metadata :name => "workflowMetadata", :type => WorkflowMetadata
 
-    has_metadata :name => "bookMetadata", :type => BookMetadata
+    has_metadata :name => "pageMetadata", :type => PageMetadata
 
     def apply_default_permissions
       self.datastreams["rightsMetadata"].update_permissions( "group"=>{"Repository Administrators"=>"edit"} )
@@ -52,10 +52,11 @@ module Bplmodels
         doc['marked_for_deletion_reason_ssi']  =  self.workflowMetadata.marked_for_deletion.reason.first
       end
 
-      if self.bookMetadata.present?
-        doc['page_type_ssi'] = self.bookMetadata.book.page_data.page.page_type.first
-        doc['hand_side_ssi'] = self.bookMetadata.book.page_data.page.hand_side.first
-        doc['page_num_label_ssi'] = self.bookMetadata.book.page_data.page.page_number.first if self.bookMetadata.book.page_data.page.page_number.present?
+      if self.pageMetadata.present?
+        doc['page_type_ssi'] = self.pageMetadata.pageData.page.page_type.first
+        doc['hand_side_ssi'] = self.pageMetadata.pageData.page.hand_side.first
+        doc['page_num_label_ssi'] = self.pageMetadata.pageData.page.page_number.first if self.pageMetadata.pageData.page.page_number.present?
+        doc['page_num_label_type_ssi'] = self.pageMetadata.pageData.page.page_number.sequence.first if self.pageMetadata.pageData.page.page_number.present?
         #doc['has_ocr_master_ssi'] = self.bookMetadata.book.page_data.page.has_ocrMaster.first
         #doc['has_djvu_json_ssi'] = self.bookMetadata.book.page_data.page.has_djvu.first
 
