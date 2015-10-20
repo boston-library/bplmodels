@@ -6,6 +6,7 @@ module Bplmodels
        return_hash[:images] = []
        return_hash[:documents] = []
        return_hash[:audio] = []
+       return_hash[:ereader] = []
        return_hash[:generic] = []
 
        preceding_pid_lookup = []
@@ -18,6 +19,8 @@ module Bplmodels
              return_hash[:images] << solr_object
            elsif solr_object['has_model_ssim'].include?('info:fedora/afmodel:Bplmodels_DocumentFile')
              return_hash[:documents] << solr_object
+           elsif solr_object['has_model_ssim'].include?('info:fedora/afmodel:Bplmodels_EreaderFile')
+             return_hash[:ereader] << solr_object
            else
              return_hash[:generic] << solr_object
            end
@@ -27,6 +30,7 @@ module Bplmodels
        return_hash[:images] = sort_files(return_hash[:images])
        return_hash[:documents] = sort_files(return_hash[:documents])
        return_hash[:audio] = sort_files(return_hash[:audio])
+       return_hash[:ereader] = sort_files(return_hash[:ereader])
        return_hash[:generic] = sort_files(return_hash[:generic])
 
        return return_hash
@@ -97,6 +101,16 @@ module Bplmodels
        return sort_files(return_list)
      end
 
+     def self.getEreaderFiles(pid)
+       return_list = []
+       Bplmodels::EreaderFile.find_in_batches('is_ereader_of_ssim'=>"info:fedora/#{pid}") do |group|
+         group.each { |solr_object|
+           return_list << solr_object
+         }
+       end
+       return sort_files(return_list)
+     end
+
      def self.getFirstImageFile(pid)
        Bplmodels::ImageFile.find_in_batches('is_image_of_ssim'=>"info:fedora/#{pid}", 'is_following_image_of_ssim'=>'') do |group|
          group.each { |solr_object|
@@ -117,6 +131,15 @@ module Bplmodels
 
      def self.getFirstDocumentFile(pid)
        Bplmodels::DocumentFile.find_in_batches('is_document_of_ssim'=>"info:fedora/#{pid}", 'is_following_document_of_ssim'=>'') do |group|
+         group.each { |solr_object|
+           return solr_object
+         }
+       end
+       return nil
+     end
+
+     def self.getFirstEreaderFile(pid)
+       Bplmodels::EreaderFile.find_in_batches('is_ereader_of_ssim'=>"info:fedora/#{pid}", 'is_following_ereader_of_ssim'=>'') do |group|
          group.each { |solr_object|
            return solr_object
          }
@@ -151,6 +174,15 @@ module Bplmodels
        return nil
      end
 
+     def self.getNextEReaderFile(pid)
+       Bplmodels::EreaderFile.find_in_batches('is_following_ereader_of_ssim'=>"info:fedora/#{pid}") do |group|
+         group.each { |solr_object|
+           return solr_object
+         }
+       end
+       return nil
+     end
+
      def self.getPrevImageFile(pid)
        Bplmodels::ImageFile.find_in_batches('is_preceding_image_of_ssim'=>"info:fedora/#{pid}") do |group|
          group.each { |solr_object|
@@ -171,6 +203,15 @@ module Bplmodels
 
      def self.getPrevDocumentFile(pid)
        Bplmodels::DocumentFile.find_in_batches('is_preceding_document_of_ssim'=>"info:fedora/#{pid}") do |group|
+         group.each { |solr_object|
+           return solr_object
+         }
+       end
+       return nil
+     end
+
+     def self.getPrevEreaderFile(pid)
+       Bplmodels::EReaderFile.find_in_batches('is_preceding_ereader_of_ssim'=>"info:fedora/#{pid}") do |group|
          group.each { |solr_object|
            return solr_object
          }

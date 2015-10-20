@@ -1118,6 +1118,8 @@ module Bplmodels
           image_file.send(datastream).mimeType = 'image/tiff'
         elsif file[:file_name].split('.').last.downcase == 'jpg'
           image_file.send(datastream).mimeType = 'image/jpeg'
+        elsif file[:file_name].split('.').last.downcase == 'jp2'
+          image_file.send(datastream).mimeType = 'image/jp2'
         else
           image_file.send(datastream).mimeType = 'image/jpeg'
         end
