@@ -135,7 +135,11 @@ module Bplmodels
       #TODO: Duplication check here to prevent over-writes?
 
       response = Typhoeus::Request.post(ARK_CONFIG_GLOBAL['url'] + "/arks.json", :params => {:ark=>{:namespace_ark => ARK_CONFIG_GLOBAL['namespace_commonwealth_ark'], :namespace_id=>ARK_CONFIG_GLOBAL['namespace_commonwealth_pid'], :url_base => ARK_CONFIG_GLOBAL['ark_commonwealth_base'], :model_type => self.name, :local_original_identifier=>args[:local_id], :local_original_identifier_type=>args[:local_id_type]}})
-      as_json = JSON.parse(response.body)
+      begin
+        as_json = JSON.parse(response.body)
+      rescue => ex
+        raise('Error in JSON response for minting an institution pid.')
+      end
 
       Bplmodels::Institution.find_in_batches('id'=>as_json["pid"]) do |group|
         group.each { |solr_result|

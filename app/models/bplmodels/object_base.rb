@@ -971,7 +971,12 @@ module Bplmodels
       args[:secondary_parent_pids] ||= []
 
       response = Typhoeus::Request.post(ARK_CONFIG_GLOBAL['url'] + "/arks.json", :params => {:ark=>{:parent_pid=>args[:parent_pid], :secondary_parent_pids=>args[:secondary_parent_pids], :namespace_ark => ARK_CONFIG_GLOBAL['namespace_commonwealth_ark'], :namespace_id=>args[:namespace_id], :url_base => ARK_CONFIG_GLOBAL['ark_commonwealth_base'], :model_type => self.name, :local_original_identifier=>args[:local_id], :local_original_identifier_type=>args[:local_id_type]}})
-      as_json = JSON.parse(response.body)
+
+      begin
+        as_json = JSON.parse(response.body)
+      rescue => ex
+        raise('Error in JSON response for minting an object pid.')
+      end
 
       puts as_json['pid']
 
