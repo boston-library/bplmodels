@@ -118,8 +118,10 @@ module Bplmodels
           self.thumbnail300.dsLabel = self.productionMaster.label
           self.access800.dsLabel = self.productionMaster.label
         when 'image/jp2'
-          #self.accessMaster.content = self.productionMaster.content
-          #TODO: Move this to a function in Hydra Derivatives...
+          self.accessMaster.content = self.productionMaster.content
+
+
+=begin
           source_path = "#{ActiveFedora.config.credentials[:url]}/#{self.productionMaster.url}"
           image = MiniMagick::Image.open(source_path)
           quality = image['%[channels]'] == 'gray' ? 'gray' : 'color'
@@ -137,17 +139,20 @@ module Bplmodels
           self.accessMaster.mimeType = 'image/jp2'
           #End wonky code
 
+          #TODO: Move this to a function in Hydra Derivatives...
+          self.save
+          image.destroy!
+          File.unlink(output_file)
+          File.unlink(file_path)
+=end
+
           transform_datastream :productionMaster, { :thumb => {size: "300x300>", datastream: 'thumbnail300', format: 'jpg'} }
           transform_datastream :productionMaster, { :thumb => {size: "x800>", datastream: 'access800', format: 'jpg'} }
           self.accessMaster.dsLabel = self.productionMaster.label
           self.thumbnail300.dsLabel = self.productionMaster.label
           self.access800.dsLabel = self.productionMaster.label
 
-          #TODO: Move this to a function in Hydra Derivatives...
-          self.save
-          image.destroy!
-          File.unlink(output_file)
-          File.unlink(file_path)
+
       end
 
     end

@@ -1140,7 +1140,7 @@ module Bplmodels
           image_file.send(datastream).mimeType = 'image/jpeg'
         end
 
-        image_file.send(datastream).dsLabel = file[:file_name].gsub('.tif', '').gsub('.jpg', '').gsub('.jpeg', '')
+        image_file.send(datastream).dsLabel = file[:file_name].gsub('.tif', '').gsub('.jpg', '').gsub('.jpeg', '').gsub('.jp2')
 
         #FIXME!!!
         original_file_location = file[:original_file_location]
