@@ -118,13 +118,36 @@ module Bplmodels
           self.thumbnail300.dsLabel = self.productionMaster.label
           self.access800.dsLabel = self.productionMaster.label
         when 'image/jp2'
-          self.accessMaster.content = self.productionMaster.content
+          #self.accessMaster.content = self.productionMaster.content
+          #TODO: Move this to a function in Hydra Derivatives...
+          source_path = "#{ActiveFedora.config.credentials[:url]}/#{self.productionMaster.url}"
+          image = MiniMagick::Image.open(source_path)
+          quality = image['%[channels]'] == 'gray' ? 'gray' : 'color'
+          long_dim = Hydra::Derivatives::Jpeg2kImage.long_dim(image)
+          directives = { recipe: :default, datastream: 'accessMaster'  }
+          recipe = Hydra::Derivatives::Jpeg2kImage.kdu_compress_recipe(directives, quality, long_dim)
+
+          file_path = Hydra::Derivatives::Jpeg2kImage.tmp_file('.jp2')
+          image.write file_path
+
+
+          output_file = Hydra::Derivatives::Jpeg2kImage.tmp_file('.jp2')
+          Hydra::Derivatives::Jpeg2kImage.encode(file_path, recipe, output_file)
+          self.accessMaster.content = ::File.open(output_file)
           self.accessMaster.mimeType = 'image/jp2'
+          #End wonky code
+
           transform_datastream :productionMaster, { :thumb => {size: "300x300>", datastream: 'thumbnail300', format: 'jpg'} }
           transform_datastream :productionMaster, { :thumb => {size: "x800>", datastream: 'access800', format: 'jpg'} }
           self.accessMaster.dsLabel = self.productionMaster.label
           self.thumbnail300.dsLabel = self.productionMaster.label
           self.access800.dsLabel = self.productionMaster.label
+
+          #TODO: Move this to a function in Hydra Derivatives...
+          self.save
+          image.destroy!
+          File.unlink(output_file)
+          File.unlink(file_path)
       end
 
     end

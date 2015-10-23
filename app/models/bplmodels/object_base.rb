@@ -13,6 +13,8 @@ module Bplmodels
 
     has_many :document_files, :class_name => "Bplmodels::DocumentFile", :property=> :is_document_of
 
+    has_many :ereader_files, :class_name => "Bplmodels::EreaderFile", :property=> :is_ereader_of
+
     has_many :files, :class_name => "Bplmodels::File", :property=> :is_file_of
 
 
@@ -1073,6 +1075,15 @@ module Bplmodels
       elsif production_master[:file_name].include?('.pdf')
         self.descMetadata.insert_media_type('application/pdf')
         inserted_obj = self.insert_new_document_file(files_hash, institution_pid)
+      elsif production_master[:file_name].include?('.epub')
+        self.descMetadata.insert_media_type('application/epub+zip')
+        inserted_obj = self.insert_new_ereader_file(files_hash, institution_pid)
+      elsif production_master[:file_name].include?('.mobi')
+        self.descMetadata.insert_media_type('application/x-mobipocket-ebook')
+        inserted_obj = self.insert_new_ereader_file(files_hash, institution_pid)
+      elsif production_master[:file_name].include?('daisy.zip')
+        self.descMetadata.insert_media_type('application/zip')
+        inserted_obj = self.insert_new_ereader_file(files_hash, institution_pid)
       else
         self.descMetadata.insert_media_type('image/jpeg')
         self.descMetadata.insert_media_type('image/jp2')
@@ -1179,11 +1190,15 @@ module Bplmodels
 
         if file[:file_name].split('.').last.downcase == 'epub'
           epub_file.send(datastream).mimeType = 'application/epub+zip'
+        elsif file[:file_name].split('.').last.downcase == 'mobi'
+          epub_file.send(datastream).mimeType = 'application/x-mobipocket-ebook'
+        elsif file[:file_name].split('.').last.downcase == 'zip'
+          epub_file.send(datastream).mimeType = 'application/zip'
         else
           epub_file.send(datastream).mimeType = 'application/epub+zip'
         end
 
-        epub_file.send(datastream).dsLabel = file[:file_name].gsub('.epub', '')
+        epub_file.send(datastream).dsLabel = file[:file_name].gsub('.epub', '').gsub('.mobi', '').gsub('.zip', '')
 
         #FIXME!!!
         original_file_location = file[:original_file_location]

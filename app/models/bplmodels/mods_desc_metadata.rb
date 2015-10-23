@@ -289,6 +289,8 @@ module Bplmodels
         t.authorityURI(:path=>{:attribute=>"authorityURI"})
         t.valueURI(:path=>{:attribute=>"valueURI"})
         t.subtitle(:path=>"subTitle", :label=>"subtitle")
+        t.part_number(:path=>"partNumber", :label=>"partNumber")
+        t.part_name(:path=>"partName", :label=>"partName")
       }
       t.title(:proxy=>[:title_info, :main_title])
 
@@ -322,6 +324,14 @@ module Bplmodels
         t.issuance(:path=>"issuance")
         t.edition(:path=>"edition")
         t.event_type(:path=>{:attribute=>"eventType"})
+        t.frequency(:path=>"frequency") {
+          t.authority(:path=>{:attribute=>"authority"})
+        }
+      }
+
+      t.target_audience(:path=>"targetAudience") {
+        t.authority(:path=>{:attribute=>"authority"})
+        t.display_label(:path=>{:attribute=>"displayLabel"})
       }
 
       t.item_location(:path=>"location") {
@@ -556,7 +566,9 @@ module Bplmodels
       }
 
 
-      t.table_of_contents(:path=>'tableOfContents')
+      t.table_of_contents(:path=>'tableOfContents') {
+        t.href(:path=>{:attribute=>'xlink:href'})
+      }
 
 
     end
@@ -686,6 +698,13 @@ module Bplmodels
       self.mods(0).accessCondition(access_index, value) unless value.blank?
       self.mods(0).accessCondition(access_index).type_at = type unless type.blank?
       self.mods(0).accessCondition(access_index).displayLabel = displayLabel unless displayLabel.blank?
+    end
+
+    def insert_target_audience(value=nil, authority=nil, display_label=nil)
+      audience_index = self.mods(0).target_audience.count
+      self.mods(0).target_audience(audience_index, value) unless value.blank?
+      self.mods(0).target_audience(audience_index).authority = authority unless authority.blank?
+      self.mods(0).target_audience(audience_index).display_label = display_label unless display_label.blank?
     end
 
 
@@ -824,6 +843,13 @@ module Bplmodels
       self.mods(0).origin_info(origin_index).event_type = event_type unless event_type.blank?
     end
 
+    def insert_origin_frequency(frequency, authority)
+      #Currently only supporting one elements...
+      origin_index = 0
+      self.mods(0).origin_info(origin_index).frequency = frequency unless frequency.blank?
+      self.mods(0).origin_info(origin_index).frequency.authority = authority unless authority.blank?
+    end
+
     def insert_tgn(tgn_id)
       puts 'TGN ID is: ' + tgn_id
 
@@ -947,7 +973,7 @@ module Bplmodels
     end
 
     #usage=nil,  supplied=nil, subtitle=nil, language=nil, type=nil, authority=nil, authorityURI=nil, valueURI=nil
-    def insert_title(nonSort=nil, main_title=nil, usage=nil, supplied=nil, type=nil, subtitle=nil, language=nil, display_label=nil, args={})
+    def insert_title(nonSort=nil, main_title=nil, usage=nil, supplied=nil, type=nil, subtitle=nil, language=nil, display_label=nil, part_number=nil, part_name=nil, args={})
       title_index = self.mods(0).title_info.count
 
       self.mods(0).title_info(title_index).nonSort = nonSort unless nonSort.blank?
@@ -975,6 +1001,10 @@ module Bplmodels
       self.mods(0).title_info(title_index).language = language unless language.blank?
 
       self.mods(0).title_info(title_index).display_label = display_label unless display_label.blank?
+
+      self.mods(0).title_info(title_index).part_number = part_number unless part_number.blank?
+
+      self.mods(0).title_info(title_index).part_name = part_name unless part_name.blank?
 
       if args.present?
         raise 'broken args in Active Fedora 7'
@@ -1639,9 +1669,10 @@ module Bplmodels
       self.find_by_terms(:subject_cartographic).slice(index.to_i).remove
     end
 
-    def insert_table_of_contents(value)
+    def insert_table_of_contents(text_value, url)
       contents_index = self.mods(0).table_of_contents.count
-      self.mods(0).table_of_contents(contents_index, value) unless value.blank?
+      self.mods(0).table_of_contents(contents_index, text_value) unless text_value.blank?
+      self.mods(0).table_of_contents(contents_index).href = url unless url.blank?
     end
 
     def remove_table_of_contents(index)
@@ -1765,10 +1796,12 @@ module Bplmodels
     def insert_identifier(identifier=nil, type=nil, display_label=nil, invalid=nil)
       identifier_index = self.mods(0).identifier.count
 
-      self.mods(0).identifier(identifier_index, identifier) unless identifier.blank?
-      self.mods(0).identifier(identifier_index).type_at = type unless type.blank?
-      self.mods(0).identifier(identifier_index).displayLabel = display_label unless display_label.blank?
-      self.mods(0).identifier(identifier_index).invalid = 'yes' if (invalid.present? && invalid == 'yes')
+      if identifier.present?
+        self.mods(0).identifier(identifier_index, identifier) unless identifier.blank?
+        self.mods(0).identifier(identifier_index).type_at = type unless type.blank?
+        self.mods(0).identifier(identifier_index).displayLabel = display_label unless display_label.blank?
+        self.mods(0).identifier(identifier_index).invalid = 'yes' if (invalid.present? && invalid == 'yes')
+      end
     end
 
     def remove_identifier(index)
