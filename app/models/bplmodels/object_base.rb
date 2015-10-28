@@ -33,6 +33,7 @@ module Bplmodels
     has_metadata :name => "workflowMetadata", :type => WorkflowMetadata
 
     has_file_datastream 'marc', versionable: false, label: 'MARC metadata'
+    has_file_datastream 'iaMeta', versionable: false, label: 'Internet Archive metadata'
     has_file_datastream 'scanData', versionable: false, label: 'Internet Archive scanData metadata'
     has_file_datastream 'plainText', versionable: false, label: 'Plain Text representation of this object'
     has_file_datastream 'djvuXML', versionable: false, label: 'XML version of DJVU output'
@@ -928,9 +929,10 @@ module Bplmodels
         doc['text_direction_ssi'] = scan_data_xml.xpath("//globalHandedness/page-progression").first.text
       end
 
-
-
-
+      if self.workflowMetadata.volume_match_md5s.present?
+        doc['marc_md5_sum_ssi'] = self.workflowMetadata.volume_match_md5s.marc.first
+        doc['iaMeta_matcher_md5_ssi'] = self.workflowMetadata.volume_match_md5s.iaMeta.first
+      end
 
       if self.workflowMetadata.marked_for_deletion.present?
         doc['marked_for_deletion_bsi']  =  self.workflowMetadata.marked_for_deletion.first
@@ -1032,6 +1034,11 @@ module Bplmodels
     def insert_marc(file_content)
       self.marc.content = file_content
       self.marc.mimeType = 'application/marc'
+    end
+
+    def insert_ia_meta(file_content)
+      self.iaMeta.content = file_content
+      self.iaMeta.mimeType = 'application/xml'
     end
 
     def insert_scan_data(file_content)
@@ -1153,7 +1160,6 @@ module Bplmodels
       end
 
 
-        other_images_exist = false
         Bplmodels::ImageFile.find_in_batches('is_image_of_ssim'=>"info:fedora/#{self.pid}", 'is_preceding_image_of_ssim'=>'') do |group|
           group.each { |image_id|
             other_images_exist = true
@@ -1166,7 +1172,14 @@ module Bplmodels
 
       image_file.add_relationship(:is_image_of, "info:fedora/" + self.pid)
       image_file.add_relationship(:is_file_of, "info:fedora/" + self.pid)
-      image_file.add_relationship(:is_exemplary_image_of, "info:fedora/" + self.pid) unless other_images_exist
+
+      #FIXME: DO THIS BETTER!
+      if file[:skip_exemplary].blank? || file[:skip_exemplary] == false
+        if ActiveFedora::Base.find_with_conditions("is_exemplary_image_of_ssim"=>"#{self.pid}").blank?
+          image_file.add_relationship(:is_exemplary_image_of, "info:fedora/" + self.pid)
+        end
+      end
+
 
       image_file.save
 
@@ -1480,6 +1493,39 @@ module Bplmodels
 
       img.destroy!
       current_document_file
+    end
+
+    def add_new_volume(pid)
+      #raise 'insert new image called with no files or more than one!' if file.blank? || file.is_a?(Array)
+      volume = Bplmodels::Volume.find(pid).adapt_to_cmodel
+
+      other_volumes_exist = false
+      Bplmodels::Volume.find_in_batches('is_volume_of_ssim'=>"info:fedora/#{self.pid}", 'is_preceding_volume_of_ssim'=>'') do |group|
+        group.each { |volume_id|
+          other_volumes_exist = true
+          preceding_volume = Bplmodels::Volume.find(volume_id['id'])
+          preceding_volume.add_relationship(:is_preceding_volume_of, "info:fedora/#{pid}", true)
+          preceding_volume.save
+          volume.add_relationship(:is_following_volume_of, "info:fedora/#{volume_id['id']}", true)
+        }
+      end
+
+      volume.add_relationship(:is_volume_of, "info:fedora/" + self.pid)
+
+      if !other_volumes_exist
+        ActiveFedora::Base.find_in_batches('is_exemplary_image_of_ssim'=>"info:fedora/#{pid}") do |group|
+          group.each { |exemplary_solr|
+            exemplary_image = Bplmodels::File.find(exemplary_solr['id']).adapt_to_cmodel
+            exemplary_image.add_relationship(:is_exemplary_image_of, "info:fedora/" + self.pid)
+            exemplary_image.save!
+          }
+        end
+      end
+
+
+      volume.save
+
+      volume
     end
 
     def deleteAllFiles

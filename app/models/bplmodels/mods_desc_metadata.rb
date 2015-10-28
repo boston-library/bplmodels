@@ -77,6 +77,18 @@ module Bplmodels
         }
       }
 
+      #CLASSIFICATION--------------------------------------------------------
+      t.classification(:path => 'classification') {
+        t.displayLabel :path=>{:attribute=>'displayLabel'}
+        t.edition :path =>{:attribute=>"edition"}
+        ::Mods::AUTHORITY_ATTRIBS.each { |attr_name|
+          t.send attr_name, :path =>{:attribute=>"#{attr_name}"}
+        }
+        ::Mods::LANG_ATTRIBS.each { |attr_name|
+          t.send attr_name, :path =>{:attribute=>"#{attr_name}"}
+        }
+      }
+
 =begin
       # CLASSIFICATION -------------------------------------------------------------------------
       t.classification(:path => 'mods/oxns:classification') {
@@ -1806,6 +1818,16 @@ module Bplmodels
 
     def remove_identifier(index)
       self.find_by_terms(:identifier).slice(index.to_i).remove
+    end
+
+    def insert_classification(value=nil, edition=nil, authority=nil, display_label=nil)
+      classification_index = self.mods(0).classification.count
+      if value.present?
+        self.mods(0).classification(classification_index, value)
+        self.mods(0).classification(classification_index).edition = edition unless edition.blank?
+        self.mods(0).classification(classification_index).authority = authority unless authority.blank?
+        self.mods(0).classification(classification_index).displayLabel = display_label unless display_label.blank?
+      end
     end
 
 

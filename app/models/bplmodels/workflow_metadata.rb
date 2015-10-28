@@ -49,6 +49,11 @@ module Bplmodels
         t.reason(:path=>'reason')
       }
 
+      t.volume_match_md5s(:path=>'volumeMatchMD5s') {
+        t.marc(:path=>'marc')
+        t.iaMeta(:path=>'iaMeta')
+      }
+
     end
 
     def self.xml_template
@@ -62,6 +67,11 @@ module Bplmodels
     #Required for Active Fedora 9
     def prefix(path=nil)
       return ''
+    end
+
+    def calculate_volume_match_md5s
+      self.volume_match_md5s.marc = Digest::MD5.hexdigest(self.marc.content)
+      self.volume_match_md5s.iaMeta = Digest::MD5.hexdigest(self.marc.content.gsub(/<\/page_progression>.+$, ''/).gsub(/<volume>.+<\/volume>/, ''))
     end
 
 
