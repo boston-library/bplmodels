@@ -305,6 +305,7 @@ module Bplmodels
       doc['identifier_local_barcode_tsim'] = self.descMetadata.local_barcode
       doc['identifier_isbn_tsim'] = self.descMetadata.isbn
       doc['identifier_lccn_tsim'] = self.descMetadata.lccn
+      doc['identifier_ia_id_ssi'] = self.descMetadata.ia_id
 
       doc['identifier_ark_ssi'] = ''
 
