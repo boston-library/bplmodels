@@ -1147,7 +1147,7 @@ module Bplmodels
           image_file.send(datastream).mimeType = 'image/jpeg'
         end
 
-        image_file.send(datastream).dsLabel = file[:file_name].gsub('.tif', '').gsub('.jpg', '').gsub('.jpeg', '').gsub('.jp2')
+        image_file.send(datastream).dsLabel = file[:file_name].gsub('.tif', '').gsub('.jpg', '').gsub('.jpeg', '').gsub('.jp2', '')
 
         #FIXME!!!
         original_file_location = file[:original_file_location]
@@ -1174,7 +1174,7 @@ module Bplmodels
       image_file.add_relationship(:is_file_of, "info:fedora/" + self.pid)
 
       #FIXME: DO THIS BETTER!
-      if file[:skip_exemplary].blank? || file[:skip_exemplary] == false
+      if files_hash.first[:skip_exemplary].blank? || files_hash.first[:skip_exemplary] == false
         if ActiveFedora::Base.find_with_conditions("is_exemplary_image_of_ssim"=>"#{self.pid}").blank?
           image_file.add_relationship(:is_exemplary_image_of, "info:fedora/" + self.pid)
         end
@@ -1588,6 +1588,12 @@ module Bplmodels
       end
 
       return true
+    end
+
+
+    def calculate_volume_match_md5s
+      self.workflowMetadata.volume_match_md5s.marc = Digest::MD5.hexdigest(self.marc.content)
+      self.workflowMetadata.volume_match_md5s.iaMeta = Digest::MD5.hexdigest(self.iaMeta.content.gsub(/<\/page_progression>.+$/, '').gsub(/<volume>.+<\/volume>/, ''))
     end
 
   end

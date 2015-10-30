@@ -69,10 +69,6 @@ module Bplmodels
       return ''
     end
 
-    def calculate_volume_match_md5s
-      self.volume_match_md5s.marc = Digest::MD5.hexdigest(self.marc.content)
-      self.volume_match_md5s.iaMeta = Digest::MD5.hexdigest(self.marc.content.gsub(/<\/page_progression>.+$, ''/).gsub(/<volume>.+<\/volume>/, ''))
-    end
 
 
     def insert_file_path(value=nil)
