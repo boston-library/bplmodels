@@ -1064,11 +1064,23 @@ module Bplmodels
       self.abbyy.mimeType = 'application/xml'
     end
 
+    def simple_insert_file(file_path, file_name, ingest_source, institution_pid, original_file_location=nil, set_exemplary=nil)
+      files_hash = []
+      file_hash = {}
+      file_hash[:datastream] = 'productionMaster'
+      file_hash[:file_path] = file_path
+      file_hash[:file_name] = file_name
+      file_hash[:original_file_location] = original_file_location
+      files_hash << file_hash
+
+      insert_new_file(files_hash, ingest_source, institution_pid, set_exemplary)
+    end
+
     # Expects a hash of the following keys
     # :file_path -> The path to the file
     # :datastream -> The datastream for the file
     # :file_name -> The name of the file
-    def insert_new_file(files_hash, file_ingest_source, institution_pid)
+    def insert_new_file(files_hash, file_ingest_source, institution_pid, set_exemplary=nil)
       puts files_hash.to_s
 
       raise 'Missing insert_new_file params' if files_hash.first[:file_path].blank? || files_hash.first[:datastream].blank? || files_hash.first[:file_name].blank?
@@ -1079,17 +1091,17 @@ module Bplmodels
         self.descMetadata.insert_media_type('image/tiff')
         self.descMetadata.insert_media_type('image/jpeg')
         self.descMetadata.insert_media_type('image/jp2')
-        inserted_obj = self.insert_new_image_file(files_hash, institution_pid)
+        inserted_obj = self.insert_new_image_file(files_hash, institution_pid,set_exemplary)
       elsif production_master[:file_name].include?('.jp2')
           self.descMetadata.insert_media_type('image/jpeg')
           self.descMetadata.insert_media_type('image/jp2')
-          inserted_obj = self.insert_new_image_file(files_hash, institution_pid)
+          inserted_obj = self.insert_new_image_file(files_hash, institution_pid,set_exemplary)
       elsif production_master[:file_name].include?('.mp3')
         self.descMetadata.insert_media_type('audio/mpeg')
         inserted_obj = self.insert_new_audio_file(files_hash, institution_pid)
       elsif production_master[:file_name].include?('.pdf')
         self.descMetadata.insert_media_type('application/pdf')
-        inserted_obj = self.insert_new_document_file(files_hash, institution_pid)
+        inserted_obj = self.insert_new_document_file(files_hash, institution_pid,set_exemplary)
       elsif production_master[:file_name].include?('.epub')
         self.descMetadata.insert_media_type('application/epub+zip')
         inserted_obj = self.insert_new_ereader_file(files_hash, institution_pid)
@@ -1102,10 +1114,10 @@ module Bplmodels
       else
         self.descMetadata.insert_media_type('image/jpeg')
         self.descMetadata.insert_media_type('image/jp2')
-        inserted_obj = self.insert_new_image_file(files_hash, institution_pid)
+        inserted_obj = self.insert_new_image_file(files_hash, institution_pid,set_exemplary)
       end
 
-      self.workflowMetadata.item_source.ingest_origin = file_ingest_source
+      self.workflowMetadata.item_source.ingest_origin = file_ingest_source if self.workflowMetadata.item_source.ingest_origin.blank?
       files_hash.each do |file|
         original_file_location = file[:original_file_location]
         original_file_location ||= file[:file_path]
@@ -1114,7 +1126,7 @@ module Bplmodels
       inserted_obj
     end
 
-    def insert_new_image_file(files_hash, institution_pid)
+    def insert_new_image_file(files_hash, institution_pid, set_exemplary)
       #raise 'insert new image called with no files or more than one!' if file.blank? || file.is_a?(Array)
 
       puts 'processing image of: ' + self.pid.to_s + ' with file_hash: ' + files_hash.to_s
@@ -1176,8 +1188,7 @@ module Bplmodels
       image_file.add_relationship(:is_image_of, "info:fedora/" + self.pid)
       image_file.add_relationship(:is_file_of, "info:fedora/" + self.pid)
 
-      #FIXME: DO THIS BETTER!
-      if files_hash.first[:skip_exemplary].blank? || files_hash.first[:skip_exemplary] == false
+      if set_exemplary.nil? || set_exemplary
         if ActiveFedora::Base.find_with_conditions("is_exemplary_image_of_ssim"=>"#{self.pid}").blank?
           image_file.add_relationship(:is_exemplary_image_of, "info:fedora/" + self.pid)
         end
@@ -1250,64 +1261,6 @@ module Bplmodels
       epub_file
     end
 
-    def insert_book_page(file_path, file_name, zip_file, institution_pid)
-      image_file = Bplmodels::ImageFile.mint(:parent_pid=>self.pid, :local_id=>file_name, :local_id_type=>'File Name', :label=>file_name, :institution_pid=>institution_pid)
-
-      if image_file.is_a?(String)
-        Bplmodels::ImageFile.find(image_file).delete
-        image_file = Bplmodels::ImageFile.mint(:parent_pid=>self.pid, :local_id=>file_name, :local_id_type=>'File Name', :label=>file_name, :institution_pid=>institution_pid)
-        #last_image_file = Bplmodels::ImageFile.mint(:parent_pid=>self.pid, :local_id=>final_file_name, :local_id_type=>'File Name', :label=>final_file_name, :institution_pid=>institution_pid)
-        return true
-      end
-
-      puts 'Page object has a pid of: ' + image_file.pid
-
-
-        datastream = 'productionMaster'
-
-
-        image_file.send(datastream).content = ::File.open(file_path)
-
-
-        if file_name.split('.').last.downcase == 'tif'
-          image_file.send(datastream).mimeType = 'image/tiff'
-        elsif file_name.split('.').last.downcase == 'jpg'
-          image_file.send(datastream).mimeType = 'image/jpeg'
-        elsif file_name.split('.').last.downcase == 'jp2'
-          image_file.send(datastream).mimeType = 'image/jp2'
-        else
-          image_file.send(datastream).mimeType = 'image/jpeg'
-        end
-
-        image_file.send(datastream).dsLabel = file_name.gsub('.tif', '').gsub('.jpg', '').gsub('.jpeg', '').gsub('.jp2', '')
-
-
-        #FIXME!!!
-        image_file.workflowMetadata.insert_file_source(zip_file,file_name,datastream)
-        image_file.workflowMetadata.item_status.state = "published"
-        image_file.workflowMetadata.item_status.state_comment = "Added via the Internet Archive image object base method on " + Time.new.year.to_s + "/" + Time.new.month.to_s + "/" + Time.new.day.to_s
-
-
-      other_images_exist = false
-      Bplmodels::ImageFile.find_in_batches('is_image_of_ssim'=>"info:fedora/#{self.pid}", 'is_preceding_image_of_ssim'=>'') do |group|
-        group.each { |image_id|
-          other_images_exist = true
-          preceding_image = Bplmodels::ImageFile.find(image_id['id'])
-          preceding_image.add_relationship(:is_preceding_image_of, "info:fedora/#{image_file.pid}", true)
-          preceding_image.save
-          image_file.add_relationship(:is_following_image_of, "info:fedora/#{image_id['id']}", true)
-        }
-      end
-
-      image_file.add_relationship(:is_image_of, "info:fedora/" + self.pid)
-      image_file.add_relationship(:is_file_of, "info:fedora/" + self.pid)
-      image_file.add_relationship(:is_exemplary_image_of, "info:fedora/" + self.pid) unless other_images_exist
-
-      image_file.save
-
-      image_file
-    end
-
     #FIXME: NOT UPDATED!
     def insert_new_audio_file(audio_file, institution_pid)
       raise 'audio file missing!' if audio_file.blank?
@@ -1359,63 +1312,80 @@ module Bplmodels
       current_audio_file
     end
 
-    def refactor_new_document_file(file_path, file_name, zip_file, institution_pid)
-      image_file = Bplmodels::DocumentFile.mint(:parent_pid=>self.pid, :local_id=>file_name, :local_id_type=>'File Name', :label=>file_name, :institution_pid=>institution_pid)
+    def insert_new_document_file(files_hash, institution_pid, set_exemplary)
+      production_master = files_hash.select{ |hash| hash[:datastream] == 'productionMaster' }.first
 
-      if image_file.is_a?(String)
-        Bplmodels::DocumentFile.find(image_file).delete
-        image_file = Bplmodels::DocumentFile.mint(:parent_pid=>self.pid, :local_id=>file_name, :local_id_type=>'File Name', :label=>file_name, :institution_pid=>institution_pid)
+      #uri_file_part = file
+      #Fix common url errors
+      #uri_file_part = URI::escape(uri_file_part) if uri_file_part.match(/^http/)
+
+      document_file = Bplmodels::DocumentFile.mint(:parent_pid=>self.pid, :local_id=>production_master[:file_name], :local_id_type=>'File Name', :label=>production_master[:file_name], :institution_pid=>institution_pid)
+
+      if document_file.is_a?(String)
+        #Bplmodels::ImageFile.find(last_image_file).delete
         #last_image_file = Bplmodels::ImageFile.mint(:parent_pid=>self.pid, :local_id=>final_file_name, :local_id_type=>'File Name', :label=>final_file_name, :institution_pid=>institution_pid)
-        return true
+        #return true
+        return Bplmodels::DocumentFile.find(image_file)
       end
 
-      puts 'Document object has a pid of: ' + image_file.pid
+      files_hash.each_with_index do |file, file_index|
+        datastream = file[:datastream]
+
+        #Fix common url errors
+        if file[:file_path].match(/^http/)
+          document_file.send(datastream).content = ::File.open(URI::escape(file[:file_path]))
+        else
+          document_file.send(datastream).content = ::File.open(Ufile[:file_path])
+        end
 
 
-      datastream = 'productionMaster'
+        if file[:file_name].split('.').last.downcase == 'pdf'
+          document_file.send(datastream).mimeType = 'application/pdf'
+        else
+          document_file.send(datastream).mimeType = 'application/pdf'
+        end
+
+        document_file.send(datastream).dsLabel = file[:file_name].gsub('.pdf', '')
+
+        #FIXME!!!
+        original_file_location = file[:original_file_location]
+        original_file_location ||= file[:file_path]
+        document_file.workflowMetadata.insert_file_source(original_file_location,file[:file_name],datastream)
+        document_file.workflowMetadata.item_status.state = "published"
+        document_file.workflowMetadata.item_status.state_comment = "Added via the ingest image object base method on " + Time.new.year.to_s + "/" + Time.new.month.to_s + "/" + Time.new.day.to_s
 
 
-      image_file.send(datastream).content = ::File.open(file_path)
-
-
-      if file_name.split('.').last.downcase == 'pdf'
-        image_file.send(datastream).mimeType = 'application/pdf'
-      else
-        image_file.send(datastream).mimeType = 'application/pdf'
       end
 
-      image_file.send(datastream).dsLabel = file_name.gsub('.pdf', '')
 
-
-      #FIXME!!!
-      image_file.workflowMetadata.insert_file_source(zip_file,file_name,datastream)
-      image_file.workflowMetadata.item_status.state = "published"
-      image_file.workflowMetadata.item_status.state_comment = "Added via the Internet Archive image object base method on " + Time.new.year.to_s + "/" + Time.new.month.to_s + "/" + Time.new.day.to_s
-
-
-      other_images_exist = false
-      Bplmodels::ImageFile.find_in_batches('is_document_of_ssim'=>"info:fedora/#{self.pid}", 'is_preceding_document_of_ssim'=>'') do |group|
-        group.each { |image_id|
-          other_images_exist = true
-          preceding_image = Bplmodels::DocumentFile.find(image_id['id'])
-          preceding_image.add_relationship(:is_preceding_document_of, "info:fedora/#{image_file.pid}", true)
-          preceding_image.save
-          image_file.add_relationship(:is_following_document_of, "info:fedora/#{image_id['id']}", true)
+      Bplmodels::DocumentFile.find_in_batches('is_document_of_ssim'=>"info:fedora/#{self.pid}", 'is_preceding_document_of_ssim'=>'') do |group|
+        group.each { |document_id|
+          preceding_document = Bplmodels::DocumentFile.find(document_id['id'])
+          preceding_document.add_relationship(:is_preceding_document_of, "info:fedora/#{document_file.pid}", true)
+          preceding_document.save
+          preceding_document.add_relationship(:is_following_document_of, "info:fedora/#{document_id['id']}", true)
         }
       end
 
-      image_file.add_relationship(:is_document_of, "info:fedora/" + self.pid)
-      image_file.add_relationship(:is_file_of, "info:fedora/" + self.pid)
-      #image_file.add_relationship(:is_exemplary_image_of, "info:fedora/" + self.pid) unless other_images_exist
+      document_file.add_relationship(:is_image_of, "info:fedora/" + self.pid)
+      document_file.add_relationship(:is_file_of, "info:fedora/" + self.pid)
 
-      image_file.save
+      if set_exemplary.nil? || set_exemplary
+        if ActiveFedora::Base.find_with_conditions("is_exemplary_image_of_ssim"=>"#{self.pid}").blank?
+          document_file.add_relationship(:is_exemplary_image_of, "info:fedora/" + self.pid)
+        end
+      end
 
-      image_file
+
+      document_file.save
+
+      document_file
     end
+
 
     #FIXME: NOT UPDATED!
     #FIXME: Cases of images and PDF?
-    def insert_new_document_file(document_file, institution_pid)
+    def insert_new_document_file_old(document_file, institution_pid)
       raise 'document file missing!' if document_file.blank?
 
       puts 'processing document of: ' + self.pid.to_s + ' with file: ' + document_file

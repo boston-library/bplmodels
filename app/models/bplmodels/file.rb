@@ -76,9 +76,40 @@ module Bplmodels
     end
 
     def generate_derivatives
+      #Sample object on prod: https://fedora.digitalcommonwealth.org/fedora/objects/commonwealth:9w032896b/datastreams/productionMaster/content
+      #Sample object from test book object: https://fedoratest.bpl.org/fedora/objects/bpl-test:rf55zp77f/datastreams/productionMaster/content
       case self.productionMaster.mimeType
         when 'application/pdf'
           #transform_datastream :productionMaster, { :thumb => "100x100>" }
+
+          pdffile = Tempfile.new(['derivative','.pdf'])
+          pdffile.binmode
+          pdffile.write(self.productionMaster.content) #ActiveFedora.config.credentials[:url] + '/objects/' + self.pid + '/datastreams/productionMaster/content'
+          pdffile.close
+
+          current_page = 0
+          total_colors = 0
+          until total_colors > 1 do
+            #Won't work... asks for login with the brackets...
+            img = Magick::Image.read(pdffile.path + '[' + current_page.to_s + ']'){
+              self.quality = 100
+              self.density = 200
+            }.first
+            total_colors = img.total_colors
+            current_page = current_page + 1
+          end
+
+          #This is horrible. But if you don't do this, some PDF files won't come out right at all.
+          #Multiple attempts have failed to fix this but perhaps the bug will be patched in ImageMagick.
+          #To duplicate, one can use the PDF files at: http://libspace.uml.edu/omeka/files/original/7ecb4dc9579b11e2b53ccc2040e58d36.pdf
+          img = Magick::Image.from_blob( img.to_blob { self.format = "jpg" } ).first
+
+          thumb = img.resize_to_fit(300,300)
+
+          current_document_file.thumbnail300.content = thumb.to_blob { self.format = "jpg" }
+          current_document_file.thumbnail300.mimeType = 'image/jpeg'
+
+          pdffile.delete
         when 'audio/wav'
           #transform_datastream :productionMaster, { :mp3 => {format: 'mp3'}, :ogg => {format: 'ogg'} }, processor: :audio
         when 'video/avi'
