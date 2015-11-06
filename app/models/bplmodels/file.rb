@@ -52,6 +52,12 @@ module Bplmodels
         doc['marked_for_deletion_reason_ssi']  =  self.workflowMetadata.marked_for_deletion.reason.first
       end
 
+      if ['image/tiff', 'image/png', 'image/jpg', 'image/jp2'].include?(self.productionMaster.mimeType) and self.accessMaster.blank?
+        doc['derivative_processsed_ssi'] = 'false'
+      else
+        doc['derivative_processsed_ssi'] = 'true'
+      end
+
       if self.pageMetadata.present?
         doc['page_type_ssi'] = self.pageMetadata.pageData.page.page_type.first
         doc['hand_side_ssi'] = self.pageMetadata.pageData.page.hand_side.first
@@ -106,8 +112,9 @@ module Bplmodels
 
           thumb = img.resize_to_fit(300,300)
 
-          current_document_file.thumbnail300.content = thumb.to_blob { self.format = "jpg" }
-          current_document_file.thumbnail300.mimeType = 'image/jpeg'
+          self.thumbnail300.content = thumb.to_blob { self.format = "jpg" }
+          self.thumbnail300.mimeType = 'image/jpeg'
+          self.thumbnail300.dsLabel = self.productionMaster.label
 
           pdffile.delete
         when 'audio/wav'
@@ -150,6 +157,7 @@ module Bplmodels
           self.access800.dsLabel = self.productionMaster.label
         when 'image/jp2'
           self.accessMaster.content = self.productionMaster.content
+          self.accessMaster.mimeType = 'image/jp2'
 
 
 =begin

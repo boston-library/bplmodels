@@ -111,6 +111,16 @@ module Bplmodels
        return sort_files(return_list)
      end
 
+     def self.getVolumeObjects(pid)
+       return_list = []
+       Bplmodels::Volume.find_in_batches('is_volume_of_ssim'=>"info:fedora/#{pid}") do |group|
+         group.each { |solr_object|
+           return_list << solr_object
+         }
+       end
+       return sort_files(return_list)
+     end
+
      def self.getFirstImageFile(pid)
        Bplmodels::ImageFile.find_in_batches('is_image_of_ssim'=>"info:fedora/#{pid}", 'is_following_image_of_ssim'=>'') do |group|
          group.each { |solr_object|
@@ -140,6 +150,15 @@ module Bplmodels
 
      def self.getFirstEreaderFile(pid)
        Bplmodels::EreaderFile.find_in_batches('is_ereader_of_ssim'=>"info:fedora/#{pid}", 'is_following_ereader_of_ssim'=>'') do |group|
+         group.each { |solr_object|
+           return solr_object
+         }
+       end
+       return nil
+     end
+
+     def self.getFirstVolumeObject(pid)
+       Bplmodels::Volume.find_in_batches('is_volume_of_ssim'=>"info:fedora/#{pid}", 'is_following_volume_of_ssim'=>'') do |group|
          group.each { |solr_object|
            return solr_object
          }
@@ -229,5 +248,14 @@ module Bplmodels
        return nil
      end
 
+
+     def self.getUnprocessedDerivatives(pid)
+       Bplmodels::File.find_in_batches('is_file_of_ssim'=>"info:fedora/#{pid}", 'derivative_processsed_ssi'=>'false') do |group|
+         group.each { |solr_object|
+           return solr_object
+         }
+       end
+       return nil
+     end
   end
 end

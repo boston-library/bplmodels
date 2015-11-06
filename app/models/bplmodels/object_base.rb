@@ -1325,7 +1325,7 @@ module Bplmodels
         #Bplmodels::ImageFile.find(last_image_file).delete
         #last_image_file = Bplmodels::ImageFile.mint(:parent_pid=>self.pid, :local_id=>final_file_name, :local_id_type=>'File Name', :label=>final_file_name, :institution_pid=>institution_pid)
         #return true
-        return Bplmodels::DocumentFile.find(image_file)
+        return Bplmodels::DocumentFile.find(document_file)
       end
 
       files_hash.each_with_index do |file, file_index|
@@ -1335,7 +1335,7 @@ module Bplmodels
         if file[:file_path].match(/^http/)
           document_file.send(datastream).content = ::File.open(URI::escape(file[:file_path]))
         else
-          document_file.send(datastream).content = ::File.open(Ufile[:file_path])
+          document_file.send(datastream).content = ::File.open(file[:file_path])
         end
 
 
@@ -1352,7 +1352,7 @@ module Bplmodels
         original_file_location ||= file[:file_path]
         document_file.workflowMetadata.insert_file_source(original_file_location,file[:file_name],datastream)
         document_file.workflowMetadata.item_status.state = "published"
-        document_file.workflowMetadata.item_status.state_comment = "Added via the ingest image object base method on " + Time.new.year.to_s + "/" + Time.new.month.to_s + "/" + Time.new.day.to_s
+        document_file.workflowMetadata.item_status.state_comment = "Added via the ingest document object base method on " + Time.new.year.to_s + "/" + Time.new.month.to_s + "/" + Time.new.day.to_s
 
 
       end
@@ -1380,92 +1380,6 @@ module Bplmodels
       document_file.save
 
       document_file
-    end
-
-
-    #FIXME: NOT UPDATED!
-    #FIXME: Cases of images and PDF?
-    def insert_new_document_file_old(document_file, institution_pid)
-      raise 'document file missing!' if document_file.blank?
-
-      puts 'processing document of: ' + self.pid.to_s + ' with file: ' + document_file
-
-      uri_file_part = document_file
-
-      #Fix common url errors
-      if uri_file_part.match(/^http/)
-        #uri_file_part = uri_file_part.gsub(' ', '%20')
-        uri_file_part = URI::escape(uri_file_part)
-      end
-
-      final_document_name =  document_file.gsub('\\', '/').split('/').last
-      current_document_file = Bplmodels::DocumentFile.mint(:parent_pid=>self.pid, :local_id=>final_document_name, :local_id_type=>'File Name', :label=>final_document_name, :institution_pid=>institution_pid)
-      if current_document_file.is_a?(String)
-        Bplmodels::DocumentFile.find(current_document_file).delete
-        current_document_file = Bplmodels::DocumentFile.mint(:parent_pid=>self.pid, :local_id=>final_document_name, :local_id_type=>'File Name', :label=>final_document_name, :institution_pid=>institution_pid)
-        #return true
-      end
-
-      current_document_file.productionMaster.content = open(uri_file_part)
-      if document_file.split('.').last.downcase == 'pdf'
-        current_document_file.productionMaster.mimeType = 'application/pdf'
-      else
-        current_document_file.productionMaster.mimeType = 'application/pdf'
-      end
-
-      current_page = 0
-      total_colors = 0
-      until total_colors > 1 do
-        img = Magick::Image.read(uri_file_part + '[' + current_page.to_s + ']'){
-          self.quality = 100
-          self.density = 200
-        }.first
-        total_colors = img.total_colors
-        current_page = current_page + 1
-      end
-
-      #This is horrible. But if you don't do this, some PDF files won't come out right at all.
-      #Multiple attempts have failed to fix this but perhaps the bug will be patched in ImageMagick.
-      #To duplicate, one can use the PDF files at: http://libspace.uml.edu/omeka/files/original/7ecb4dc9579b11e2b53ccc2040e58d36.pdf
-      img = Magick::Image.from_blob( img.to_blob { self.format = "jpg" } ).first
-
-      thumb = img.resize_to_fit(300,300)
-
-      current_document_file.thumbnail300.content = thumb.to_blob { self.format = "jpg" }
-      current_document_file.thumbnail300.mimeType = 'image/jpeg'
-
-      Bplmodels::DocumentFile.find_in_batches('is_document_of_ssim'=>"info:fedora/#{self.pid}", 'is_preceding_document_of_ssim'=>'') do |group|
-        group.each { |document_solr|
-          other_document_exist = true
-          preceding_document = Bplmodels::DocumentFile.find(document_solr['id'])
-          preceding_document.add_relationship(:is_preceding_document_of, "info:fedora/#{current_document_file.pid}", true)
-          preceding_document.save
-          current_document_file.add_relationship(:is_following_document_of, "info:fedora/#{document_solr['id']}", true)
-        }
-      end
-
-      #TODO: Fix this in the image file object?
-      other_exemplary_exist = false
-      Bplmodels::File.find_in_batches('is_exemplary_image_of_ssim'=>"info:fedora/#{self.pid}") do |group|
-        group.each { |exemplary_solr|
-          other_exemplary_exist = true
-        }
-      end
-
-      current_document_file.add_relationship(:is_document_of, "info:fedora/" + self.pid)
-      current_document_file.add_relationship(:is_file_of, "info:fedora/" + self.pid)
-
-      current_document_file.add_relationship(:is_exemplary_image_of, "info:fedora/" + self.pid) unless other_exemplary_exist
-
-      current_document_file.workflowMetadata.insert_file_path(document_file)
-      current_document_file.workflowMetadata.insert_file_name(final_document_name)
-      current_document_file.workflowMetadata.item_status.state = "published"
-      current_document_file.workflowMetadata.item_status.state_comment = "Added via the ingest document object base method on " + Time.new.year.to_s + "/" + Time.new.month.to_s + "/" + Time.new.day.to_s
-
-      current_document_file.save
-
-      img.destroy!
-      current_document_file
     end
 
     def add_new_volume(pid)
