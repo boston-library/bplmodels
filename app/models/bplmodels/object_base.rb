@@ -23,7 +23,7 @@ module Bplmodels
 
     has_and_belongs_to_many :collection, :class_name => 'Bplmodels::Collection', :property => :is_member_of_collection
 
-    has_and_belongs_to_many :organization, :class_name => 'Bplmodels::Collection', :property => :is_member_of_collection
+    #has_and_belongs_to_many :organization, :class_name => 'Bplmodels::Collection', :property => :is_member_of_collection
 
     belongs_to :admin_set, :class_name => 'Bplmodels::Collection', :property => :administrative_set
 
@@ -107,9 +107,10 @@ module Bplmodels
       #if !self.instance_of?(klass)
       adapted_object = self.adapt_to(klass)
 
-      self.relationships.each_statement do |statement|
+      adapted_object.relationships.each_statement do |statement|
         if statement.predicate == "info:fedora/fedora-system:def/model#hasModel"
-          self.remove_relationship(:has_model, statement.object)
+          adapted_object.remove_relationship(:has_model, statement.object)
+          #puts statement.object
         end
       end
 
@@ -1189,7 +1190,7 @@ module Bplmodels
       image_file.add_relationship(:is_file_of, "info:fedora/" + self.pid)
 
       if set_exemplary.nil? || set_exemplary
-        if ActiveFedora::Base.find_with_conditions("is_exemplary_image_of_ssim"=>"#{self.pid}").blank?
+        if ActiveFedora::Base.find_with_conditions("is_exemplary_image_of_ssim"=>"info:fedora/#{self.pid}").blank?
           image_file.add_relationship(:is_exemplary_image_of, "info:fedora/" + self.pid)
         end
       end
@@ -1371,7 +1372,7 @@ module Bplmodels
       document_file.add_relationship(:is_file_of, "info:fedora/" + self.pid)
 
       if set_exemplary.nil? || set_exemplary
-        if ActiveFedora::Base.find_with_conditions("is_exemplary_image_of_ssim"=>"#{self.pid}").blank?
+        if ActiveFedora::Base.find_with_conditions("is_exemplary_image_of_ssim"=>"info:fedora/#{self.pid}").blank?
           document_file.add_relationship(:is_exemplary_image_of, "info:fedora/" + self.pid)
         end
       end
@@ -1399,12 +1400,13 @@ module Bplmodels
 
       volume.add_relationship(:is_volume_of, "info:fedora/" + self.pid)
 
+      #FIXME: Doesn't work with PDF?
       if !other_volumes_exist
         ActiveFedora::Base.find_in_batches('is_exemplary_image_of_ssim'=>"info:fedora/#{pid}") do |group|
           group.each { |exemplary_solr|
             exemplary_image = Bplmodels::File.find(exemplary_solr['id']).adapt_to_cmodel
             exemplary_image.add_relationship(:is_exemplary_image_of, "info:fedora/" + self.pid)
-            exemplary_image.save!
+            exemplary_image.save
           }
         end
       end
