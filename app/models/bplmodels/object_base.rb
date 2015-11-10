@@ -870,12 +870,16 @@ module Bplmodels
             if self.descMetadata.mods(0).title_info(index).display_label[0] == 'primary_display'
               doc['title_info_primary_tsi'] = title_prefix + title_value
               doc['title_info_primary_ssort'] = title_value
+              doc['title_info_partnum_tsi'] = self.descMetadata.mods(0).title_info(index).part_number
+              doc['title_info_partname_tsi'] = self.descMetadata.mods(0).title_info(index).part_name
             else
               doc['title_info_primary_trans_tsim'] << title_prefix + title_value
             end
           else
             doc['title_info_primary_tsi'] = title_prefix + title_value
             doc['title_info_primary_ssort'] = title_value
+            doc['title_info_partnum_tsi'] = self.descMetadata.mods(0).title_info(index).part_number
+            doc['title_info_partname_tsi'] = self.descMetadata.mods(0).title_info(index).part_name
           end
           if self.descMetadata.mods(0).title_info(index).supplied[0] == 'yes'
             doc['supplied_title_bs'] = 'true'
@@ -932,6 +936,20 @@ module Bplmodels
         scan_data_xml = Nokogiri::XML(self.scanData.content)
         doc['text_direction_ssi'] = scan_data_xml.xpath("//globalHandedness/page-progression").first.text
       end
+
+      #Handle the case of multiple volumes...
+      if self.class.name == 'Bplmodels::Book'
+        volume_check = Bplmodels::Finder.getVolumeObjects(self.pid)
+        if volume_check.present?
+          doc['ocr_tiv'] = ''
+          volume_check.each do |volume|
+            #FIXME!!!
+            volume_object = ActiveFedora::Base.find(volume['pid']).adapt_to_cmodel
+            doc['ocr_tiv'] += volume_object.plainText.content.squish + ' ' if volume_object.plainText.present?
+          end
+        end
+      end
+
 
       if self.workflowMetadata.volume_match_md5s.present?
         doc['marc_md5_sum_ssi'] = self.workflowMetadata.volume_match_md5s.marc.first
@@ -1386,22 +1404,85 @@ module Bplmodels
     def add_new_volume(pid)
       #raise 'insert new image called with no files or more than one!' if file.blank? || file.is_a?(Array)
       volume = Bplmodels::Volume.find(pid).adapt_to_cmodel
+      placement_location = volume.descMetadata.title_info.part_number.first.match(/\d+/).to_s.to_i
 
       other_volumes_exist = false
+      volume_placed = false
+      queryed_placement_start_val = 0
+
       Bplmodels::Volume.find_in_batches('is_volume_of_ssim'=>"info:fedora/#{self.pid}", 'is_preceding_volume_of_ssim'=>'') do |group|
         group.each { |volume_id|
-          other_volumes_exist = true
-          preceding_volume = Bplmodels::Volume.find(volume_id['id'])
-          preceding_volume.add_relationship(:is_preceding_volume_of, "info:fedora/#{pid}", true)
-          preceding_volume.save
-          volume.add_relationship(:is_following_volume_of, "info:fedora/#{volume_id['id']}", true)
+          if !volume_placed
+            other_volumes_exist = true
+            queryed_placement_end_val = volume_id['title_info_partnum_tsi'].match(/\d+/).to_s.to_i
+
+            #Case of insert at end
+            if volume_id['is_preceding_volume_of_ssim'].blank? && queryed_placement_end_val < placement_location
+              preceding_volume = Bplmodels::Volume.find(volume_id['id'])
+              preceding_volume.add_relationship(:is_preceding_volume_of, "info:fedora/#{pid}", true)
+              preceding_volume.save
+              volume.add_relationship(:is_following_volume_of, "info:fedora/#{volume_id['id']}", true)
+              volume_placed = true
+              #Case of only 1 element of volume 2... insert at beginning
+            elsif volume_id['is_preceding_volume_of_ssim'].blank?
+              following_volume = Bplmodels::Volume.find(volume_id['id'])
+              following_volume.add_relationship(:is_following_volume_of, "info:fedora/#{pid}", true)
+
+              volume.add_relationship(:is_preceding_volume_of, "info:fedora/#{volume_id['id']}", true)
+              preceding_volume.save
+              volume_placed = true
+              #Case of multiple but insert at front
+            elsif volume_id['is_following_volume_of_ssim'].blank? && queryed_placement_start_val < placement_location and queryed_placement_end_val > placement_location
+              following_volume = Bplmodels::Volume.find(volume_id['id'])
+              following_volume.add_relationship(:is_following_volume_of, "info:fedora/#{pid}", true)
+
+              volume.add_relationship(:is_preceding_volume_of, "info:fedora/#{volume_id['id']}", true)
+              preceding_volume.save
+              volume_placed = true
+              #Normal case
+            elsif queryed_placement_start_val < placement_location and queryed_placement_end_val > placement_location
+              following_volume = Bplmodels::Volume.find(volume_id['id'])
+              preceeding_volume = Bplmodels::Volume.find(volume_id['is_preceding_volume_of_ssim'].gsub('info:fedora/', ''))
+
+              following_volume.remove_relationship(:is_following_volume_of, "info:fedora/#{preceeding_volume.pid}", true)
+              preceeding_volume.remove_relationship(:is_preceding_volume_of, "info:fedora/#{following_volume.pid}", true)
+
+
+              following_volume.add_relationship(:is_following_volume_of, "info:fedora/#{pid}", true)
+              preceeding_volume.add_relationship(:is_preceding_volume_of, "info:fedora/#{pid}", true)
+
+
+              volume.add_relationship(:is_following_volume_of, "info:fedora/#{preceeding_volume.pid}", true)
+              volume.add_relationship(:is_preceding_volume_of, "info:fedora/#{following_volume.pid}", true)
+              preceding_volume.save
+              following_volume.save
+              volume_placed = true
+            end
+          end
+
+          queryed_placement_start_val = queryed_placement_end_val
+
         }
       end
 
       volume.add_relationship(:is_volume_of, "info:fedora/" + self.pid)
 
       #FIXME: Doesn't work with PDF?
+      #FIXME: Do this better?
       if !other_volumes_exist
+        ActiveFedora::Base.find_in_batches('is_exemplary_image_of_ssim'=>"info:fedora/#{pid}") do |group|
+          group.each { |exemplary_solr|
+            exemplary_image = Bplmodels::File.find(exemplary_solr['id']).adapt_to_cmodel
+            exemplary_image.add_relationship(:is_exemplary_image_of, "info:fedora/" + self.pid)
+            exemplary_image.save
+          }
+        end
+      elsif placement_location == 1
+        if ActiveFedora::Base.find_with_conditions("is_exemplary_image_of_ssim"=>"info:fedora/#{self.pid}").present?
+          exemplary_to_remove = ActiveFedora::Base.find_with_conditions("is_exemplary_image_of_ssim"=>"info:fedora/#{self.pid}").first['id']
+          document_file.remove_relationship(:is_exemplary_image_of, "info:fedora/" + exemplary_to_remove)
+        end
+
         ActiveFedora::Base.find_in_batches('is_exemplary_image_of_ssim'=>"info:fedora/#{pid}") do |group|
           group.each { |exemplary_solr|
             exemplary_image = Bplmodels::File.find(exemplary_solr['id']).adapt_to_cmodel
