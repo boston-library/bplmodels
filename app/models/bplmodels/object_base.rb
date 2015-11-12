@@ -944,7 +944,7 @@ module Bplmodels
           doc['ocr_tiv'] = ''
           volume_check.each do |volume|
             #FIXME!!!
-            volume_object = ActiveFedora::Base.find(volume['pid']).adapt_to_cmodel
+            volume_object = ActiveFedora::Base.find(volume['id']).adapt_to_cmodel
             doc['ocr_tiv'] += volume_object.plainText.content.squish + ' ' if volume_object.plainText.present?
           end
         end
@@ -1429,7 +1429,7 @@ module Bplmodels
               following_volume.add_relationship(:is_following_volume_of, "info:fedora/#{pid}", true)
 
               volume.add_relationship(:is_preceding_volume_of, "info:fedora/#{volume_id['id']}", true)
-              preceding_volume.save
+              following_volume.save
               volume_placed = true
               #Case of multiple but insert at front
             elsif volume_id['is_following_volume_of_ssim'].blank? && queryed_placement_start_val < placement_location and queryed_placement_end_val > placement_location
@@ -1437,22 +1437,22 @@ module Bplmodels
               following_volume.add_relationship(:is_following_volume_of, "info:fedora/#{pid}", true)
 
               volume.add_relationship(:is_preceding_volume_of, "info:fedora/#{volume_id['id']}", true)
-              preceding_volume.save
+              following_volume.save
               volume_placed = true
               #Normal case
             elsif queryed_placement_start_val < placement_location and queryed_placement_end_val > placement_location
               following_volume = Bplmodels::Volume.find(volume_id['id'])
-              preceeding_volume = Bplmodels::Volume.find(volume_id['is_preceding_volume_of_ssim'].gsub('info:fedora/', ''))
+              preceding_volume = Bplmodels::Volume.find(volume_id['is_preceding_volume_of_ssim'].gsub('info:fedora/', ''))
 
-              following_volume.remove_relationship(:is_following_volume_of, "info:fedora/#{preceeding_volume.pid}", true)
-              preceeding_volume.remove_relationship(:is_preceding_volume_of, "info:fedora/#{following_volume.pid}", true)
+              following_volume.remove_relationship(:is_following_volume_of, "info:fedora/#{preceding_volume.pid}", true)
+              preceding_volume.remove_relationship(:is_preceding_volume_of, "info:fedora/#{following_volume.pid}", true)
 
 
               following_volume.add_relationship(:is_following_volume_of, "info:fedora/#{pid}", true)
-              preceeding_volume.add_relationship(:is_preceding_volume_of, "info:fedora/#{pid}", true)
+              preceding_volume.add_relationship(:is_preceding_volume_of, "info:fedora/#{pid}", true)
 
 
-              volume.add_relationship(:is_following_volume_of, "info:fedora/#{preceeding_volume.pid}", true)
+              volume.add_relationship(:is_following_volume_of, "info:fedora/#{preceding_volume.pid}", true)
               volume.add_relationship(:is_preceding_volume_of, "info:fedora/#{following_volume.pid}", true)
               preceding_volume.save
               following_volume.save
@@ -1479,8 +1479,9 @@ module Bplmodels
         end
       elsif placement_location == 1
         if ActiveFedora::Base.find_with_conditions("is_exemplary_image_of_ssim"=>"info:fedora/#{self.pid}").present?
-          exemplary_to_remove = ActiveFedora::Base.find_with_conditions("is_exemplary_image_of_ssim"=>"info:fedora/#{self.pid}").first['id']
-          document_file.remove_relationship(:is_exemplary_image_of, "info:fedora/" + exemplary_to_remove)
+          exemplary_to_remove_id = ActiveFedora::Base.find_with_conditions("is_exemplary_image_of_ssim"=>"info:fedora/#{self.pid}").first['id']
+          exemplary_to_remove = ActiveFedora::Base.find(exemplary_to_remove_id).adapt_to_cmodel
+          exemplary_to_remove.remove_relationship(:is_exemplary_image_of, "info:fedora/" + exemplary_to_remove_id)
         end
 
         ActiveFedora::Base.find_in_batches('is_exemplary_image_of_ssim'=>"info:fedora/#{pid}") do |group|
