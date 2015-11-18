@@ -33,6 +33,7 @@ module Bplmodels
     has_metadata :name => "workflowMetadata", :type => WorkflowMetadata
 
     has_file_datastream 'marc', versionable: false, label: 'MARC metadata'
+    has_file_datastream 'marcXML', versionable: false, label: 'MARC XML metadata'
     has_file_datastream 'iaMeta', versionable: false, label: 'Internet Archive metadata'
     has_file_datastream 'scanData', versionable: false, label: 'Internet Archive scanData metadata'
     has_file_datastream 'plainText', versionable: false, label: 'Plain Text representation of this object'
@@ -477,12 +478,12 @@ module Bplmodels
       doc['digital_origin_ssi']  = self.descMetadata.physical_description(0).digital_origin[0]
       doc['internet_media_type_ssim']  = self.descMetadata.physical_description(0).internet_media_type
 
-      doc['physical_location_ssim']  = self.descMetadata.item_location(0).physical_location
-      doc['physical_location_tsim']  = self.descMetadata.item_location(0).physical_location
+      doc['physical_location_ssim']  = self.descMetadata.item_location.physical_location
+      doc['physical_location_tsim']  = self.descMetadata.item_location.physical_location
 
-      doc['sub_location_tsim']  = self.descMetadata.item_location(0).holding_simple(0).copy_information(0).sub_location
+      doc['sub_location_tsim']  = self.descMetadata.item_location.holding_simple.copy_information.sub_location
 
-      doc['shelf_locator_tsim']  = self.descMetadata.item_location(0).holding_simple(0).copy_information(0).shelf_locator
+      doc['shelf_locator_tsim']  = self.descMetadata.item_location.holding_simple.copy_information.shelf_locator
 
       doc['subject_topic_tsim'] = self.descMetadata.subject.topic
 
@@ -1056,6 +1057,11 @@ module Bplmodels
     def insert_marc(file_content)
       self.marc.content = file_content
       self.marc.mimeType = 'application/marc'
+    end
+
+    def insert_marc_xml(file_content)
+      self.marcXML.content = file_content
+      self.marcXML.mimeType = 'application/xml'
     end
 
     def insert_ia_meta(file_content)
