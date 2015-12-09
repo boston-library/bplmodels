@@ -84,6 +84,7 @@ module Bplmodels
 
     def remove_oai_relationships
       self.remove_relationship(:oai_item_id, "oai:digitalcommonwealth.org:" + self.pid, true)
+      self.save
     end
 
     #alias :limited_delete :delete
