@@ -1682,7 +1682,7 @@ module Bplmodels
       self.find_by_terms(:subject_cartographic).slice(index.to_i).remove
     end
 
-    def insert_table_of_contents(text_value, url)
+    def insert_table_of_contents(text_value, url=nil)
       contents_index = self.mods(0).table_of_contents.count
       self.mods(0).table_of_contents(contents_index, text_value) unless text_value.blank?
       self.mods(0).table_of_contents(contents_index).href = url unless url.blank?
