@@ -804,7 +804,8 @@ module Bplmodels
       if doc['subject_geo_nonhier_ssim'] && doc['subject_hiergeo_geojson_ssm']
         doc['subject_geo_nonhier_ssim'].each do |non_hier_geo_subj|
           doc['subject_hiergeo_geojson_ssm'].each do |hiergeo_geojson_feature|
-            if hiergeo_geojson_feature.match(/#{non_hier_geo_subj}/)
+            #if hiergeo_geojson_feature.match(/#{non_hier_geo_subj}/)
+            if hiergeo_geojson_feature.include?(non_hier_geo_subj)
               doc['subject_geo_nonhier_ssim'].delete(non_hier_geo_subj)
             end
           end
