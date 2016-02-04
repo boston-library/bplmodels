@@ -118,6 +118,17 @@ module Bplmodels
       doc['institution_pid_si'] = self.pid
       doc['institution_pid_ssi'] = self.pid
 
+      # basic genre
+      basic_genre = 'Institutions'
+      doc['genre_basic_ssim'] = basic_genre
+      doc['genre_basic_tsim'] = basic_genre
+
+      # physical location
+      # slightly redundant, but needed for faceting and A-Z filtering
+      institution_name = self.descMetadata.mods(0).title.first
+      doc['physical_location_ssim'] = institution_name
+      doc['physical_location_tsim'] = institution_name
+
 
       doc
 

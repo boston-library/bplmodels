@@ -55,14 +55,16 @@ module Bplmodels
       # description
       doc['abstract_tsim'] = self.descMetadata.abstract
 
+      # basic genre
+      basic_genre = 'Collections'
+      doc['genre_basic_ssim'] = basic_genre
+      doc['genre_basic_tsim'] = basic_genre
+
       # institution
       if self.institutions
         collex_location = self.institutions.label.to_s
         doc['physical_location_ssim'] = collex_location
         doc['physical_location_tsim'] = collex_location
-        doc['institution_pid_si'] = self.institutions.pid
-        # TODO: need to remove the 3 above and refactor apps as necessary
-        # collections (AKA sets) have institutions, not locations
         doc['institution_name_ssim'] = collex_location
         doc['institution_name_tsim'] = collex_location
         doc['institution_pid_ssi'] = self.institutions.pid
