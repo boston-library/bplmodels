@@ -734,6 +734,8 @@ module Bplmodels
       doc['subject_facet_ssim'].concat(self.descMetadata.subject.topic)
 
       # temporal subjects
+      #FIXME
+=begin
       if self.descMetadata.subject.temporal.length > 0
         doc['subject_temporal_start_tsim'] = []
         doc['subject_temporal_start_dtsim'] = []
@@ -782,6 +784,23 @@ module Bplmodels
 
         doc['subject_facet_ssim'].concat(doc['subject_temporal_facet_ssim'])
 
+      end
+=end
+
+      doc['subject_temporal_facet_ssim'] = []
+      if self.descMetadata.subject.temporal.length > 0
+        0.upto self.descMetadata.mods(0).subject.length-1 do |subj_index|
+          temp_element = self.descMetadata.mods(0).subject(subj_index).temporal
+          if temp_element.blank?
+            #No Temporal element
+          elsif temp_element.length == 1
+            doc['subject_temporal_facet_ssim'].append(temp_element[0])
+          elsif temp_element.length == 2
+            doc['subject_temporal_facet_ssim'].append(temp_element[0][0..3] + '-' + temp_element[1][0..3])
+          else
+            raise 'There is an error with temporal of some type. Value gotten was: ' + temp_element.to_s
+          end
+        end
       end
 
       # title subjects
