@@ -142,7 +142,8 @@ module Bplmodels
 
 
       doc['label_ssim'] = self.label.to_s
-      #1995-12-31T23:59:59.999Z
+
+      # dates
       doc['date_start_dtsi'] = []
       doc['date_start_tsim'] = []
       doc['date_end_dtsi'] = []
@@ -150,16 +151,23 @@ module Bplmodels
       doc['date_facet_ssim'] = []
       doc['date_type_ssm'] = []
       doc['date_start_qualifier_ssm'] = []
+      doc['note_date_tsim'] = []
       dates_static = []
       dates_start = []
       dates_end = []
 
+      # these values get appended to dates in _dtsi Solr format
+      start_date_suffix_for_yyyy = '-01-01T00:00:00.000Z'
+      start_date_suffix_for_yyyymm = '-01T01:00:00.000Z'
+      start_date_suffix_for_yyyymmdd = 'T00:00:00.000Z'
+      end_date_suffix_for_yyyy = '-12-31T23:59:59.999Z'
+      end_date_suffix_for_yyyymm = '-28T23:59:59.999Z' # TODO: end DD value should depend on MM value ('31' for Jan., '28' for Feb., etc.)
+      end_date_suffix_for_yyyymmdd = 'T23:59:59.999Z'
+
       # dateOther
-      if self.descMetadata.date(0).date_other[0] != nil && self.descMetadata.date(0).date_other.length > 0
-        if self.descMetadata.date(0).date_other[0] == 'undated'
-          # do nothing -- don't want to index this
-        else
-          # TODO insert code for date_other values here
+      if self.descMetadata.date(0).date_other[0]
+        self.descMetadata.date(0).date_other.each do |date_other|
+          doc['note_date_tsim'] << date_other
         end
       end
 
@@ -169,8 +177,8 @@ module Bplmodels
         #dateCreated
         if self.descMetadata.date(0).dates_created[0]
           self.descMetadata.date(0).dates_created.each_with_index do |date,index|
-          #FIXME: Has to add "date.present" and the when '' case for oai-test:h415pc718
-           if date.present?
+            #FIXME: Has to add "date.present" and the when '' case for oai-test:h415pc718
+            if date.present?
               case self.descMetadata.date(0).dates_created(index).point[0]
                 when nil, ''
                   dates_static << date
@@ -234,48 +242,63 @@ module Bplmodels
         end
 
         # set the date ranges for date-time fields and decade faceting
-        earliest_date = (dates_static + dates_start).sort[0]
+        sorted_start_dates = (dates_static + dates_start).sort
+        earliest_date = sorted_start_dates[0]
         date_facet_start = earliest_date[0..3].to_i
+        latest_date = dates_end.sort.reverse[0]
 
-        if earliest_date.length == 4
-          doc['date_start_dtsi'].append(earliest_date + '-01-01T00:00:00.000Z')
-        elsif earliest_date.length == 7
-          doc['date_start_dtsi'].append(earliest_date + '-01T01:00:00.000Z')
-        elsif earliest_date.length > 11
-          doc['date_start_dtsi'].append(earliest_date)
-        else
-          doc['date_start_dtsi'].append(earliest_date + 'T00:00:00.000Z')
+        # set earliest date
+        if earliest_date =~ /[0-9]{4}[0-9-]*\z/ # rough date format matching
+          if earliest_date.length == 4
+            doc['date_start_dtsi'].append(earliest_date + start_date_suffix_for_yyyy)
+          elsif earliest_date.length == 7
+            doc['date_start_dtsi'].append(earliest_date + start_date_suffix_for_yyyymm)
+          elsif earliest_date.length > 11
+            doc['date_start_dtsi'].append(earliest_date)
+          else
+            doc['date_start_dtsi'].append(earliest_date + start_date_suffix_for_yyyymmdd)
+          end
         end
 
-        if dates_end[0]
-          latest_date = dates_end.reverse[0]
+        # set latest date
+        if latest_date && latest_date =~ /[0-9]{4}[0-9-]*\z/
           date_facet_end = latest_date[0..3].to_i
           if latest_date.length == 4
-            doc['date_end_dtsi'].append(latest_date + '-12-31T23:59:59.999Z')
+            doc['date_end_dtsi'].append(latest_date + end_date_suffix_for_yyyy)
           elsif latest_date.length == 7
-            # TODO: DD value should be dependent on MM value
-            # e.g., '31' for January, but '28' for February, etc.
-            doc['date_end_dtsi'].append(latest_date + '-28T23:59:59.999Z')
+            doc['date_end_dtsi'].append(latest_date + end_date_suffix_for_yyyymm)
           elsif latest_date.length > 11
             doc['date_end_dtsi'].append(latest_date)
           else
-            doc['date_end_dtsi'].append(latest_date + 'T23:59:59.999Z')
+            doc['date_end_dtsi'].append(latest_date + end_date_suffix_for_yyyymmdd)
           end
         else
           date_facet_end = 0
+          latest_start_date = sorted_start_dates[-1]
+          if latest_start_date =~ /[0-9]{4}[0-9-]*\z/
+            if latest_start_date.length == 4
+              doc['date_end_dtsi'].append(latest_start_date + end_date_suffix_for_yyyy)
+            elsif latest_start_date.length == 7
+              doc['date_end_dtsi'].append(latest_start_date + end_date_suffix_for_yyyymm)
+            elsif latest_start_date.length > 11
+              doc['date_end_dtsi'].append(latest_start_date)
+            else
+              doc['date_end_dtsi'].append(latest_start_date + end_date_suffix_for_yyyymmdd)
+            end
+          end
         end
 
         # decade faceting
-        (1500..2020).step(10) do |index|
-          if ((date_facet_start >= index && date_facet_start < index+10) || (date_facet_end != -1 && index > date_facet_start && date_facet_end >= index))
+        (1100..2020).step(10) do |index|
+          if (date_facet_start >= index && date_facet_start < index+10) || (date_facet_end != -1 && index > date_facet_start && date_facet_end >= index)
             doc['date_facet_ssim'].append(index.to_s + 's')
           end
         end
 
         doc['date_facet_yearly_ssim'] = []
         # yearly faceting
-        (1500..2020).step(1) do |index|
-          if ((date_facet_start >= index && date_facet_start < index+1) || (date_facet_end != -1 && index > date_facet_start && date_facet_end >= index))
+        (1100..2020).step(1) do |index|
+          if (date_facet_start >= index && date_facet_start < index+1) || (date_facet_end != -1 && index > date_facet_start && date_facet_end >= index)
             doc['date_facet_yearly_ssim'].append(index.to_s + 's')
           end
         end
@@ -650,52 +673,6 @@ module Bplmodels
 
       end
 
-=begin
-      new_logger = Logger.new('log/geo_log')
-      new_logger.level = Logger::ERROR
-
-      #Blacklight-maps esque placename_coords
-      0.upto self.descMetadata.subject.length-1 do |subject_index|
-       if self.descMetadata.mods(0).subject(subject_index).cartographics.present? && self.descMetadata.mods(0).subject(subject_index).cartographics.scale.blank?
-         place_name = "Results"
-
-         if self.descMetadata.mods(0).subject(subject_index).authority == ['tgn'] && self.descMetadata.mods(0).subject(subject_index).hierarchical_geographic[0].blank?
-           new_logger.error "Weird Geography for: " + self.pid
-         end
-
-         if self.descMetadata.mods(0).subject(subject_index).authority == ['tgn'] && self.descMetadata.mods(0).subject(subject_index).hierarchical_geographic[0].present?
-           place_locations = []
-           self.descMetadata.mods(0).subject(subject_index).hierarchical_geographic[0].split("\n").each do |split_geo|
-             split_geo = split_geo.strip
-             place_locations << split_geo if split_geo.present? && !split_geo.include?('North and Central America') && !split_geo.include?('United States')
-           end
-           place_name = place_locations.reverse.join(', ')
-         elsif self.descMetadata.mods(0).subject(subject_index).geographic.present?
-           place_name = self.descMetadata.mods(0).subject(subject_index).geographic.first
-         end
-
-         doc['subject_blacklight_maps_ssim'] = "#{place_name}-|-#{self.descMetadata.mods(0).subject(subject_index).cartographics.coordinates[0].split(',').first}-|-#{self.descMetadata.mods(0).subject(subject_index).cartographics.coordinates[0].split(',').last}"
-       end
-      end
-=end
-      #Blacklight-maps coords only
-=begin
-      best_coords_found = false
-      0.upto self.descMetadata.subject.length-1 do |subject_index|
-        if self.descMetadata.mods(0).subject(subject_index).cartographics.present?
-          if self.descMetadata.mods(0).subject(subject_index).authority.present? && self.descMetadata.mods(0).subject(subject_index).authority != ['tgn']
-            best_coords_found = true
-            doc['subject_blacklight_maps_coords_ssim'] = self.descMetadata.mods(0).subject(subject_index).cartographics.coordinates[0]
-          end
-        end
-      end
-      0.upto self.descMetadata.subject.length-1 do |subject_index|
-        if self.descMetadata.mods(0).subject(subject_index).cartographics.present? && !best_coords_found
-            doc['subject_blacklight_maps_coords_ssim'] = self.descMetadata.mods(0).subject(subject_index).cartographics.coordinates[0]
-        end
-      end
-=end
-
       # name subjects
       doc['subject_name_personal_tsim'] = []
       doc['subject_name_corporate_tsim'] = []
@@ -729,78 +706,79 @@ module Bplmodels
 
       end
 
-      #doc['subject_facet_ssim'] = self.descMetadata.subject.topic  +  self.descMetadata.subject.corporate_name.name_part + self.descMetadata.subject.personal_name.name_part
-
       doc['subject_facet_ssim'].concat(self.descMetadata.subject.topic)
 
       # temporal subjects
-      #FIXME
-=begin
       if self.descMetadata.subject.temporal.length > 0
+
         doc['subject_temporal_start_tsim'] = []
         doc['subject_temporal_start_dtsim'] = []
         doc['subject_temporal_facet_ssim'] = []
+        doc['subject_temporal_end_tsim'] = []
+        doc['subject_temporal_end_dtsim'] = []
         subject_date_range_start = []
         subject_date_range_end = []
+
         self.descMetadata.subject.temporal.each_with_index do |value,index|
           if self.descMetadata.subject.temporal.point[index] != 'end'
-            subject_temporal_start = value
-            doc['subject_temporal_start_tsim'].append(subject_temporal_start)
-            subject_date_range_start.append(subject_temporal_start)
-            # subject_temporal_start.length > 4 ? subject_date_range_start.append(subject_temporal_start[0..3]) : subject_date_range_start.append(subject_temporal_start)
-            if subject_temporal_start.length == 4
-              doc['subject_temporal_start_dtsim'].append(subject_temporal_start + '-01-01T00:00:00.000Z')
-            elsif subject_temporal_start.length == 7
-              doc['subject_temporal_start_dtsim'].append(subject_temporal_start + '-01T01:00:00.000Z')
-            else
-              doc['subject_temporal_start_dtsim'].append(subject_temporal_start + 'T00:00:00.000Z')
+            doc['subject_temporal_start_tsim'] << value
+            subject_date_range_start << value
+            # if there is no accompanying end date, create nil value placeholders
+            unless self.descMetadata.subject.temporal.point[index+1] == 'end'
+              subject_date_range_end << nil
+              doc['subject_temporal_end_tsim'] << 'nil'
             end
           else
-            doc['subject_temporal_end_tsim'] = []
-            doc['subject_temporal_end_dtsim'] = []
-            subject_temporal_end = value
-            doc['subject_temporal_end_tsim'].append(subject_temporal_end)
-            subject_date_range_end.append(subject_temporal_end)
-            # subject_temporal_end.length > 4 ? subject_date_range_end.append(subject_temporal_end[0..3]) : subject_date_range_end.append(subject_temporal_end)
-            if subject_temporal_end.length == 4
-              doc['subject_temporal_end_dtsim'].append(subject_temporal_end + '-01-01T00:00:00.000Z')
-            elsif subject_temporal_end.length == 7
-              doc['subject_temporal_end_dtsim'].append(subject_temporal_end + '-01T01:00:00.000Z')
-            else
-              doc['subject_temporal_end_dtsim'].append(subject_temporal_end + 'T00:00:00.000Z')
-            end
+            doc['subject_temporal_end_tsim'] << value
+            subject_date_range_end << value
           end
         end
 
         if subject_date_range_start.length > 0
           subject_date_range_start.each_with_index do |date_start,index|
-            if subject_date_range_end.present?
-              doc['subject_temporal_facet_ssim'].append(date_start[0..3] + '-' + subject_date_range_end[index][0..3])
+            formatted_date_subject_start = false
+            formatted_date_subject_end = false
+            if date_start =~ /[0-9]{4}[0-9-]*\z/ # rough check for date formatting
+              formatted_date_subject_start = true
+              if date_start.length == 7
+                doc['subject_temporal_start_dtsim'] << date_start + start_date_suffix_for_yyyymm
+              elsif date_start.length == 10
+                doc['subject_temporal_start_dtsim'] << date_start + start_date_suffix_for_yyyymmdd
+              else
+                doc['subject_temporal_start_dtsim'] << date_start[0..3] + start_date_suffix_for_yyyy
+              end
+            end
+            if subject_date_range_end[index]
+              doc['subject_temporal_facet_ssim'] << date_start[0..3] + '-' + subject_date_range_end[index][0..3]
+              if formatted_date_subject_start
+                if subject_date_range_end[index] =~ /[0-9]{4}[0-9-]*\z/ # rough check for date formatting
+                  formatted_date_subject_end = true
+                  if subject_date_range_end[index].length == 7
+                    doc['subject_temporal_end_dtsim'] << subject_date_range_end[index] + end_date_suffix_for_yyyymm
+                  elsif subject_date_range_end[index].length == 10
+                    doc['subject_temporal_end_dtsim'] << subject_date_range_end[index] + end_date_suffix_for_yyyymmdd
+                  else
+                    doc['subject_temporal_end_dtsim'] << subject_date_range_end[index][0..3] + end_date_suffix_for_yyyy
+                  end
+                end
+              end
             else
-              doc['subject_temporal_facet_ssim'].append(date_start)
+              doc['subject_temporal_facet_ssim'] << date_start
+            end
+            if formatted_date_subject_start && !formatted_date_subject_end
+              if date_start.length == 7
+                doc['subject_temporal_end_dtsim'] << date_start + end_date_suffix_for_yyyymm
+              elsif date_start.length == 10
+                doc['subject_temporal_end_dtsim'] << date_start + end_date_suffix_for_yyyymmdd
+              else
+                doc['subject_temporal_end_dtsim'] << date_start[0..3] + end_date_suffix_for_yyyy
+              end
             end
           end
         end
 
+        # add temporal subject values to subject facet field
         doc['subject_facet_ssim'].concat(doc['subject_temporal_facet_ssim'])
-
-      end
-=end
-
-      doc['subject_temporal_facet_ssim'] = []
-      if self.descMetadata.subject.temporal.length > 0
-        0.upto self.descMetadata.mods(0).subject.length-1 do |subj_index|
-          temp_element = self.descMetadata.mods(0).subject(subj_index).temporal
-          if temp_element.blank?
-            #No Temporal element
-          elsif temp_element.length == 1
-            doc['subject_temporal_facet_ssim'].append(temp_element[0])
-          elsif temp_element.length == 2
-            doc['subject_temporal_facet_ssim'].append(temp_element[0][0..3] + '-' + temp_element[1][0..3])
-          else
-            raise 'There is an error with temporal of some type. Value gotten was: ' + temp_element.to_s
-          end
-        end
       end
 
       # title subjects
@@ -848,7 +826,6 @@ module Bplmodels
 
       doc['note_tsim'] = []
       doc['note_resp_tsim'] = []
-      doc['note_date_tsim'] = []
       doc['note_performers_tsim'] = []
       doc['note_acquisition_tsim'] = []
       doc['note_ownership_tsim'] = []
@@ -1012,7 +989,7 @@ module Bplmodels
         if !args.keys.include?(arg)
           raise "Mint called but missing parameter: #{arg}"
         end
-       end
+      end
 
       #TODO: Duplication check here to prevent over-writes?
 
