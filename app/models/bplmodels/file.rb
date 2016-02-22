@@ -126,13 +126,13 @@ module Bplmodels
             transform_datastream :productionMaster, { :testJP2k => { recipe: :default, datastream: 'accessMaster'  } }, processor: 'jpeg2k_image'
           rescue => error
             if error.message.include?('compressed TIFF files')
-              Magick::limit_resource(:memory, 8500000000)
-              Magick::limit_resource(:map, 8500000000)
+              #Magick::limit_resource(:memory, 8500000000)
+              #Magick::limit_resource(:map, 8500000000)
               #jp2_img =  Magick::Image.read("#{self.fedora_connection[0].options[:url]}/objects/#{self.pid}datastreams/productionMaster/content").first
               jp2_img =  Magick::Image.from_blob(self.productionMaster.content).first
               self.accessMaster.content = jp2_img.to_blob { self.format = "jp2" }
               self.accessMaster.mimeType = 'image/jp2'
-              #jp2_img.destroy! #Potential memory leak...
+              jp2_img.destroy! #Potential memory leak...
             else
               raise error
             end
@@ -143,8 +143,8 @@ module Bplmodels
           self.thumbnail300.dsLabel = self.productionMaster.label
           self.access800.dsLabel = self.productionMaster.label
         when 'image/jpeg' #FIXME
-          Magick::limit_resource(:memory, 5500000000)
-          Magick::limit_resource(:map, 5500000000)
+          #Magick::limit_resource(:memory, 5500000000)
+          #Magick::limit_resource(:map, 5500000000)
           jp2_img =  Magick::Image.from_blob(self.productionMaster.content).first
           self.accessMaster.content = jp2_img.to_blob { self.format = "jp2" }
           self.accessMaster.mimeType = 'image/jp2'
