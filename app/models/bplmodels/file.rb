@@ -132,7 +132,7 @@ module Bplmodels
               jp2_img =  Magick::Image.from_blob(self.productionMaster.content).first
               self.accessMaster.content = jp2_img.to_blob { self.format = "jp2" }
               self.accessMaster.mimeType = 'image/jp2'
-              jp2_img.destroy!
+              #jp2_img.destroy! #Potential memory leak...
             else
               raise error
             end
