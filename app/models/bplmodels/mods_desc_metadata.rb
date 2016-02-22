@@ -1151,6 +1151,66 @@ module Bplmodels
 
     end
 
+    def insert_oai_date_copyright(date)
+      #converted = Bplmodels::DatastreamInputFuncs.convert_to_mods_date(date)
+      converted = BplEnrich::Dates.standardize(date)
+
+      #date_index =  self.date.length
+      date_index = 0
+      dup_found = false
+
+      #Prevent duplicate entries... Using a flag as keep the potential note?
+      (self.mods(0).date(date_index).dates_copyright.length-1).times do |index|
+        if converted.has_key?(:single_date)
+          if self.mods(0).date(date_index).dates_copyright(index).point.blank? && self.mods(0).date(date_index).dates_copyright(index).first == converted[:single_date]
+            dup_found = true
+          end
+        elsif converted.has_key?(:date_range)
+          if self.mods(0).date(date_index).dates_copyright(index).point == 'start' && self.mods(0).date(date_index).dates_copyright(index).first == converted[:date_range][:start]
+            if self.mods(0).date(date_index).dates_copyright(index+1).point == 'end' && self.mods(0).date(date_index).dates_copyright(index+1).first == converted[:date_range][:end]
+              dup_found = true
+            end
+
+          end
+        end
+      end
+
+      if !dup_found
+        if converted.has_key?(:single_date) && !self.date.dates_copyright.include?(converted[:single_date])
+          date_created_index = self.date(date_index).dates_copyright.length
+          self.date(date_index).dates_copyright(date_created_index, converted[:single_date])
+          self.date(date_index).dates_copyright(date_created_index).encoding = 'w3cdtf'
+          if date_created_index == 0
+            self.date(date_index).dates_copyright(date_created_index).key_date = 'yes'
+          end
+
+          if converted.has_key?(:date_qualifier)
+            self.date(date_index).dates_copyright(date_created_index).qualifier =  converted[:date_qualifier]
+          end
+        elsif converted.has_key?(:date_range)
+          date_created_index = self.date(date_index).dates_copyright.length
+          self.date(date_index).dates_copyright(date_created_index, converted[:date_range][:start])
+          self.date(date_index).dates_copyright(date_created_index).encoding = 'w3cdtf'
+          if date_created_index == 0
+            self.date(date_index).dates_copyright(date_created_index).key_date = 'yes'
+          end
+          self.date(date_index).dates_copyright(date_created_index).point = 'start'
+          self.date(date_index).dates_copyright(date_created_index).qualifier = converted[:date_qualifier]
+
+          date_created_index = self.date(date_index).dates_copyright.length
+          self.date(date_index).dates_copyright(date_created_index, converted[:date_range][:end])
+          self.date(date_index).dates_copyright(date_created_index).encoding = 'w3cdtf'
+          self.date(date_index).dates_copyright(date_created_index).point = 'end'
+          self.date(date_index).dates_copyright(date_created_index).qualifier = converted[:date_qualifier]
+        end
+      end
+
+
+
+      self.insert_note(converted[:date_note],"date") unless !converted.has_key?(:date_note)
+
+    end
+
     def insert_oai_date_issued(date)
       #converted = Bplmodels::DatastreamInputFuncs.convert_to_mods_date(date)
       converted = BplEnrich::Dates.standardize(date)
