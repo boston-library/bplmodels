@@ -129,10 +129,19 @@ module Bplmodels
               #Magick::limit_resource(:memory, 8500000000)
               #Magick::limit_resource(:map, 8500000000)
               #jp2_img =  Magick::Image.read("#{self.fedora_connection[0].options[:url]}/objects/#{self.pid}datastreams/productionMaster/content").first
+=begin
               jp2_img =  Magick::Image.from_blob(self.productionMaster.content).first
               self.accessMaster.content = jp2_img.to_blob { self.format = "jp2" }
               self.accessMaster.mimeType = 'image/jp2'
-              jp2_img.destroy! #Potential memory leak...
+              jp2_img.destroy!
+=end
+              jp2_img = MiniMagick::Image.read(self.productionMaster.content) do |b|
+                b.format "jp2"
+              end
+
+              self.accessMaster.content = jp2_img.to_blob
+              self.accessMaster.mimeType = 'image/jp2'
+              jp2_img.destroy!
             else
               raise error
             end
@@ -145,8 +154,24 @@ module Bplmodels
         when 'image/jpeg' #FIXME
           #Magick::limit_resource(:memory, 5500000000)
           #Magick::limit_resource(:map, 5500000000)
+=begin
+          iajp2file = Tempfile.new(['iajp2file','.jp2'])
+          iajp2file.write(entry.get_input_stream.read)
+          iajp2file.close
+=end
+
+=begin
           jp2_img =  Magick::Image.from_blob(self.productionMaster.content).first
           self.accessMaster.content = jp2_img.to_blob { self.format = "jp2" }
+          self.accessMaster.mimeType = 'image/jp2'
+          jp2_img.destroy!
+=end
+
+          jp2_img = MiniMagick::Image.read(self.productionMaster.content) do |b|
+            b.format "jp2"
+          end
+
+          self.accessMaster.content = jp2_img.to_blob
           self.accessMaster.mimeType = 'image/jp2'
           jp2_img.destroy!
 
