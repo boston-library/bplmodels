@@ -1200,14 +1200,19 @@ module Bplmodels
 
       end
 
-
+        other_images_exist = false
         Bplmodels::ImageFile.find_in_batches('is_image_of_ssim'=>"info:fedora/#{self.pid}", 'is_preceding_image_of_ssim'=>'') do |group|
           group.each { |image_id|
-            other_images_exist = true
-            preceding_image = Bplmodels::ImageFile.find(image_id['id'])
-            preceding_image.add_relationship(:is_preceding_image_of, "info:fedora/#{image_file.pid}", true)
-            preceding_image.save
-            image_file.add_relationship(:is_following_image_of, "info:fedora/#{image_id['id']}", true)
+            if other_images_exist
+              raise 'This object has an error... likely was interupted during a previous ingest so multiple starting files. Pid: ' + self.pid
+            else
+              other_images_exist = true
+              preceding_image = Bplmodels::ImageFile.find(image_id['id'])
+              preceding_image.add_relationship(:is_preceding_image_of, "info:fedora/#{image_file.pid}", true)
+              preceding_image.save
+              image_file.add_relationship(:is_following_image_of, "info:fedora/#{image_id['id']}", true)
+            end
+
           }
         end
 
