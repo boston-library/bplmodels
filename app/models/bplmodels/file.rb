@@ -35,6 +35,11 @@ module Bplmodels
 
     has_metadata :name => "pageMetadata", :type => PageMetadata
 
+    def delete
+      cache_invalidate
+      super()
+    end
+
     def apply_default_permissions
       self.datastreams["rightsMetadata"].update_permissions( "group"=>{"Repository Administrators"=>"edit"} )
       self.save
@@ -256,6 +261,19 @@ module Bplmodels
 
       return object
     end
+
+
+    def cache_invalidate
+      response = Typhoeus::Request.post(DERIVATIVE_CONFIG_GLOBAL['url'] + "/processor/objectcacheinvalidation.json", :params => {:file_pid=>self.pid, :environment=>Bplmodels.environment})
+      as_json = JSON.parse(response.body)
+
+      if as_json['result'] == "false"
+        raise "Error Deleting the Cache! Server error!"
+      end
+
+      return true
+    end
+
 
   end
 end

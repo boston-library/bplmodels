@@ -1563,7 +1563,7 @@ module Bplmodels
     end
 
     def cache_invalidate
-      response = Typhoeus::Request.post(DERIVATIVE_CONFIG_GLOBAL['url'] + "/processor/objectcacheinvalidation.json", :params => {:pid=>self.pid, :environment=>Bplmodels.environment})
+      response = Typhoeus::Request.post(DERIVATIVE_CONFIG_GLOBAL['url'] + "/processor/objectcacheinvalidation.json", :params => {:object_pid=>self.pid, :environment=>Bplmodels.environment})
       as_json = JSON.parse(response.body)
 
       if as_json['result'] == "false"
