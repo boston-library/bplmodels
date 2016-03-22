@@ -36,7 +36,10 @@ module Bplmodels
     has_metadata :name => "pageMetadata", :type => PageMetadata
 
     def delete
-      cache_invalidate
+      #FIXME: This should just not be hardcoded in AVI Processor
+      if ActiveFedora.config.credentials[:url].match('fedora.digitalcommonwealth.org/fedora')
+        cache_invalidate
+      end
       super()
     end
 
