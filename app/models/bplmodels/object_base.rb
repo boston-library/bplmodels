@@ -103,6 +103,54 @@ module Bplmodels
           }
         end
       end
+
+      #FIXME: What if this is interuppted? Need to do this better...
+      if self.class.name == "Bplmodels::Volume"
+        next_object = nil
+        previous_object = nil
+        volume_object = Bplmodels::Finder.getVolumeObjects()
+        self.relationships.each_statement do |statement|
+          puts statement.predicate
+          if statement.predicate == "http://projecthydra.org/ns/relations#isPrecedingVolumeOf"
+            next_object = ActiveFedora::Base.find(statement.object.split('/').last).adapt_to_cmodel
+          elsif statement.predicate == "http://projecthydra.org/ns/relations#isFollowingVolumeOf"
+            previous_object = ActiveFedora::Base.find(statement.object.split('/').last).adapt_to_cmodel
+          end
+        end
+
+        if next_object.present? and previous_object.present?
+          next_object.relationships.each_statement do |statement|
+            if statement.predicate == "http://projecthydra.org/ns/relations#isFollowingVolumeOf"
+              adapted_object.remove_relationship(:is_following_volume_of, statement.object)
+            end
+          end
+
+          previous_object.relationships.each_statement do |statement|
+            if statement.predicate == "http://projecthydra.org/ns/relations#isPrecedingVolumeOf"
+              adapted_object.remove_relationship(:is_preceding_volume_of, statement.object)
+            end
+          end
+
+          next_object.add_relationship(:is_following_volume_of, "info:fedora/#{previous_object.pid}", true)
+          previous_object.add_relationship(:is_preceding_volume_of, "info:fedora/#{next_object.pid}", true)
+          next_object.save
+          previous_object.save
+        elsif next_object.present? and previous_object.blank?
+          next_object.relationships.each_statement do |statement|
+            if statement.predicate == "http://projecthydra.org/ns/relations#isFollowingVolumeOf"
+              adapted_object.remove_relationship(:is_following_volume_of, statement.object)
+            end
+          end
+
+        elsif  next_object.blank? and previous_object.present?
+          previous_object.relationships.each_statement do |statement|
+            if statement.predicate == "http://projecthydra.org/ns/relations#isPrecedingVolumeOf"
+              adapted_object.remove_relationship(:is_preceding_volume_of, statement.object)
+            end
+          end
+        end
+       self.collection.first.update_index
+      end
       super()
     end
 
@@ -1422,59 +1470,58 @@ module Bplmodels
       volume_placed = false
       queryed_placement_start_val = 0
 
-      Bplmodels::Volume.find_in_batches('is_volume_of_ssim'=>"info:fedora/#{self.pid}", 'is_preceding_volume_of_ssim'=>'') do |group|
-        group.each { |volume_id|
-          if !volume_placed
-            other_volumes_exist = true
-            queryed_placement_end_val = volume_id['title_info_partnum_tsi'].match(/\d+/).to_s.to_i
+      volume_objects = Bplmodels::Finder.getVolumeObjects(self.pid)
+      volume_objects.each do |volume_id|
+        if !volume_placed
+          queryed_placement_end_val = volume_id['title_info_partnum_tsi'].match(/\d+/).to_s.to_i
+          queryed_placement_start_val ||= queryed_placement_end_val
+          other_volumes_exist = true
 
-            #Case of insert at end
-            if volume_id['is_preceding_volume_of_ssim'].blank? && queryed_placement_end_val < placement_location
-              preceding_volume = Bplmodels::Volume.find(volume_id['id'])
-              preceding_volume.add_relationship(:is_preceding_volume_of, "info:fedora/#{pid}", true)
-              preceding_volume.save
-              volume.add_relationship(:is_following_volume_of, "info:fedora/#{volume_id['id']}", true)
-              volume_placed = true
-              #Case of only 1 element of volume 2... insert at beginning
-            elsif volume_id['is_preceding_volume_of_ssim'].blank?
-              following_volume = Bplmodels::Volume.find(volume_id['id'])
-              following_volume.add_relationship(:is_following_volume_of, "info:fedora/#{pid}", true)
+          #Case of insert at end
+          if volume_id['is_preceding_volume_of_ssim'].blank? && queryed_placement_end_val < placement_location
+            preceding_volume = Bplmodels::Volume.find(volume_id['id'])
+            preceding_volume.add_relationship(:is_preceding_volume_of, "info:fedora/#{pid}", true)
+            preceding_volume.save
+            volume.add_relationship(:is_following_volume_of, "info:fedora/#{volume_id['id']}", true)
+            volume_placed = true
+            #Case of only 1 element of volume 2... insert at beginning
+          elsif volume_id['is_preceding_volume_of_ssim'].blank?
+            following_volume = Bplmodels::Volume.find(volume_id['id'])
+            following_volume.add_relationship(:is_following_volume_of, "info:fedora/#{pid}", true)
 
-              volume.add_relationship(:is_preceding_volume_of, "info:fedora/#{volume_id['id']}", true)
-              following_volume.save
-              volume_placed = true
-              #Case of multiple but insert at front
-            elsif volume_id['is_following_volume_of_ssim'].blank? && queryed_placement_start_val < placement_location and queryed_placement_end_val > placement_location
-              following_volume = Bplmodels::Volume.find(volume_id['id'])
-              following_volume.add_relationship(:is_following_volume_of, "info:fedora/#{pid}", true)
+            volume.add_relationship(:is_preceding_volume_of, "info:fedora/#{volume_id['id']}", true)
+            following_volume.save
+            volume_placed = true
+            #Case of multiple but insert at front
+          elsif volume_id['is_following_volume_of_ssim'].blank? && queryed_placement_start_val < placement_location and queryed_placement_end_val > placement_location
+            following_volume = Bplmodels::Volume.find(volume_id['id'])
+            following_volume.add_relationship(:is_following_volume_of, "info:fedora/#{pid}", true)
 
-              volume.add_relationship(:is_preceding_volume_of, "info:fedora/#{volume_id['id']}", true)
-              following_volume.save
-              volume_placed = true
-              #Normal case
-            elsif queryed_placement_start_val < placement_location and queryed_placement_end_val > placement_location
-              following_volume = Bplmodels::Volume.find(volume_id['id'])
-              preceding_volume = Bplmodels::Volume.find(volume_id['is_preceding_volume_of_ssim'].gsub('info:fedora/', ''))
+            volume.add_relationship(:is_preceding_volume_of, "info:fedora/#{volume_id['id']}", true)
+            following_volume.save
+            volume_placed = true
+            #Normal case
+          elsif queryed_placement_start_val < placement_location and queryed_placement_end_val > placement_location
+            following_volume = Bplmodels::Volume.find(volume_id['id'])
+            preceding_volume = Bplmodels::Volume.find(volume_id['is_preceding_volume_of_ssim'].gsub('info:fedora/', ''))
 
-              following_volume.remove_relationship(:is_following_volume_of, "info:fedora/#{preceding_volume.pid}", true)
-              preceding_volume.remove_relationship(:is_preceding_volume_of, "info:fedora/#{following_volume.pid}", true)
-
-
-              following_volume.add_relationship(:is_following_volume_of, "info:fedora/#{pid}", true)
-              preceding_volume.add_relationship(:is_preceding_volume_of, "info:fedora/#{pid}", true)
+            following_volume.remove_relationship(:is_following_volume_of, "info:fedora/#{preceding_volume.pid}", true)
+            preceding_volume.remove_relationship(:is_preceding_volume_of, "info:fedora/#{following_volume.pid}", true)
 
 
-              volume.add_relationship(:is_following_volume_of, "info:fedora/#{preceding_volume.pid}", true)
-              volume.add_relationship(:is_preceding_volume_of, "info:fedora/#{following_volume.pid}", true)
-              preceding_volume.save
-              following_volume.save
-              volume_placed = true
-            end
+            following_volume.add_relationship(:is_following_volume_of, "info:fedora/#{pid}", true)
+            preceding_volume.add_relationship(:is_preceding_volume_of, "info:fedora/#{pid}", true)
+
+
+            volume.add_relationship(:is_following_volume_of, "info:fedora/#{preceding_volume.pid}", true)
+            volume.add_relationship(:is_preceding_volume_of, "info:fedora/#{following_volume.pid}", true)
+            preceding_volume.save
+            following_volume.save
+            volume_placed = true
           end
+        end
 
-          queryed_placement_start_val = queryed_placement_end_val
-
-        }
+        queryed_placement_start_val = queryed_placement_end_val
       end
 
       volume.add_relationship(:is_volume_of, "info:fedora/" + self.pid)
