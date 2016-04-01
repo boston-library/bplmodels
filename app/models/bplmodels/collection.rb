@@ -56,7 +56,7 @@ module Bplmodels
       Bplmodels::ObjectBase.find_in_batches('is_member_of_collection_ssim'=>"info:fedora/#{self.pid}") do |group|
         group.each { |object_id|
           #object_id_array << Bplmodels::ObjectBase.find(object_id['id']).adapt_to_cmodel
-          basic_genre_array += object_id['genre_basic_ssim']
+          basic_genre_array += object_id['genre_basic_ssim'] if object_id['genre_basic_ssim'].present?
         }
       end
       doc['genre_basic_ssim'] = basic_genre_array.uniq!
