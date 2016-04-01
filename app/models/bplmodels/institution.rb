@@ -5,6 +5,8 @@ module Bplmodels
 
     has_metadata :name => "workflowMetadata", :type => WorkflowMetadata
 
+    has_many :exemplary_image, :class_name => "Bplmodels::File", :property=> :is_exemplary_image_of
+
     #A collection can have another collection as a member, or an image
     def insert_member(fedora_object)
       if (fedora_object.instance_of?(Bplmodels::Collection))
@@ -29,6 +31,8 @@ module Bplmodels
 
     def to_solr(doc = {} )
       doc = super(doc)
+
+
 
       # description
       doc['abstract_tsim'] = self.descMetadata.abstract
