@@ -134,7 +134,7 @@ module Bplmodels
             transform_datastream :productionMaster, { :testJP2k => { recipe: :default, datastream: 'accessMaster'  } }, processor: 'jpeg2k_image'
           rescue => error
             # First one is from Blue Books collection. Second one is from commonwealth:xd07m887b
-            if error.message.include?('compressed TIFF files') || error.message.include?("The number of colours associated with the colour space specified using `-jp2_space'")
+            if error.message.include?('compressed TIFF files') || error.message.include?("The number of colours associated with the colour space specified using")
               jp2_img = MiniMagick::Image.read(self.productionMaster.content) do |b|
                 b.format "jp2"
               end
