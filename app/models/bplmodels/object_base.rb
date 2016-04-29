@@ -108,7 +108,7 @@ module Bplmodels
       if self.class.name == "Bplmodels::Volume"
         next_object = nil
         previous_object = nil
-        volume_object = Bplmodels::Finder.getVolumeObjects()
+        volume_object = Bplmodels::Finder.getVolumeObjects(self.pid)
         self.relationships.each_statement do |statement|
           puts statement.predicate
           if statement.predicate == "http://projecthydra.org/ns/relations#isPrecedingVolumeOf"
