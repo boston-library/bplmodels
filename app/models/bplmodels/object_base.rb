@@ -121,13 +121,13 @@ module Bplmodels
         if next_object.present? and previous_object.present?
           next_object.relationships.each_statement do |statement|
             if statement.predicate == "http://projecthydra.org/ns/relations#isFollowingVolumeOf"
-              adapted_object.remove_relationship(:is_following_volume_of, statement.object)
+              next_object.remove_relationship(:is_following_volume_of, statement.object)
             end
           end
 
           previous_object.relationships.each_statement do |statement|
             if statement.predicate == "http://projecthydra.org/ns/relations#isPrecedingVolumeOf"
-              adapted_object.remove_relationship(:is_preceding_volume_of, statement.object)
+              previous_object.remove_relationship(:is_preceding_volume_of, statement.object)
             end
           end
 
@@ -138,14 +138,14 @@ module Bplmodels
         elsif next_object.present? and previous_object.blank?
           next_object.relationships.each_statement do |statement|
             if statement.predicate == "http://projecthydra.org/ns/relations#isFollowingVolumeOf"
-              adapted_object.remove_relationship(:is_following_volume_of, statement.object)
+              next_object.remove_relationship(:is_following_volume_of, statement.object)
             end
           end
 
         elsif  next_object.blank? and previous_object.present?
           previous_object.relationships.each_statement do |statement|
             if statement.predicate == "http://projecthydra.org/ns/relations#isPrecedingVolumeOf"
-              adapted_object.remove_relationship(:is_preceding_volume_of, statement.object)
+              previous_object.remove_relationship(:is_preceding_volume_of, statement.object)
             end
           end
         end
@@ -984,6 +984,7 @@ module Bplmodels
       doc['ocr_tiv'] = self.plainText.content.squish if self.plainText.present?
       if self.scanData.present?
         scan_data_xml = Nokogiri::XML(self.scanData.content)
+        #See http://archive.org/download/handbookforkitch00neel (created in 2009) for a record lacking this
         doc['text_direction_ssi'] = scan_data_xml.xpath("//globalHandedness/page-progression").first.text if scan_data_xml.xpath("//globalHandedness/page-progression").first.present?
       end
 
