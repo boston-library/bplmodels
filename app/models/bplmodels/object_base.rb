@@ -112,9 +112,9 @@ module Bplmodels
         self.relationships.each_statement do |statement|
           puts statement.predicate
           if statement.predicate == "http://projecthydra.org/ns/relations#isPrecedingVolumeOf"
-            next_object = ActiveFedora::Base.find(statement.object.split('/').last).adapt_to_cmodel
+            next_object = ActiveFedora::Base.find(statement.object..to_s.split('/').last).adapt_to_cmodel
           elsif statement.predicate == "http://projecthydra.org/ns/relations#isFollowingVolumeOf"
-            previous_object = ActiveFedora::Base.find(statement.object.split('/').last).adapt_to_cmodel
+            previous_object = ActiveFedora::Base.find(statement.object.to_s.split('/').last).adapt_to_cmodel
           end
         end
 
