@@ -984,7 +984,7 @@ module Bplmodels
       doc['ocr_tiv'] = self.plainText.content.squish if self.plainText.present?
       if self.scanData.present?
         scan_data_xml = Nokogiri::XML(self.scanData.content)
-        doc['text_direction_ssi'] = scan_data_xml.xpath("//globalHandedness/page-progression").first.text
+        doc['text_direction_ssi'] = scan_data_xml.xpath("//globalHandedness/page-progression").first.text if scan_data_xml.xpath("//globalHandedness/page-progression").first.present?
       end
 
       #Handle the case of multiple volumes...
