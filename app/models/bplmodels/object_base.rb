@@ -105,14 +105,15 @@ module Bplmodels
       end
 
       #FIXME: What if this is interuppted? Need to do this better...
-      if self.class.name == "Bplmodels::Volume"
+      #Broken so no match for now
+      if self.class.name == "Bplmodels::Volume2"
         next_object = nil
         previous_object = nil
         #volume_object = Bplmodels::Finder.getVolumeObjects(self.pid)
         self.relationships.each_statement do |statement|
           puts statement.predicate
           if statement.predicate == "http://projecthydra.org/ns/relations#isPrecedingVolumeOf"
-            next_object = ActiveFedora::Base.find(statement.object..to_s.split('/').last).adapt_to_cmodel
+            next_object = ActiveFedora::Base.find(statement.object.to_s.split('/').last).adapt_to_cmodel
           elsif statement.predicate == "http://projecthydra.org/ns/relations#isFollowingVolumeOf"
             previous_object = ActiveFedora::Base.find(statement.object.to_s.split('/').last).adapt_to_cmodel
           end
