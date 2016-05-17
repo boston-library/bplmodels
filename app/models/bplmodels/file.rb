@@ -145,8 +145,6 @@ module Bplmodels
               self.accessMaster.content = jp2_img.to_blob
               self.accessMaster.mimeType = 'image/jp2'
               jp2_img.destroy!
-              self.save
-              raise error
             else
               raise error
             end
@@ -157,9 +155,13 @@ module Bplmodels
           self.thumbnail300.dsLabel = self.productionMaster.label
           self.access800.dsLabel = self.productionMaster.label
         when 'image/jpeg' #FIXME
+=begin
           jp2_img = MiniMagick::Image.read(self.productionMaster.content) do |b|
             b.format "jp2"
           end
+=end
+          jp2_img = MiniMagick::Image.read(self.productionMaster.content)
+          jp2_img.format 'jp2'
 
           self.accessMaster.content = jp2_img.to_blob
           self.accessMaster.mimeType = 'image/jp2'
