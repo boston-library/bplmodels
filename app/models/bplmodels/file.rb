@@ -135,13 +135,18 @@ module Bplmodels
           rescue => error
             # First one is from Blue Books collection. Second one is from commonwealth:xd07m887b
             if error.message.include?('compressed TIFF files') || error.message.include?("The number of colours associated with the colour space specified using")
+=begin
               jp2_img = MiniMagick::Image.read(self.productionMaster.content) do |b|
                 b.format "jp2"
               end
-
+=end
+              jp2_img = MiniMagick::Image.read(self.productionMaster.content)
+              jp2_img.format 'jp2'
               self.accessMaster.content = jp2_img.to_blob
               self.accessMaster.mimeType = 'image/jp2'
               jp2_img.destroy!
+              self.save
+              raise error
             else
               raise error
             end
