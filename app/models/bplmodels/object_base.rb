@@ -1175,8 +1175,18 @@ module Bplmodels
       elsif production_master[:file_name].include?('.mp3')
         self.descMetadata.insert_media_type('audio/mpeg')
         inserted_obj = self.insert_new_audio_file(files_hash, institution_pid)
+      elsif production_master[:file_name].include?('.wav')
+        self.descMetadata.insert_media_type('audio/x-wav')
+        inserted_obj = self.insert_new_audio_file(files_hash, institution_pid)
+      elsif production_master[:file_name].include?('.aif')
+        self.descMetadata.insert_media_type('audio/x-aiff')
+        inserted_obj = self.insert_new_audio_file(files_hash, institution_pid)
       elsif production_master[:file_name].include?('.pdf')
         self.descMetadata.insert_media_type('application/pdf')
+        ocr_preproduction_master = files_hash.select{ |hash| hash[:datastream] == 'preProductionNegativeMaster' }.first
+        if ocr_preproduction_master.present?
+          self.descMetadata.insert_media_type('application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+        end
         inserted_obj = self.insert_new_document_file(files_hash, institution_pid,set_exemplary)
       elsif production_master[:file_name].include?('.epub')
         self.descMetadata.insert_media_type('application/epub+zip')
@@ -1235,7 +1245,8 @@ module Bplmodels
         elsif file[:file_name].split('.').last.downcase == 'jp2'
           image_file.send(datastream).mimeType = 'image/jp2'
         else
-          image_file.send(datastream).mimeType = 'image/jpeg'
+          #image_file.send(datastream).mimeType = 'image/jpeg'
+          raise "Could not find a mimeType for #{file[:file_name].split('.').last.downcase}"
         end
 
         image_file.send(datastream).dsLabel = file[:file_name].gsub('.tif', '').gsub('.jpg', '').gsub('.jpeg', '').gsub('.jp2', '')
@@ -1342,55 +1353,67 @@ module Bplmodels
       epub_file
     end
 
-    #FIXME: NOT UPDATED!
-    def insert_new_audio_file(audio_file, institution_pid)
-      raise 'audio file missing!' if audio_file.blank?
+    def insert_new_audio_file(files_hash, institution_pid, set_exemplary=false)
+      production_master = files_hash.select{ |hash| hash[:datastream] == 'productionMaster' }.first
+      audio_file = Bplmodels::AudioFile.mint(:parent_pid=>self.pid, :local_id=>production_master[:file_name], :local_id_type=>'File Name', :label=>production_master[:file_name], :institution_pid=>institution_pid)
 
-      uri_file_part = audio_file
-      #Fix common url errors
-      if uri_file_part.match(/^http/)
-        #uri_file_part = uri_file_part.gsub(' ', '%20')
-        uri_file_part = URI::escape(uri_file_part)
+      if audio_file.is_a?(String)
+        #Bplmodels::ImageFile.find(last_image_file).delete
+        #last_image_file = Bplmodels::ImageFile.mint(:parent_pid=>self.pid, :local_id=>final_file_name, :local_id_type=>'File Name', :label=>final_file_name, :institution_pid=>institution_pid)
+        #return true
+        return Bplmodels::AudioFile.find(image_file)
       end
 
-      final_audio_name =  audio_file.gsub('\\', '/').split('/').last
-      current_audio_file = Bplmodels::AudioFile.mint(:parent_pid=>self.pid, :local_id=>final_audio_name, :local_id_type=>'File Name', :label=>final_audio_name, :institution_pid=>institution_pid)
-      if current_audio_file.is_a?(String)
-        Bplmodels::AudioFile.find(current_audio_file).delete
-        current_audio_file = Bplmodels::AudioFile.mint(:parent_pid=>self.pid, :local_id=>final_audio_name, :local_id_type=>'File Name', :label=>final_audio_name, :institution_pid=>institution_pid)
+      files_hash.each_with_index do |file, file_index|
+        datastream = file[:datastream]
+
+
+        audio_file.send(datastream).content = ::File.open(file[:file_path])
+
+        if file[:file_name].split('.').last.downcase == 'mp3'
+          image_file.send(datastream).mimeType = 'audio/mpeg'
+        elsif file[:file_name].split('.').last.downcase == 'wav'
+          image_file.send(datastream).mimeType = 'audio/x-wav'
+        elsif file[:file_name].split('.').last.downcase == 'aif'
+          image_file.send(datastream).mimeType = 'audio/x-aiff'
+        else
+          raise "Could not find a mimeType for #{file[:file_name].split('.').last.downcase}"
+        end
+
+        audio_file.send(datastream).dsLabel = file[:file_name].gsub('.mp3', '').gsub('.wav', '').gsub('.aif', '')
+
+        #FIXME!!!
+        original_file_location = file[:original_file_location]
+        original_file_location ||= file[:file_path]
+        audio_file.workflowMetadata.insert_file_source(original_file_location,file[:file_name],datastream)
+        audio_file.workflowMetadata.item_status.state = "published"
+        audio_file.workflowMetadata.item_status.state_comment = "Added via the ingest image object base method on " + Time.new.year.to_s + "/" + Time.new.month.to_s + "/" + Time.new.day.to_s
+
+
       end
-
-
-      current_audio_file.productionMaster.content = open(uri_file_part)
-      if audio_file.split('.').last.downcase == 'mp3'
-        current_audio_file.productionMaster.mimeType = 'audio/mpeg'
-      else
-        current_audio_file.productionMaster.mimeType = 'audio/mpeg'
-      end
-
 
       other_audio_exist = false
       Bplmodels::AudioFile.find_in_batches('is_audio_of_ssim'=>"info:fedora/#{self.pid}", 'is_preceding_audio_of_ssim'=>'') do |group|
         group.each { |audio|
-          other_audio_exist = true
-          preceding_audio = Bplmodels::AudioFile.find(audio['id'])
-          preceding_audio.add_relationship(:is_preceding_audio_of, "info:fedora/#{current_audio_file.pid}", true)
-          preceding_audio.save
-          current_audio_file.add_relationship(:is_following_audio_of, "info:fedora/#{audio['id']}", true)
+          if other_audio_exist
+            raise 'This object has an error... likely was interupted during a previous ingest so multiple starting files. Pid: ' + self.pid
+          else
+            other_images_exist = true
+            preceding_audio = Bplmodels::AudioFile.find(audio['id'])
+            preceding_audio.add_relationship(:is_preceding_image_of, "info:fedora/#{audio_file.pid}", true)
+            preceding_audio.save
+            audio_file.add_relationship(:is_following_image_of, "info:fedora/#{audio['id']}", true)
+          end
+
         }
       end
 
-      current_audio_file.add_relationship(:is_audio_of, "info:fedora/" + self.pid)
-      current_audio_file.add_relationship(:is_file_of, "info:fedora/" + self.pid)
+      audio_file.add_relationship(:is_audio_of, "info:fedora/" + self.pid)
+      audio_file.add_relationship(:is_file_of, "info:fedora/" + self.pid)
 
-      current_audio_file.workflowMetadata.insert_file_path(audio_file)
-      current_audio_file.workflowMetadata.insert_file_name(final_audio_name)
-      current_audio_file.workflowMetadata.item_status.state = "published"
-      current_audio_file.workflowMetadata.item_status.state_comment = "Added via the ingest audio object base method on " + Time.new.year.to_s + "/" + Time.new.month.to_s + "/" + Time.new.day.to_s
+      audio_file.save
 
-      current_audio_file.save
-
-      current_audio_file
+      audio_file
     end
 
     def insert_new_document_file(files_hash, institution_pid, set_exemplary)
@@ -1422,11 +1445,13 @@ module Bplmodels
 
         if file[:file_name].split('.').last.downcase == 'pdf'
           document_file.send(datastream).mimeType = 'application/pdf'
+        elsif file[:file_name].split('.').last.downcase == 'docx'
+          document_file.send(datastream).mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         else
-          document_file.send(datastream).mimeType = 'application/pdf'
+          raise "Could not find a mimeType for #{file[:file_name].split('.').last.downcase}"
         end
 
-        document_file.send(datastream).dsLabel = file[:file_name].gsub('.pdf', '')
+        document_file.send(datastream).dsLabel = file[:file_name].gsub('.pdf', '').gsub('.docx', '')
 
         #FIXME!!!
         original_file_location = file[:original_file_location]
