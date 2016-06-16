@@ -1163,25 +1163,25 @@ module Bplmodels
 
       production_master = files_hash.select{ |hash| hash[:datastream] == 'productionMaster' }.first
 
-      if production_master[:file_name].include?('.tif')
+      if production_master[:file_name].downcase.include?('.tif')
         self.descMetadata.insert_media_type('image/tiff')
         self.descMetadata.insert_media_type('image/jpeg')
         self.descMetadata.insert_media_type('image/jp2')
         inserted_obj = self.insert_new_image_file(files_hash, institution_pid,set_exemplary)
-      elsif production_master[:file_name].include?('.jp2')
+      elsif production_master[:file_name].downcase.include?('.jp2')
           self.descMetadata.insert_media_type('image/jpeg')
           self.descMetadata.insert_media_type('image/jp2')
           inserted_obj = self.insert_new_image_file(files_hash, institution_pid,set_exemplary)
-      elsif production_master[:file_name].include?('.mp3')
+      elsif production_master[:file_name].downcase.include?('.mp3')
         self.descMetadata.insert_media_type('audio/mpeg')
         inserted_obj = self.insert_new_audio_file(files_hash, institution_pid)
-      elsif production_master[:file_name].include?('.wav')
+      elsif production_master[:file_name].downcase.include?('.wav')
         self.descMetadata.insert_media_type('audio/x-wav')
         inserted_obj = self.insert_new_audio_file(files_hash, institution_pid)
-      elsif production_master[:file_name].include?('.aif')
+      elsif production_master[:file_name].downcase.include?('.aif')
         self.descMetadata.insert_media_type('audio/x-aiff')
         inserted_obj = self.insert_new_audio_file(files_hash, institution_pid)
-      elsif production_master[:file_name].include?('.pdf')
+      elsif production_master[:file_name].downcase.include?('.pdf')
         self.descMetadata.insert_media_type('application/pdf')
         ocr_preproduction_master = files_hash.select{ |hash| hash[:datastream] == 'preProductionNegativeMaster' }.first
 =begin
@@ -1190,13 +1190,13 @@ module Bplmodels
         end
 =end
         inserted_obj = self.insert_new_document_file(files_hash, institution_pid,set_exemplary)
-      elsif production_master[:file_name].include?('.epub')
+      elsif production_master[:file_name].downcase.include?('.epub')
         self.descMetadata.insert_media_type('application/epub+zip')
         inserted_obj = self.insert_new_ereader_file(files_hash, institution_pid)
-      elsif production_master[:file_name].include?('.mobi')
+      elsif production_master[:file_name].downcase.include?('.mobi')
         self.descMetadata.insert_media_type('application/x-mobipocket-ebook')
         inserted_obj = self.insert_new_ereader_file(files_hash, institution_pid)
-      elsif production_master[:file_name].include?('daisy.zip')
+      elsif production_master[:file_name].downcase.include?('daisy.zip')
         self.descMetadata.insert_media_type('application/zip')
         inserted_obj = self.insert_new_ereader_file(files_hash, institution_pid)
       else
@@ -1253,7 +1253,7 @@ module Bplmodels
           raise "Could not find a mimeType for #{file[:file_name].split('.').last.downcase}"
         end
 
-        image_file.send(datastream).dsLabel = file[:file_name].gsub('.tif', '').gsub('.jpg', '').gsub('.jpeg', '').gsub('.jp2', '').gsub('.txt','')
+        image_file.send(datastream).dsLabel = file[:file_name].gsub(/\.(tif|TIF|jpg|JPG|jpeg|JPEG|jp2|JP2|txt|TXT)$/, '')
 
         #FIXME!!!
         original_file_location = file[:original_file_location]
@@ -1328,7 +1328,7 @@ module Bplmodels
           epub_file.send(datastream).mimeType = 'application/epub+zip'
         end
 
-        epub_file.send(datastream).dsLabel = file[:file_name].gsub('.epub', '').gsub('.mobi', '').gsub('.zip', '').gsub('.txt','')
+        epub_file.send(datastream).dsLabel = file[:file_name].gsub(/\.(epub|EPUB|mobi|MOBI|zip|ZIP|txt|TXT)$/, '')
 
         #FIXME!!!
         original_file_location = file[:original_file_location]
@@ -1388,7 +1388,7 @@ module Bplmodels
           raise "Could not find a mimeType for #{file[:file_name].split('.').last.downcase}"
         end
 
-        audio_file.send(datastream).dsLabel = file[:file_name].gsub('.mp3', '').gsub('.wav', '').gsub('.aif', '').gsub('.txt','')
+        audio_file.send(datastream).dsLabel = file[:file_name].gsub(/\.(mp3|MP3|wav|WAV|aif|AIF|txt|TXT)$/, '')
 
         #FIXME!!!
         original_file_location = file[:original_file_location]
@@ -1463,7 +1463,7 @@ module Bplmodels
           raise "Could not find a mimeType for #{file[:file_name].split('.').last.downcase}"
         end
 
-        document_file.send(datastream).dsLabel = file[:file_name].gsub('.pdf', '').gsub('.docx', '').gsub('.doc', '').gsub('.txt','')
+        document_file.send(datastream).dsLabel = file[:file_name].gsub(/\.(pdf|PDF|docx|DOCX|doc|DOC|txt|TXT)$/, '')
 
         #FIXME!!!
         original_file_location = file[:original_file_location]
