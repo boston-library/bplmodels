@@ -795,6 +795,8 @@ module Bplmodels
     end
 
     def self.utf8Encode(value)
+      value = value.force_encoding('UTF-8')
+      value.encode!("UTF-8", 'binary', invalid: :replace, undef: :replace, replace: '') unless if value.valid_encoding?
       return HTMLEntities.new.decode(ActionView::Base.full_sanitizer.sanitize(value.to_s.gsub(/\r?\n?\t/, ' ').gsub(/\r?\n/, ' ').gsub(/<br[\s]*\/>/,' '))).strip
     end
 
