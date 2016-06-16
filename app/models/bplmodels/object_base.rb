@@ -1323,7 +1323,7 @@ module Bplmodels
         elsif file[:file_name].split('.').last.downcase == 'zip'
           epub_file.send(datastream).mimeType = 'application/zip'
         elsif file[:file_name].split('.').last.downcase == 'txt'
-          image_file.send(datastream).mimeType = 'text/plain'
+          epub_file.send(datastream).mimeType = 'text/plain'
         else
           epub_file.send(datastream).mimeType = 'application/epub+zip'
         end
@@ -1377,13 +1377,13 @@ module Bplmodels
         audio_file.send(datastream).content = ::File.open(file[:file_path])
 
         if file[:file_name].split('.').last.downcase == 'mp3'
-          image_file.send(datastream).mimeType = 'audio/mpeg'
+          audio_file.send(datastream).mimeType = 'audio/mpeg'
         elsif file[:file_name].split('.').last.downcase == 'wav'
-          image_file.send(datastream).mimeType = 'audio/x-wav'
+          audio_file.send(datastream).mimeType = 'audio/x-wav'
         elsif file[:file_name].split('.').last.downcase == 'aif'
-          image_file.send(datastream).mimeType = 'audio/x-aiff'
+          audio_file.send(datastream).mimeType = 'audio/x-aiff'
         elsif file[:file_name].split('.').last.downcase == 'txt'
-          image_file.send(datastream).mimeType = 'text/plain'
+          audio_file.send(datastream).mimeType = 'text/plain'
         else
           raise "Could not find a mimeType for #{file[:file_name].split('.').last.downcase}"
         end
@@ -1458,7 +1458,7 @@ module Bplmodels
         elsif file[:file_name].split('.').last.downcase == 'doc'
           document_file.send(datastream).mimeType = 'application/msword'
         elsif file[:file_name].split('.').last.downcase == 'txt'
-          image_file.send(datastream).mimeType = 'text/plain'
+          document_file.send(datastream).mimeType = 'text/plain'
         else
           raise "Could not find a mimeType for #{file[:file_name].split('.').last.downcase}"
         end
