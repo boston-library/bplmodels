@@ -66,6 +66,11 @@ module Bplmodels
         doc['derivative_processsed_ssi'] = 'true'
       end
 
+      if self.ocrMaster.present?
+        doc['ocr_tsiv'] = self.ocrMaster.content.squish
+        doc['has_ocr_text_bsi'] = true
+      end
+
       if self.pageMetadata.present?
         doc['page_type_ssi'] = self.pageMetadata.pageData.page.page_type.first
         doc['hand_side_ssi'] = self.pageMetadata.pageData.page.hand_side.first
@@ -73,11 +78,6 @@ module Bplmodels
         doc['page_num_label_type_ssi'] = self.pageMetadata.pageData.page.page_number.sequence.first if self.pageMetadata.pageData.page.page_number.present?
         #doc['has_ocr_master_ssi'] = self.bookMetadata.book.page_data.page.has_ocrMaster.first
         #doc['has_djvu_json_ssi'] = self.bookMetadata.book.page_data.page.has_djvu.first
-
-        if self.ocrMaster.present?
-          doc['ocr_tsiv'] = self.ocrMaster.content.squish
-          doc['has_ocr_text_ssi'] = 'true'
-        end
 
         if self.djvuCoords.present?
           doc['has_djvu_json_ssi'] = 'true'
