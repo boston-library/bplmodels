@@ -981,8 +981,18 @@ module Bplmodels
       doc['compressed_ocr_ssi'] = ocr_text_squished[0..10000] if ocr_text_squished.present?
 =end
 
+      if self.plainText.present?
+        doc['ocr_tiv'] = self.plainText.content.squish
 
-      doc['ocr_tiv'] = self.plainText.content.squish if self.plainText.present?
+        pages_check = Bplmodels::ImageFile.find_with_conditions("is_image_of_ssim:info\:fedora/#{self.pid.gsub(':', '\:')}", rows: '20', fl: 'id,ocr_tsiv' )
+        pages_check.each do |page_object|
+          if page_object['ocr_tsiv']
+            doc['has_searchable_text_bsi'] = true
+            break
+          end
+        end
+      end
+
       if self.scanData.present?
         scan_data_xml = Nokogiri::XML(self.scanData.content)
         #See http://archive.org/download/handbookforkitch00neel (created in 2009) for a record lacking this
