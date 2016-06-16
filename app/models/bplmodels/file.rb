@@ -76,6 +76,7 @@ module Bplmodels
 
         if self.ocrMaster.present?
           doc['ocr_tsiv'] = self.ocrMaster.content.squish
+          doc['has_ocr_text_ssi'] = 'true'
         end
 
         if self.djvuCoords.present?
