@@ -1,5 +1,6 @@
 #!/bin/env ruby
 # encoding: utf-8
+require 'htmlentities'
 
 module Bplmodels
   class DatastreamInputFuncs
