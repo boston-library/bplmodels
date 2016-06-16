@@ -1455,13 +1455,15 @@ module Bplmodels
           document_file.send(datastream).mimeType = 'application/pdf'
         elsif file[:file_name].split('.').last.downcase == 'docx'
           document_file.send(datastream).mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        elsif file[:file_name].split('.').last.downcase == 'doc'
+          document_file.send(datastream).mimeType = 'application/msword'
         elsif file[:file_name].split('.').last.downcase == 'txt'
           image_file.send(datastream).mimeType = 'text/plain'
         else
           raise "Could not find a mimeType for #{file[:file_name].split('.').last.downcase}"
         end
 
-        document_file.send(datastream).dsLabel = file[:file_name].gsub('.pdf', '').gsub('.docx', '').gsub('.txt','')
+        document_file.send(datastream).dsLabel = file[:file_name].gsub('.pdf', '').gsub('.docx', '').gsub('.doc', '').gsub('.txt','')
 
         #FIXME!!!
         original_file_location = file[:original_file_location]
