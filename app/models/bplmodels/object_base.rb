@@ -1184,9 +1184,11 @@ module Bplmodels
       elsif production_master[:file_name].include?('.pdf')
         self.descMetadata.insert_media_type('application/pdf')
         ocr_preproduction_master = files_hash.select{ |hash| hash[:datastream] == 'preProductionNegativeMaster' }.first
+=begin
         if ocr_preproduction_master.present?
           self.descMetadata.insert_media_type('application/vnd.openxmlformats-officedocument.wordprocessingml.document')
         end
+=end
         inserted_obj = self.insert_new_document_file(files_hash, institution_pid,set_exemplary)
       elsif production_master[:file_name].include?('.epub')
         self.descMetadata.insert_media_type('application/epub+zip')
@@ -1244,12 +1246,14 @@ module Bplmodels
           image_file.send(datastream).mimeType = 'image/jpeg'
         elsif file[:file_name].split('.').last.downcase == 'jp2'
           image_file.send(datastream).mimeType = 'image/jp2'
+        elsif file[:file_name].split('.').last.downcase == 'txt'
+          image_file.send(datastream).mimeType = 'text/plain'
         else
           #image_file.send(datastream).mimeType = 'image/jpeg'
           raise "Could not find a mimeType for #{file[:file_name].split('.').last.downcase}"
         end
 
-        image_file.send(datastream).dsLabel = file[:file_name].gsub('.tif', '').gsub('.jpg', '').gsub('.jpeg', '').gsub('.jp2', '')
+        image_file.send(datastream).dsLabel = file[:file_name].gsub('.tif', '').gsub('.jpg', '').gsub('.jpeg', '').gsub('.jp2', '').gsub('.txt','')
 
         #FIXME!!!
         original_file_location = file[:original_file_location]
@@ -1318,11 +1322,13 @@ module Bplmodels
           epub_file.send(datastream).mimeType = 'application/x-mobipocket-ebook'
         elsif file[:file_name].split('.').last.downcase == 'zip'
           epub_file.send(datastream).mimeType = 'application/zip'
+        elsif file[:file_name].split('.').last.downcase == 'txt'
+          image_file.send(datastream).mimeType = 'text/plain'
         else
           epub_file.send(datastream).mimeType = 'application/epub+zip'
         end
 
-        epub_file.send(datastream).dsLabel = file[:file_name].gsub('.epub', '').gsub('.mobi', '').gsub('.zip', '')
+        epub_file.send(datastream).dsLabel = file[:file_name].gsub('.epub', '').gsub('.mobi', '').gsub('.zip', '').gsub('.txt','')
 
         #FIXME!!!
         original_file_location = file[:original_file_location]
@@ -1376,11 +1382,13 @@ module Bplmodels
           image_file.send(datastream).mimeType = 'audio/x-wav'
         elsif file[:file_name].split('.').last.downcase == 'aif'
           image_file.send(datastream).mimeType = 'audio/x-aiff'
+        elsif file[:file_name].split('.').last.downcase == 'txt'
+          image_file.send(datastream).mimeType = 'text/plain'
         else
           raise "Could not find a mimeType for #{file[:file_name].split('.').last.downcase}"
         end
 
-        audio_file.send(datastream).dsLabel = file[:file_name].gsub('.mp3', '').gsub('.wav', '').gsub('.aif', '')
+        audio_file.send(datastream).dsLabel = file[:file_name].gsub('.mp3', '').gsub('.wav', '').gsub('.aif', '').gsub('.txt','')
 
         #FIXME!!!
         original_file_location = file[:original_file_location]
@@ -1447,11 +1455,13 @@ module Bplmodels
           document_file.send(datastream).mimeType = 'application/pdf'
         elsif file[:file_name].split('.').last.downcase == 'docx'
           document_file.send(datastream).mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        elsif file[:file_name].split('.').last.downcase == 'txt'
+          image_file.send(datastream).mimeType = 'text/plain'
         else
           raise "Could not find a mimeType for #{file[:file_name].split('.').last.downcase}"
         end
 
-        document_file.send(datastream).dsLabel = file[:file_name].gsub('.pdf', '').gsub('.docx', '')
+        document_file.send(datastream).dsLabel = file[:file_name].gsub('.pdf', '').gsub('.docx', '').gsub('.txt','')
 
         #FIXME!!!
         original_file_location = file[:original_file_location]
