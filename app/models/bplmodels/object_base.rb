@@ -880,6 +880,7 @@ module Bplmodels
       doc['note_ownership_tsim'] = []
       doc['note_citation_tsim'] = []
       doc['note_reference_tsim'] = []
+      doc['note_physical_tsim'] = []
 
       0.upto self.descMetadata.note.length-1 do |index|
         if self.descMetadata.note(index).type_at.first == 'statement of responsibility'
@@ -901,11 +902,10 @@ module Bplmodels
         end
       end
 
-
       0.upto self.descMetadata.physical_description.length-1 do |physical_index|
         0.upto self.descMetadata.physical_description(physical_index).note.length-1 do |note_index|
           if self.descMetadata.physical_description(physical_index).note(note_index).first != nil
-            doc['note_tsim'].append(self.descMetadata.physical_description(physical_index).note(note_index).first)
+            doc['note_physical_tsim'].append(self.descMetadata.physical_description(physical_index).note(note_index).first)
           end
         end
       end
