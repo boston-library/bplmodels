@@ -67,7 +67,7 @@ module Bplmodels
       end
 
       if self.ocrMaster.present?
-        doc['ocr_tsiv'] = self.ocrMaster.content.squish
+        doc['ocr_tsiv'] = Bplmodels::DatastreamInputFuncs.strip_value(self.ocrMaster.content.squish)
         doc['has_ocr_text_bsi'] = true
       end
 
