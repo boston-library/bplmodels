@@ -510,7 +510,7 @@ module Bplmodels
             doc['name_personal_tsim'].append(self.descMetadata.mods(0).name(index).namePart[0])
           end
           if self.descMetadata.mods(0).name(index).role.length > 1
-            doc['name_personal_role_tsim'].append(self.descMetadata.mods(0).name(0).role.join('||').gsub(/[\n]\s*/,''))
+            doc['name_personal_role_tsim'].append(self.descMetadata.mods(0).name(index).role.join('||').gsub(/[\n]\s*/,''))
           else
             doc['name_personal_role_tsim'].append(self.descMetadata.mods(0).name(index).role.text[0])
           end
@@ -525,7 +525,7 @@ module Bplmodels
             doc['name_corporate_tsim'].append(corporate_name)
           end
           if self.descMetadata.mods(0).name(index).role.length > 1
-            doc['name_corporate_role_tsim'].append(self.descMetadata.mods(0).name(0).role.join('||').gsub(/[\n]\s*/,''))
+            doc['name_corporate_role_tsim'].append(self.descMetadata.mods(0).name(index).role.join('||').gsub(/[\n]\s*/,''))
           else
             doc['name_corporate_role_tsim'].append(self.descMetadata.mods(0).name(index).role.text[0])
           end
@@ -537,7 +537,7 @@ module Bplmodels
             doc['name_generic_tsim'].append(self.descMetadata.mods(0).name(index).namePart[0])
           end
           if self.descMetadata.mods(0).name(index).role.length > 1
-            doc['name_generic_role_tsim'].append(self.descMetadata.mods(0).name(0).role.join('||').gsub(/[\n]\s*/,''))
+            doc['name_generic_role_tsim'].append(self.descMetadata.mods(0).name(index).role.join('||').gsub(/[\n]\s*/,''))
           else
             doc['name_generic_role_tsim'].append(self.descMetadata.mods(0).name(index).role.text[0])
           end
