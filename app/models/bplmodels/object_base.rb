@@ -984,13 +984,8 @@ module Bplmodels
       if self.plainText.present?
         doc['ocr_tiv'] = self.plainText.content.squish
 
-        pages_check = Bplmodels::ImageFile.find_with_conditions("is_image_of_ssim:info\\:fedora/#{self.pid.gsub(':', '\\:')}", rows: '20', fl: 'id,has_ocr_text_bsi' )
-        pages_check.each do |page_object|
-          if page_object['has_ocr_text_bsi'].present?
-            doc['has_searchable_text_bsi'] = true
-            break
-          end
-        end
+        pages_ocr_check = Bplmodels::ImageFile.find_with_conditions({"is_image_of_ssim"=>"info:fedora/#{self.pid}","has_ocr_text_bsi"=>"true"}, rows: '1', fl: 'id,has_ocr_text_bsi' )
+        doc['has_searchable_text_bsi'] = true if pages_ocr_check.present?
       end
 
       if self.scanData.present?
