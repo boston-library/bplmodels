@@ -8,7 +8,7 @@ module Bplmodels
 
     belongs_to :institutions, :class_name => 'Bplmodels::Institution', :property => :is_member_of
 
-    has_many :exemplary_image, :class_name => "ActiveFedora::Base", :property=> :is_exemplary_image_of
+    #has_many :exemplary_image, :class_name => "ActiveFedora::Base", :property=> :is_exemplary_image_of
 
     # Uses the Hydra modsCollection profile for collection list
     #has_metadata :name => "members", :type => Hydra::ModsCollectionMembers
@@ -82,9 +82,15 @@ module Bplmodels
         doc['institution_pid_ssi'] = self.institutions.pid
       end
 
+      exemplary_check = Bplmodels::ImageFile.find_with_conditions({"is_exemplary_image_of_ssim"=>"info:fedora/#{self.pid}"}, rows: '1', fl: 'id' )
+      if exemplary_check.present?
+        doc['exemplary_image_ssi'] = exemplary_check.first["id"]
+      end
+=begin
       if self.exemplary_image.first != nil
         doc['exemplary_image_ssi'] = self.exemplary_image.first.pid
       end
+=end
 
       doc
 

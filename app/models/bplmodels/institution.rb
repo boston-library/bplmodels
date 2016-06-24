@@ -29,6 +29,54 @@ module Bplmodels
       'institution'
     end
 
+    def new_examplary_image(file_path, file_name)
+
+      #Delete any old images
+      ActiveFedora::Base.find_in_batches('is_exemplary_image_of_ssim'=>"info:fedora/#{self.pid}") do |group|
+        group.each { |image_solr|
+            current_image_file = ActiveFedora::Base.find(image_solr['id']).adapt_to_cmodel
+            current_image_file.delete
+        }
+      end
+
+
+      image_file = Bplmodels::ImageFile.mint(:parent_pid=>self.pid, :local_id=>file_name, :local_id_type=>'File Name', :label=>file_name, :institution_pid=>self.pid)
+
+      datastream = 'productionMaster'
+      image_file.send(datastream).content = ::File.open(file_path)
+
+      if file_name.split('.').last.downcase == 'tif'
+        image_file.send(datastream).mimeType = 'image/tiff'
+      elsif file_name.split('.').last.downcase == 'jpg'
+        image_file.send(datastream).mimeType = 'image/jpeg'
+      elsif file_name.split('.').last.downcase == 'jp2'
+        image_file.send(datastream).mimeType = 'image/jp2'
+      elsif file_name.split('.').last.downcase == 'png'
+        image_file.send(datastream).mimeType = 'image/png'
+      elsif file_name.split('.').last.downcase == 'txt'
+        image_file.send(datastream).mimeType = 'text/plain'
+      else
+        #image_file.send(datastream).mimeType = 'image/jpeg'
+        raise "Could not find a mimeType for #{file_name.split('.').last.downcase}"
+      end
+
+      image_file.send(datastream).dsLabel = file_name.gsub(/\.(tif|TIF|jpg|JPG|jpeg|JPEG|jp2|JP2|png|PNG|txt|TXT)$/, '')
+
+      #FIXME!!!
+      original_file_location = "Uploaded file of #{file_path}"
+      image_file.workflowMetadata.insert_file_source(original_file_location,file_name,datastream)
+      image_file.workflowMetadata.item_status.state = "published"
+      image_file.workflowMetadata.item_status.state_comment = "Added via the institution admin form using Bplmodels new_exemplary_image method on " + Time.new.year.to_s + "/" + Time.new.month.to_s + "/" + Time.new.day.to_s
+
+      image_file.add_relationship(:is_image_of, "info:fedora/" + self.pid)
+      image_file.add_relationship(:is_file_of, "info:fedora/" + self.pid)
+      image_file.add_relationship(:is_exemplary_image_of, "info:fedora/" + self.pid)
+
+
+      image_file.save
+      image_file
+    end
+
     def to_solr(doc = {} )
       doc = super(doc)
 
@@ -132,6 +180,11 @@ module Bplmodels
       institution_name = self.descMetadata.mods(0).title.first
       doc['physical_location_ssim'] = institution_name
       doc['physical_location_tsim'] = institution_name
+
+      exemplary_check = Bplmodels::ImageFile.find_with_conditions({"is_exemplary_image_of_ssim"=>"info:fedora/#{self.pid}"}, rows: '1', fl: 'id' )
+      if exemplary_check.present?
+        doc['exemplary_image_ssi'] = exemplary_check.first["id"]
+      end
 
 
       doc

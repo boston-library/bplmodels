@@ -1177,6 +1177,11 @@ module Bplmodels
           self.descMetadata.insert_media_type('image/jpeg')
           self.descMetadata.insert_media_type('image/jp2')
           inserted_obj = self.insert_new_image_file(files_hash, institution_pid,set_exemplary)
+      elsif production_master[:file_name].downcase.include?('.png')
+        self.descMetadata.insert_media_type('image/png')
+        self.descMetadata.insert_media_type('image/jpeg')
+        self.descMetadata.insert_media_type('image/jp2')
+        inserted_obj = self.insert_new_image_file(files_hash, institution_pid,set_exemplary)
       elsif production_master[:file_name].downcase.include?('.mp3')
         self.descMetadata.insert_media_type('audio/mpeg')
         inserted_obj = self.insert_new_audio_file(files_hash, institution_pid)
@@ -1251,6 +1256,8 @@ module Bplmodels
           image_file.send(datastream).mimeType = 'image/jpeg'
         elsif file[:file_name].split('.').last.downcase == 'jp2'
           image_file.send(datastream).mimeType = 'image/jp2'
+        elsif file[:file_name].split('.').last.downcase == 'png'
+          image_file.send(datastream).mimeType = 'image/png'
         elsif file[:file_name].split('.').last.downcase == 'txt'
           image_file.send(datastream).mimeType = 'text/plain'
         else
@@ -1258,7 +1265,7 @@ module Bplmodels
           raise "Could not find a mimeType for #{file[:file_name].split('.').last.downcase}"
         end
 
-        image_file.send(datastream).dsLabel = file[:file_name].gsub(/\.(tif|TIF|jpg|JPG|jpeg|JPEG|jp2|JP2|txt|TXT)$/, '')
+        image_file.send(datastream).dsLabel = file[:file_name].gsub(/\.(tif|TIF|jpg|JPG|jpeg|JPEG|jp2|JP2|png|PNG|txt|TXT)$/, '')
 
         #FIXME!!!
         original_file_location = file[:original_file_location]
