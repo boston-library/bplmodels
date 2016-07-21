@@ -1077,8 +1077,11 @@ module Bplmodels
 
       object = self.new(:pid=>as_json["pid"])
 
-      object.add_relationship(:is_member_of_collection, "info:fedora/" + args[:parent_pid])
-      object.add_relationship(:administrative_set, "info:fedora/" + args[:parent_pid])
+      collect_pid = args[:collection_pid]
+      collect_pid ||= args[:parent_pid]
+
+      object.add_relationship(:is_member_of_collection, "info:fedora/" + collect_pid)
+      object.add_relationship(:administrative_set, "info:fedora/" + collect_pid)
 
       args[:secondary_parent_pids].each do |other_collection_pid|
         object.add_relationship(:is_member_of_collection, "info:fedora/" + other_collection_pid)
