@@ -59,8 +59,8 @@ module Bplmodels
           basic_genre_array += object_id['genre_basic_ssim'] if object_id['genre_basic_ssim'].present?
         }
       end
-      doc['genre_basic_ssim'] = basic_genre_array.uniq!
-      doc['genre_basic_tsim'] = basic_genre_array.uniq!
+      doc['genre_basic_ssim'] = basic_genre_array.uniq
+      doc['genre_basic_tsim'] = basic_genre_array.uniq
 
       # description
       doc['abstract_tsim'] = self.descMetadata.abstract
