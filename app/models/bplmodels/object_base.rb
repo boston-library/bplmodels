@@ -1030,7 +1030,7 @@ module Bplmodels
       else
         doc['destination_site_ssim'] = ['commonwealth']
         if doc['institution_name_ssim'].present? and doc['institution_name_ssim'].include?('Boston Public Library')
-          doc['destination_site_ssim'] << 'bpldc'
+          doc['destination_site_ssim'] << 'bpl'
         end
       end
 
