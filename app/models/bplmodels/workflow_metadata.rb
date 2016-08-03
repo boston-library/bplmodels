@@ -20,6 +20,7 @@ module Bplmodels
         t.state_comment(:path=>"stateComment")
         t.processing(:path=>"processing")
         t.processing_comment(:path=>"processingComment")
+        t.harvestable(:path=>"harvestable") #just added
       }
 
       t.item_source(:path=>"itemSource") {
@@ -52,6 +53,10 @@ module Bplmodels
       t.volume_match_md5s(:path=>'volumeMatchMD5s') {
         t.marc(:path=>'marc')
         t.iaMeta(:path=>'iaMeta')
+      }
+
+      t.destination(:path=>'destination') {
+        t.site(:path=>'site')
       }
 
     end
@@ -91,6 +96,11 @@ module Bplmodels
       self.source(source_count).ingest_datastream(0, datastream) unless datastream.blank?
     end
 
+    def insert_destination(destination=nil)
+      site_index = self.destination(0).site.count
+      self.destination(0).site(site_index, destination) unless destination.blank?
+    end
+
     def insert_flagged(value=nil)
       self.item_designations(0).flagged_for_content(0, value) unless value.blank?
     end
@@ -100,6 +110,10 @@ module Bplmodels
       self.item_status(0).state_comment = "OAI Harvested Record"
       self.item_status(0).processing = "complete"
       self.item_status(0).processing_comment = "Object Processing Complete"
+    end
+
+    def insert_harvesting_status(harvesting)
+      self.item_status(0).harvestable = harvesting
     end
   end
 end

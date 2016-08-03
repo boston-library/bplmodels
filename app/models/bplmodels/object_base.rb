@@ -1024,6 +1024,28 @@ module Bplmodels
         end
       end
 
+      if self.workflowMetadata.destination.present?
+        doc['destination_site_ssim'] = self.workflowMetadata.destination.site
+      #default to commonwealth and add in bpldc if bpl collection
+      else
+        doc['destination_site_ssim'] = ['commonwealth']
+        if doc['institution_name_ssim'].present? and doc['institution_name_ssim'].include?('Boston Public Library')
+          doc['destination_site_ssim'] << 'bpldc'
+        end
+      end
+
+      if self.workflowMetadata.item_status.harvestable.present?
+        if self.workflowMetadata.item_status.harvestable[0] == 'false' || self.workflowMetadata.item_status.harvestable[0] == 'False' || self.workflowMetadata.item_status.harvestable[0] == false
+          doc['harvesting_status_bsi'] = false
+          self.remove_oai_relationships
+        else
+          doc['harvesting_status_bsi'] = true
+        end
+      #default to true
+      else
+        doc['harvesting_status_bsi'] = true
+      end
+
 
       #doc['all_text_timv'] = [self.descMetadata.abstract, main_title, self.rels_ext.model.class.to_s.gsub(/\A[\w]*::/,''),self.descMetadata.item_location(0).physical_location[0]]
 
