@@ -186,6 +186,9 @@ module Bplmodels
         doc['exemplary_image_ssi'] = exemplary_check.first["id"]
       end
 
+      doc['ingest_origin_ssim'] = self.workflowMetadata.item_source.ingest_origin if self.workflowMetadata.item_source.ingest_origin.present?
+      doc['ingest_path_ssim'] = self.workflowMetadata.item_source.ingest_filepath if self.workflowMetadata.item_source.ingest_filepath.present?
+
 
       doc
 
