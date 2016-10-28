@@ -108,7 +108,7 @@ module Bplmodels
     def insert_oai_defaults
       self.item_status(0).state = "published"
       self.item_status(0).state_comment = "OAI Harvested Record"
-      self.item_status(0).processing = "complete"
+      self.item_status(0).processing = "complete" #STEVEN: FIXME
       self.item_status(0).processing_comment = "Object Processing Complete"
     end
 

@@ -57,8 +57,20 @@ module Bplmodels
 
       if self.workflowMetadata
         doc['workflow_state_ssi'] = self.workflowMetadata.item_status.state
+
+        if self.workflowMetadata.destination.present?
+          doc['destination_site_ssim'] = self.workflowMetadata.destination.site
+        end
+
+        if self.workflowMetadata.item_status.harvestable.present?
+          if self.workflowMetadata.item_status.harvestable[0] == 'false' || self.workflowMetadata.item_status.harvestable[0] == 'False' || self.workflowMetadata.item_status.harvestable[0] == false
+            doc['harvesting_status_bsi'] = false
+          else
+            doc['harvesting_status_bsi'] = true
+          end
+        end
       end
-      puts self.pid
+
       doc
     end
 

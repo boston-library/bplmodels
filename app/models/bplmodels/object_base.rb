@@ -348,7 +348,7 @@ module Bplmodels
         # yearly faceting
         (1100..2020).step(1) do |index|
           if (date_facet_start >= index && date_facet_start < index+1) || (date_facet_end != -1 && index > date_facet_start && date_facet_end >= index)
-            doc['date_facet_yearly_ssim'].append(index.to_s + 's')
+            doc['date_facet_yearly_ssim'].append(index.to_s)
           end
         end
 
@@ -460,7 +460,7 @@ module Bplmodels
           else
             doc['related_item_' + related_item_type + '_tsim'] ||= []
             doc['related_item_' + related_item_type + '_ssim'] ||= []
-            related_title_prefix = self.descMetadata.mods(0).related_item(index).title_info.nonSort[0] ? self.descMetadata.mods(0).related_item(index).title_info.nonSort[0] + ' ' : ''
+            related_title_prefix = self.descMetadata.mods(0).related_item(index).title_info.nonSort[0].presence || ''
             doc['related_item_' + related_item_type + '_tsim'].append(related_title_prefix + self.descMetadata.mods(0).related_item(index).title_info.title[0])
             doc['related_item_' + related_item_type + '_ssim'].append(related_title_prefix + self.descMetadata.mods(0).related_item(index).title_info.title[0])
           end
@@ -472,7 +472,7 @@ module Bplmodels
         doc['related_item_subseries_tsim'] ||= []
         doc['related_item_subseries_ssim'] ||= []
         (0..self.descMetadata.mods(0).related_item.subseries.length-1).each do |index|
-          subseries_prefix = self.descMetadata.mods(0).related_item.subseries(index).title_info.nonSort[0] ? self.descMetadata.mods(0).related_item.subseries(index).title_info.nonSort[0] + ' ' : ''
+          subseries_prefix = self.descMetadata.mods(0).related_item.subseries(index).title_info.nonSort[0].presence || ''
           subseries_value = subseries_prefix + self.descMetadata.mods(0).related_item.subseries(index).title_info.title[0]
           doc['related_item_subseries_tsim'].append(subseries_value)
           doc['related_item_subseries_ssim'].append(subseries_value)
@@ -484,7 +484,7 @@ module Bplmodels
         doc['related_item_subsubseries_tsim'] ||= []
         doc['related_item_subsubseries_ssim'] ||= []
         (0..self.descMetadata.mods(0).related_item.subseries.subsubseries.length-1).each do |index|
-          subsubseries_prefix = self.descMetadata.mods(0).related_item.subseries.subsubseries(index).title_info.nonSort[0] ? self.descMetadata.mods(0).related_item.subseries.subsubseries(index).title_info.nonSort[0] + ' ' : ''
+          subsubseries_prefix = self.descMetadata.mods(0).related_item.subseries.subsubseries(index).title_info.nonSort[0].presence || ''
           subsubseries_value = subsubseries_prefix + self.descMetadata.mods(0).related_item.subseries.subsubseries(index).title_info.title[0]
           doc['related_item_subsubseries_tsim'].append(subsubseries_value)
           doc['related_item_subsubseries_ssim'].append(subsubseries_value)
@@ -915,7 +915,7 @@ module Bplmodels
       doc['title_info_primary_trans_tsim'] = []
       doc['title_info_translated_tsim'] = []
       self.descMetadata.mods(0).title.each_with_index do |title_value,index|
-        title_prefix = self.descMetadata.mods(0).title_info(index).nonSort[0] ? self.descMetadata.mods(0).title_info(index).nonSort[0] + ' ' : '' # shouldn't be adding space; see Trac ticket #101
+        title_prefix = self.descMetadata.mods(0).title_info(index).nonSort[0].presence || ''
         if self.descMetadata.mods(0).title_info(index).usage[0] == 'primary'
           if self.descMetadata.mods(0).title_info(index).type[0] == 'translated'
             if self.descMetadata.mods(0).title_info(index).display_label[0] == 'primary_display'
