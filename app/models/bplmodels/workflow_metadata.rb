@@ -98,7 +98,7 @@ module Bplmodels
 
     def insert_destination(destination=nil)
       site_index = self.destination(0).site.count
-      self.destination(0).site(site_index, destination) unless destination.blank?
+      self.destination(0).site(site_index, destination) unless destination.blank? || self.destination(0).site.include?(destination)
     end
 
     def insert_flagged(value=nil)
