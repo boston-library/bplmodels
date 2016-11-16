@@ -86,6 +86,11 @@ module Bplmodels
       self.remove_relationship(:oai_item_id, "oai:digitalcommonwealth.org:" + self.pid, true)
     end
 
+    def insert_harvesting_status(value)
+      self.workflowMetadata.insert_harvesting_status(value)
+      self.add_oai_relationships if value == 'true'
+    end
+
     #alias :limited_delete :delete
 
 =begin
@@ -1108,8 +1113,6 @@ module Bplmodels
       args[:secondary_parent_pids].each do |other_collection_pid|
         object.add_relationship(:is_member_of_collection, "info:fedora/" + other_collection_pid)
       end
-
-      object.add_oai_relationships
 
       object.label = args[:label] if args[:label].present?
 

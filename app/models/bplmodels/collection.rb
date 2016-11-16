@@ -45,6 +45,11 @@ module Bplmodels
       self.add_relationship(:oai_set_name, self.label.gsub(' & ', ' &amp; '), true)
     end
 
+    def insert_harvesting_status(value)
+      self.workflowMetadata.insert_harvesting_status(value)
+      self.add_oai_relationships if value == 'true'
+    end
+
     def fedora_name
       'collection'
     end
@@ -129,8 +134,6 @@ module Bplmodels
       object.add_relationship(:is_member_of, "info:fedora/" + args[:parent_pid])
       uri = ARK_CONFIG_GLOBAL['url'] + '/ark:/'+ as_json["namespace_ark"] + '/' +  as_json["noid"]
       object.descMetadata.insert_access_links(nil, uri)
-
-      object.add_oai_relationships
 
       object.read_groups = ["public"]
       object.edit_groups = ["superuser", "admin[#{args[:parent_pid]}]"]
