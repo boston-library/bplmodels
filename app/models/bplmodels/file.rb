@@ -8,6 +8,8 @@ module Bplmodels
     include ActiveFedora::Auditable
     include Hydra::Derivatives
 
+    has_file_datastream 'geoEncodedMaster', versionable: false, label: 'geoEncodedMaster datastream'
+
     has_file_datastream 'preProductionNegativeMaster', versionable: true, label: 'preProductionNegativeMaster datastream'
 
     has_file_datastream 'productionMaster', versionable: true, label: 'productionMaster datastream', type: FileContentDatastream
