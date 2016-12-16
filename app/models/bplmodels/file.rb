@@ -10,6 +10,8 @@ module Bplmodels
 
     has_file_datastream 'geoEncodedMaster', versionable: false, label: 'geoEncodedMaster datastream'
 
+    has_file_datastream 'geoRectifiedMaster', versionable: false, label: 'geoRectifiedMaster datastream'
+
     has_file_datastream 'preProductionNegativeMaster', versionable: true, label: 'preProductionNegativeMaster datastream'
 
     has_file_datastream 'productionMaster', versionable: true, label: 'productionMaster datastream', type: FileContentDatastream
