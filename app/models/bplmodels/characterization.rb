@@ -49,7 +49,13 @@ module Bplmodels
     def characterize
       self.characterization.ng_xml = self.productionMaster.extract_metadata
       self.append_metadata
-      self.filename = self.label
+
+      if self.label.class == Array
+        self.filename = self.label
+      else
+        self.filename = [self.label]
+      end
+
       save
     end
 
