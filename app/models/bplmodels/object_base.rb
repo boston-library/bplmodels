@@ -1000,8 +1000,6 @@ module Bplmodels
         #See http://archive.org/download/handbookforkitch00neel (created in 2009) for a record lacking this
         doc['text_direction_ssi'] = scan_data_xml.xpath("//globalHandedness/page-progression").first.text if scan_data_xml.xpath("//globalHandedness/page-progression").first.present?
       end
-      
-      doc['georeferenced_bsi'] = true if self.georectifiedMaster.present?
 
       #Handle the case of multiple volumes...
       if self.class.name == 'Bplmodels::Book'

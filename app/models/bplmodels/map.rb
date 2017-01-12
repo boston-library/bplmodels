@@ -24,6 +24,13 @@ module Bplmodels
     def to_solr(doc = {} )
       doc = super(doc)
       doc['active_fedora_model_ssi'] = self.class.name
+
+      doc['georeferenced_bsi'] = false
+      Bplmodels::Finder.getImageFiles('bpl-test:zs25x8895').each do |image_file|
+        georect_result = image_file.select { |field| field == 'georeferenced_bsi' }
+        doc['georeferenced_bsi'] = true if georect_result.present? and (georect_result['georeferenced_bsi'] == true || georect_result['georeferenced_bsi'] = "true")
+      end
+
       doc
     end
 
