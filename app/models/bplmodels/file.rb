@@ -88,7 +88,7 @@ module Bplmodels
         end
       end
 
-      doc['georeferenced_bsi'] = true if self.georectifiedMaster.present?
+      doc['georeferenced_bsi'] = self.georectifiedMaster.present?
 
       doc['checksum_file_md5_ssi'] = self.productionMaster.checksum
 
