@@ -136,22 +136,14 @@ module Bplmodels
           #transform_datastream :productionMaster, { :mp3 => {format: 'mp3'}, :ogg => {format: 'ogg'} }, processor: :audio
         when 'video/avi'
           #transform_datastream :productionMaster, { :mp4 => {format: 'mp4'}, :webm => {format: 'webm'} }, processor: :video
-        when 'image/tiff', 'image/png', 'image/jpg', 'image/png'
+        when 'image/tiff'
           begin
             transform_datastream :productionMaster, { :testJP2k => { recipe: :default, datastream: 'accessMaster'  } }, processor: 'jpeg2k_image'
           rescue => error
             # First one is from Blue Books collection. Second one is from commonwealth:xd07m887b
             if error.message.include?('compressed TIFF files') || error.message.include?("The number of colours associated with the colour space specified using")
-=begin
-              jp2_img = MiniMagick::Image.read(self.productionMaster.content) do |b|
-                b.format "jp2"
-              end
-=end
-              jp2_img = MiniMagick::Image.read(self.productionMaster.content)
-              jp2_img.format 'jp2'
-              self.accessMaster.content = jp2_img.to_blob
-              self.accessMaster.mimeType = 'image/jp2'
-              jp2_img.destroy!
+
+             self.manually_generate_jp2
             else
               raise error
             end
@@ -161,18 +153,8 @@ module Bplmodels
           self.accessMaster.dsLabel = self.productionMaster.label
           self.thumbnail300.dsLabel = self.productionMaster.label
           self.access800.dsLabel = self.productionMaster.label
-        when 'image/jpeg' #FIXME
-=begin
-          jp2_img = MiniMagick::Image.read(self.productionMaster.content) do |b|
-            b.format "jp2"
-          end
-=end
-          jp2_img = MiniMagick::Image.read(self.productionMaster.content)
-          jp2_img.format 'jp2'
-
-          self.accessMaster.content = jp2_img.to_blob
-          self.accessMaster.mimeType = 'image/jp2'
-          jp2_img.destroy!
+        when 'image/jpeg', 'image/png', 'image/jpg'
+          self.manually_generate_jp2
 
           transform_datastream :productionMaster, { :thumb => {size: "300x300>", datastream: 'thumbnail300', format: 'jpg'} }
           transform_datastream :productionMaster, { :thumb => {size: "x800>", datastream: 'access800', format: 'jpg'} }
@@ -218,6 +200,21 @@ module Bplmodels
 
       end
 
+    end
+
+    def manually_generate_jp2
+=begin  # This bit of code used to work then stopped in a later MiniMagick release (despite such an example remaining in their documentation).
+        # Leaving it here as a warning and a reminder.
+        jp2_img = MiniMagick::Image.read(self.productionMaster.content) do |b|
+          b.format "jp2"
+        end
+=end
+
+      jp2_img = MiniMagick::Image.read(self.productionMaster.content)
+      jp2_img.format 'jp2'
+      self.accessMaster.content = jp2_img.to_blob
+      self.accessMaster.mimeType = 'image/jp2'
+      jp2_img.destroy!
     end
 
     def derivative_service(is_new)
