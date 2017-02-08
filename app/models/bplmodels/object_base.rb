@@ -1161,6 +1161,8 @@ module Bplmodels
     end
 
     def insert_plain_text(file_content)
+      file_content = file_content.force_encoding('UTF-8')
+      file_content.encode!("UTF-8", 'binary', invalid: :replace, undef: :replace, replace: '') unless file_content.valid_encoding?
       self.plainText.content = file_content
       self.plainText.mimeType = 'text/plain'
     end
