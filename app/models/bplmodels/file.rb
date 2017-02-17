@@ -26,7 +26,7 @@ module Bplmodels
     has_file_datastream 'djvuCoords', versionable: false,  label:'djvu coordinate json datastream'
 
 
-    belongs_to :object, :class_name => "Bplmodels::ObjectBase", :property => :is_image_of
+    belongs_to :object, :class_name => "Bplmodels::ObjectBase", :property => :is_file_of
 
     belongs_to :exemplary, :class_name => "Bplmodels::ObjectBase", :property => :is_exemplary_image_of
 

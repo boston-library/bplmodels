@@ -1529,7 +1529,7 @@ module Bplmodels
         }
       end
 
-      document_file.add_relationship(:is_image_of, "info:fedora/" + self.pid)
+      document_file.add_relationship(:is_document_of, "info:fedora/" + self.pid)
       document_file.add_relationship(:is_file_of, "info:fedora/" + self.pid)
 
       if set_exemplary.nil? || set_exemplary
