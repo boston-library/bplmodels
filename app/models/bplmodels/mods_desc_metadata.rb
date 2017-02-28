@@ -519,7 +519,7 @@ module Bplmodels
         t.type(:path=>{:attribute=>"type"})
       }
 
-      t.restriction_on_access(:path=>"accessCondition", :attributes=>{:type=>"restrictions on access"}) {
+      t.restriction_on_access(:path=>"accessCondition", :attributes=>{:type=>"restriction on access"}) {
         t.displayLabel :path=>{:attribute=>'displayLabel'}
         t.type(:path=>{:attribute=>"type"})
       }
