@@ -768,32 +768,19 @@ module Bplmodels
 
         self.mods(0).genre(genre_index, value) unless value.blank?
 
-        self.mods(0).genre(genre_index).authority = authority unless authority.blank?
-
-        if authority == 'gmgpc' || authority == 'lctgm'
-          self.mods(0).genre(genre_index).authorityURI = 'http://id.loc.gov/vocabulary/graphicMaterials'
-        elsif authority == 'lcsh'
-          self.mods(0).genre(genre_index).authorityURI = 'http://id.loc.gov/authorities/subjects'
-        elsif authority == 'aat'
-          self.mods(0).genre(genre_index).authorityURI = 'http://vocab.getty.edu/aat'
+        unless authority.blank?
+          self.mods(0).genre(genre_index).authority = authority
+          self.mods(0).genre(genre_index).authorityURI = Bplmodels::DatastreamInputFuncs.authority_uri(authority)
         end
 
         if value_uri.present? && value_uri.match(/^http/).blank?
-          if authority == 'marcgt'
-            value_uri = value_url
-          elsif authority == 'aat'
-            value_uri = 'http://vocab.getty.edu/aat/' + value_uri
-          elsif authority == 'gmgpc' || authority == 'lctgm'
-            value_uri = 'http://id.loc.gov/vocabulary/graphicMaterials/' + value_uri
-          end
+          value_uri = "#{Bplmodels::DatastreamInputFuncs.authority_uri(authority)}/#{value_uri}"
         end
 
         self.mods(0).genre(genre_index).valueURI = value_uri unless value_uri.blank?
 
         self.mods(0).genre(genre_index).displayLabel = display_label unless display_label.blank?
       end
-
-
     end
 
     def remove_genre(index)
@@ -986,15 +973,14 @@ module Bplmodels
     end
 
     #usage=nil,  supplied=nil, subtitle=nil, language=nil, type=nil, authority=nil, authorityURI=nil, valueURI=nil
-    def insert_title(nonSort=nil, main_title=nil, usage=nil, supplied=nil, type=nil, subtitle=nil, language=nil, display_label=nil, part_number=nil, part_name=nil, args={})
+    def insert_title(nonSort=nil, main_title=nil, usage=nil, supplied=nil, type=nil, subtitle=nil, language=nil,
+                     display_label=nil, part_number=nil, part_name=nil, authority=nil, value_uri=nil, args={})
       title_index = self.mods(0).title_info.count
 
       self.mods(0).title_info(title_index).nonSort = nonSort unless nonSort.blank?
       self.mods(0).title_info(title_index).main_title = main_title unless main_title.blank?
-
       self.mods(0).title_info(title_index).usage = usage unless usage.blank?
       self.mods(0).title_info(title_index).supplied = 'yes' unless supplied.blank? || supplied == 'no'
-
       self.mods(0).title_info(title_index).type = type unless type.blank?
 
       #Need to update previous titles to be translated now as well....
@@ -1010,14 +996,15 @@ module Bplmodels
       end
 
       self.mods(0).title_info(title_index).subtitle = subtitle unless subtitle.blank?
-
       self.mods(0).title_info(title_index).language = language unless language.blank?
-
       self.mods(0).title_info(title_index).display_label = display_label unless display_label.blank?
-
       self.mods(0).title_info(title_index).part_number = part_number unless part_number.blank?
-
       self.mods(0).title_info(title_index).part_name = part_name unless part_name.blank?
+      unless authority.blank?
+        self.mods(0).title_info(title_index).authority = authority
+        self.mods(0).title_info(title_index).authorityURI = Bplmodels::DatastreamInputFuncs.authority_uri(authority)
+      end
+      self.mods(0).title_info(title_index).valueURI = value_uri unless value_uri.blank?
 
       if args.present?
         raise 'broken args in Active Fedora 7'
@@ -1056,7 +1043,7 @@ module Bplmodels
       end
 
       if(authority == 'naf')
-        self.mods(0).name(name_index).authorityURI = 'http://id.loc.gov/authorities/names'
+        self.mods(0).name(name_index).authorityURI = Bplmodels::DatastreamInputFuncs.authority_uri(authority)
       end
 
       if type == 'corporate'
@@ -1521,13 +1508,9 @@ module Bplmodels
         self.mods(0).subject(subject_index).title_info(0).main_title = title unless title.blank?
         self.mods(0).subject(subject_index).title_info(0).type = type unless type.blank?
 
-        self.mods(0).subject(subject_index).title_info(0).authority = authority unless authority.blank?
-        if authority == 'lctgm'
-          self.mods(0).subject(subject_index).title_info(0).authorityURI = 'http://id.loc.gov/vocabulary/graphicMaterials'
-        elsif authority == 'lcsh'
-          self.mods(0).subject(subject_index).title_info(0).authorityURI = 'http://id.loc.gov/authorities/subjects'
-        elsif authority == 'naf'
-          self.mods(0).subject(subject_index).title_info(0).authorityURI = 'http://id.loc.gov/authorities/names'
+        unless authority.blank?
+          self.mods(0).subject(subject_index).title_info(0).authority = authority
+          self.mods(0).subject(subject_index).title_info(0).authorityURI = Bplmodels::DatastreamInputFuncs.authority_uri(authority)
         end
 
         self.mods(0).subject(subject_index).title_info(0).valueURI = valueURI unless valueURI.blank?
@@ -1541,15 +1524,10 @@ module Bplmodels
         subject_index = self.mods(0).subject.count
         self.mods(0).subject(subject_index).topic = topic unless topic.blank?
         self.mods(0).subject(subject_index).valueURI = valueURI unless valueURI.blank?
-        self.mods(0).subject(subject_index).authority = authority unless authority.blank?
-        if authority == 'lctgm'
-          self.mods(0).subject(subject_index).authorityURI = 'http://id.loc.gov/vocabulary/graphicMaterials'
-        elsif authority == 'lcsh'
-          self.mods(0).subject(subject_index).authorityURI = 'http://id.loc.gov/authorities/subjects'
-        elsif authority == 'aat'
-          self.mods(0).subject(subject_index).authorityURI = 'http://vocab.getty.edu/aat/'
+        unless authority.blank?
+          self.mods(0).subject(subject_index).authority = authority
+          self.mods(0).subject(subject_index).authorityURI = Bplmodels::DatastreamInputFuncs.authority_uri(authority)
         end
-
       end
     end
 
@@ -1683,17 +1661,12 @@ module Bplmodels
         subject_index = self.mods(0).subject.count
         self.mods(0).subject(subject_index).geographic = geographic unless geographic.blank?
         self.mods(0).subject(subject_index).valueURI = valueURI unless valueURI.blank?
-        self.mods(0).subject(subject_index).authority = authority unless authority.blank?
-        if authority == 'lctgm'
-          self.mods(0).subject(subject_index).authorityURI = 'http://id.loc.gov/vocabulary/graphicMaterials'
-        elsif authority == 'lcsh'
-          self.mods(0).subject(subject_index).authorityURI = 'http://id.loc.gov/authorities/subjects'
+        unless authority.blank?
+          self.mods(0).subject(subject_index).authority = authority
+          self.mods(0).subject(subject_index).authorityURI = Bplmodels::DatastreamInputFuncs.authority_uri(authority)
         end
-
         self.mods(0).subject(subject_index).cartographics(0).coordinates = coordinates unless coordinates.blank?
-
       end
-
     end
 
     def remove_subject_geographic(index)

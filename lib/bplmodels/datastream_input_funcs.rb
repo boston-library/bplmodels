@@ -296,6 +296,27 @@ module Bplmodels
 
     end
 
+    # return the full URI for a given authority (LCSH, NAF, etc)
+    def self.authority_uri(auth)
+      case auth
+        when 'lctgm'
+          'http://id.loc.gov/vocabulary/graphicMaterials'
+        when 'gmgpc'
+          'http://id.loc.gov/vocabulary/graphicMaterials'
+        when 'lcsh'
+          'http://id.loc.gov/authorities/subjects'
+        when 'aat'
+          'http://vocab.getty.edu/aat'
+        when 'naf'
+          'http://id.loc.gov/authorities/names'
+        when 'marcgt'
+          'http://id.loc.gov/vocabulary/genreFormSchemes/marcgt'
+        else
+          ''
+      end
+
+    end
+
     # retrieve data from Getty TGN to populate <mods:subject auth="tgn">
     def self.get_tgn_data(tgn_id)
       tgn_response = Typhoeus::Request.get('http://vocabsservices.getty.edu/TGNService.asmx/TGNGetSubject?subjectID=' + tgn_id, userpwd: BPL_CONFIG_GLOBAL['getty_un'] + ':' + BPL_CONFIG_GLOBAL['getty_pw'])
