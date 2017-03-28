@@ -770,11 +770,11 @@ module Bplmodels
 
         unless authority.blank?
           self.mods(0).genre(genre_index).authority = authority
-          self.mods(0).genre(genre_index).authorityURI = Bplmodels::DatastreamInputFuncs.authority_uri(authority)
+          self.mods(0).genre(genre_index).authorityURI = BplEnrich::Authorities.authority_uri(authority)
         end
 
         if value_uri.present? && value_uri.match(/^http/).blank?
-          value_uri = "#{Bplmodels::DatastreamInputFuncs.authority_uri(authority)}/#{value_uri}"
+          value_uri = "#{BplEnrich::Authorities.authority_uri(authority)}/#{value_uri}"
         end
 
         self.mods(0).genre(genre_index).valueURI = value_uri unless value_uri.blank?
@@ -1007,7 +1007,7 @@ module Bplmodels
       self.mods(0).title_info(title_index).part_name = part_name unless part_name.blank?
       unless authority.blank?
         self.mods(0).title_info(title_index).authority = authority
-        self.mods(0).title_info(title_index).authorityURI = Bplmodels::DatastreamInputFuncs.authority_uri(authority)
+        self.mods(0).title_info(title_index).authorityURI = BplEnrich::Authorities.authority_uri(authority)
       end
       self.mods(0).title_info(title_index).valueURI = value_uri unless value_uri.blank?
 
@@ -1048,7 +1048,7 @@ module Bplmodels
       end
 
       if(authority == 'naf')
-        self.mods(0).name(name_index).authorityURI = Bplmodels::DatastreamInputFuncs.authority_uri(authority)
+        self.mods(0).name(name_index).authorityURI = BplEnrich::Authorities.authority_uri(authority)
       end
 
       if type == 'corporate'
@@ -1515,7 +1515,7 @@ module Bplmodels
 
         unless authority.blank?
           self.mods(0).subject(subject_index).title_info(0).authority = authority
-          self.mods(0).subject(subject_index).title_info(0).authorityURI = Bplmodels::DatastreamInputFuncs.authority_uri(authority)
+          self.mods(0).subject(subject_index).title_info(0).authorityURI = BplEnrich::Authorities.authority_uri(authority)
         end
 
         self.mods(0).subject(subject_index).title_info(0).valueURI = valueURI unless valueURI.blank?
@@ -1531,7 +1531,7 @@ module Bplmodels
         self.mods(0).subject(subject_index).valueURI = valueURI unless valueURI.blank?
         unless authority.blank?
           self.mods(0).subject(subject_index).authority = authority
-          self.mods(0).subject(subject_index).authorityURI = Bplmodels::DatastreamInputFuncs.authority_uri(authority)
+          self.mods(0).subject(subject_index).authorityURI = BplEnrich::Authorities.authority_uri(authority)
         end
       end
     end
@@ -1668,7 +1668,7 @@ module Bplmodels
         self.mods(0).subject(subject_index).valueURI = valueURI unless valueURI.blank?
         unless authority.blank?
           self.mods(0).subject(subject_index).authority = authority
-          self.mods(0).subject(subject_index).authorityURI = Bplmodels::DatastreamInputFuncs.authority_uri(authority)
+          self.mods(0).subject(subject_index).authorityURI = BplEnrich::Authorities.authority_uri(authority)
         end
         self.mods(0).subject(subject_index).cartographics(0).coordinates = coordinates unless coordinates.blank?
       end
