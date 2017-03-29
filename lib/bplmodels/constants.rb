@@ -32,28 +32,6 @@ module Bplmodels
     COUNTRY_TGN_LOOKUP['China'] = {:tgn_id=>1000111, :tgn_country_name=>'Zhongguo'}
     COUNTRY_TGN_LOOKUP['Japan'] = {:tgn_id=>1000120, :tgn_country_name=>'Nihon'}
 
-
-
-
-
-=begin
-    COUNTRY_TGN_LOOKUP = {
-        'US' => 7012149,
-        'CA' => 7005685,
-        'FR' => 1000070,
-        'VN' => 1000145,
-        'ZA' => 1000193,
-        'PH' => 1000135,
-        'United States' => 7012149,
-        'Canada' => 7005685,
-        'France' => 1000070,
-        'Vietnam' => 1000145,
-        'Viet Nam' => 1000145,
-        'South Africa' => 1000193,
-        'Philippines' => 1000135
-    }
-=end
-
     STATE_ABBR = {
         'AL' => 'Alabama',
         'AK' => 'Alaska',
@@ -115,6 +93,11 @@ module Bplmodels
         'WY' => 'Wyoming'
     }
 
+    NOTE_TYPES = [
+        'acquisition', 'arrangement', 'bibliography', 'biographical/historical', 'citation/reference',
+        'creation/production credits', 'date', 'exhibitions', 'funding', 'language', 'ownership', 'performers',
+        'preferred citation', 'publications', 'statement of responsibility', 'venue'
+    ]
 
   end
 end
