@@ -1292,6 +1292,8 @@ module Bplmodels
           image_file.send(datastream).mimeType = 'image/png'
         elsif file[:file_name].split('.').last.downcase == 'txt'
           image_file.send(datastream).mimeType = 'text/plain'
+        elsif file[:file_name].split('.').last.downcase == 'json'
+          image_file.send(datastream).mimeType = 'application/json'
         else
           #image_file.send(datastream).mimeType = 'image/jpeg'
           raise "Could not find a mimeType for #{file[:file_name].split('.').last.downcase}"

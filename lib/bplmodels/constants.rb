@@ -99,5 +99,11 @@ module Bplmodels
         'preferred citation', 'publications', 'statement of responsibility', 'venue'
     ]
 
+    OCR_STOPWORDS = [
+        'the', 'The', 'THE', 'in', 'In', 'IN', 'to', 'To',  'TO', 'a', 'A', 'and', 'And', 'AND', 'for', 'For', 'FOR',
+        'at', 'At', 'AT', 'of', 'Of', 'OF', 'an', 'An', 'AN', 'or', 'Or', 'OR', 'by', 'By', 'BY', 'as', 'As', 'AS',
+        'on', 'On', 'ON'
+    ]
+
   end
 end
