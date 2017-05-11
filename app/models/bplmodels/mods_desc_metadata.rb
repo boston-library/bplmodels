@@ -1031,7 +1031,10 @@ module Bplmodels
 
       name_index = self.mods(0).name.count
       self.mods(0).name(name_index).type = type unless type.blank?
-      self.mods(0).name(name_index).authority = authority unless authority.blank?
+      unless authority.blank?
+        self.mods(0).name(name_index).authority = authority
+        self.mods(0).name(name_index).authorityURI = BplEnrich::Authorities.authority_uri(authority)
+      end
       self.mods(0).name(name_index).valueURI = value_uri unless value_uri.blank?
 
       if role.present?
@@ -1045,10 +1048,6 @@ module Bplmodels
           self.mods(0).name(name_index).role(role_index).text.valueURI = role_uri_split[role_index] unless role_uri_split[role_index].blank?
         end
 
-      end
-
-      if(authority == 'naf')
-        self.mods(0).name(name_index).authorityURI = BplEnrich::Authorities.authority_uri(authority)
       end
 
       if type == 'corporate'
