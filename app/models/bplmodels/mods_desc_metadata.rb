@@ -1039,15 +1039,12 @@ module Bplmodels
 
       if role.present?
         role_split = role.split('{|}') #new split var - see Arnold ticket
-
         role_uri = '{|}{|}{|}{|}{|}' if role_uri.nil? #Very hackish...
         role_uri_split = role_uri.split('{|}') #new split var - see Arnold ticket
-
         role_split.each_with_index do |single_role, role_index|
           self.mods(0).name(name_index).role(role_index).text = single_role unless single_role.blank?
           self.mods(0).name(name_index).role(role_index).text.valueURI = role_uri_split[role_index] unless role_uri_split[role_index].blank?
         end
-
       end
 
       if type == 'corporate'
@@ -1631,17 +1628,17 @@ module Bplmodels
         #Date
         self.mods(0).subject(subject_index).name(0).name_part_actual(1, date) unless date.blank?
         self.mods(0).subject(subject_index).name(0).name_part_actual(1).type = 'date' unless date.blank?
-
       elsif name.is_a?Array
         name.each_with_index do |name_part, index|
-          self.mods(0).subject(subject_index).name(0).name_part_actual(index,  Bplmodels::DatastreamInputFuncs.utf8Encode(name_part))
-
+          self.mods(0).subject(subject_index).name(0).name_part_actual(index,
+                                                                       Bplmodels::DatastreamInputFuncs.utf8Encode(name_part))
         end
-
       end
 
-      self.mods(0).subject(subject_index).name(0).authority = authority unless authority.blank?
-      self.mods(0).subject(subject_index).name(0).authority_uri = 'http://id.loc.gov/authorities/names' if authority == 'naf'
+      unless authority.blank?
+        self.mods(0).subject(subject_index).name(0).authority = authority
+        self.mods(0).subject(subject_index).name(0).authority_uri = BplEnrich::Authorities.authority_uri(authority)
+      end
       self.mods(0).subject(subject_index).name(0).value_uri = valueURI unless valueURI.blank?
       self.mods(0).subject(subject_index).name(0).type = type unless type.blank?
     end
