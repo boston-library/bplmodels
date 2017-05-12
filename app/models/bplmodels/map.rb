@@ -1,16 +1,18 @@
 module Bplmodels
   class Map < Bplmodels::SimpleObjectBase
-    #has_file_datastream :name => 'productionMaster', :type => ActiveFedora::Datastream
+    # has_file_datastream :name => 'productionMaster', :type => ActiveFedora::Datastream
 
 
-    #A collection can have another collection as a member, or an image
+    # A collection can have another collection as a member, or an image
     def insert_member(fedora_object)
       if (fedora_object.instance_of?(Bplmodels::ImageFile))
 
-        #add to the members ds
-        members.insert_member(:member_id=>fedora_object.pid, :member_title=>fedora_object.titleSet_display, :member_type=>fedora_object.fedora_name)
+        # add to the members ds
+        members.insert_member(member_id: fedora_object.pid,
+                              member_title: fedora_object.titleSet_display,
+                              member_type: fedora_object.fedora_name)
 
-        #add to the rels-ext ds
+        # add to the rels-ext ds
         fedora_object.object << self
         self.image_files << fedora_object
 
@@ -21,14 +23,17 @@ module Bplmodels
 
     end
 
-    def to_solr(doc = {} )
+    def to_solr(doc = {})
       doc = super(doc)
       doc['active_fedora_model_ssi'] = self.class.name
 
       doc['georeferenced_bsi'] = false
-      Bplmodels::Finder.getImageFiles('bpl-test:zs25x8895').each do |image_file|
+      Bplmodels::Finder.getImageFiles(self.pid).each do |image_file|
         georect_result = image_file.select { |field| field == 'georeferenced_bsi' }
-        doc['georeferenced_bsi'] = true if georect_result.present? and (georect_result['georeferenced_bsi'] == true || georect_result['georeferenced_bsi'] = "true")
+        if georect_result.present? &&
+           (georect_result['georeferenced_bsi'] == true || georect_result['georeferenced_bsi'] == 'true')
+          doc['georeferenced_bsi'] = true
+        end
       end
 
       doc
