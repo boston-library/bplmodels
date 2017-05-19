@@ -1,5 +1,6 @@
 module Bplmodels
   class Constants
+
     GENRE_LOOKUP = {}
     GENRE_LOOKUP['Cards'] = {:id=>'tgm001686', :authority=>'gmgpc'}
     GENRE_LOOKUP['Correspondence'] = {:id=>'tgm002590', :authority=>'lctgm'}
@@ -21,6 +22,12 @@ module Bplmodels
     GENRE_LOOKUP['Albums'] = {:id=>'tgm000229', :authority=>'gmgpc'}
     GENRE_LOOKUP['Musical notation'] = {:id=>'tgm006926', :authority=>'lctgm'}
     GENRE_LOOKUP['Music'] = {:id=>'tgm006906', :authority=>'lctgm'}
+
+    RESOURCE_TYPES = [
+        'still image', 'text', 'cartographic', 'notated music', 'sound recording',
+        'sound recording-musical', 'sound recording-nonmusical', 'moving image',
+        'three dimensional object', 'software, multimedia', 'mixed material'
+    ]
 
     COUNTRY_TGN_LOOKUP = {}
     COUNTRY_TGN_LOOKUP['United States'] = {:tgn_id=>7012149, :tgn_country_name=>'United States'}
