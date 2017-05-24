@@ -612,6 +612,8 @@ module Bplmodels
 
       # scale
       doc['subject_scale_tsim'] = self.descMetadata.subject.cartographics.scale
+      # projection
+      doc['subject_projection_tsim'] = self.descMetadata.subject.cartographics.projection
 
       # coordinates / bbox
       if self.descMetadata.subject.cartographics.coordinates.length > 0
