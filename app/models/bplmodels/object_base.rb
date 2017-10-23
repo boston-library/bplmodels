@@ -617,14 +617,26 @@ module Bplmodels
 
       # coordinates / bbox
       if self.descMetadata.subject.cartographics.coordinates.length > 0
-        doc['subject_coordinates_geospatial'] = self.descMetadata.subject.cartographics.coordinates # includes both bbox and point data
         self.descMetadata.subject.cartographics.coordinates.each do |coordinates|
           if coordinates.scan(/[\s]/).length == 3
             doc['subject_bbox_geospatial'] ||= []
-            doc['subject_bbox_geospatial'] << coordinates
+            doc['subject_coordinates_geospatial'] ||= []
+            bbox_points = coordinates.split(' ')
+            # normalize any 'out of bounds' latitude values
+            # sometimes these get passed from NBLMC georeferencing process
+            # otherwise Solr throws error:
+            # not in boundary Rect(minX=-180.0,maxX=180.0,minY=-90.0,maxY=90.0)
+            bbox_points[0] = (bbox_points[0].to_f + 360).to_s if bbox_points[0].to_f < -180
+            bbox_points[1] = '-90.0' if bbox_points[1].to_f < -90
+            bbox_points[2] = (bbox_points[2].to_f - 360).to_s if bbox_points[2].to_f > 180
+            bbox_points[3] = '90.0' if bbox_points[3].to_f > 90
+            doc['subject_bbox_geospatial'] << bbox_points.join(' ')
+            doc['subject_coordinates_geospatial'] << bbox_points.join(' ')
           else
             doc['subject_point_geospatial'] ||= []
             doc['subject_point_geospatial'] << coordinates
+            doc['subject_coordinates_geospatial'] ||= []
+            doc['subject_coordinates_geospatial'] << coordinates
           end
         end
       end
