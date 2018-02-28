@@ -48,7 +48,7 @@ module Bplmodels
       if(value.blank?)
         return nil
       else
-        if value.class == Float || value.class == Fixnum
+        if value.class == Float || value.class == Integer
           value = value.to_i.to_s
         end
 
