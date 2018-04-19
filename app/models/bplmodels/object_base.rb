@@ -155,7 +155,11 @@ module Bplmodels
             end
           end
         end
-       self.collection.first.update_index
+        self.collection.first.update_index
+      end
+      # remove the cached IIIF manifest (may not exist, so no worry about response)
+      unless self.class.name == 'Bplmodels::OAIObject'
+        Typhoeus::Request.post("#{BPL_CONFIG_GLOBAL['commonwealth_public']}/search/#{self.pid}/manifest/cache_invalidate")
       end
       super()
     end
@@ -1715,8 +1719,11 @@ module Bplmodels
     end
 
     def cache_invalidate
-      response = Typhoeus::Request.post(DERIVATIVE_CONFIG_GLOBAL['url'] + "/processor/objectcacheinvalidation.json", :params => {:object_pid=>self.pid, :environment=>Bplmodels.environment})
-      as_json = JSON.parse(response.body)
+      # remove the cached IIIF manifest (may not exist, so no worry about response)
+      Typhoeus::Request.post("#{BPL_CONFIG_GLOBAL['commonwealth_public']}/search/#{self.pid}/manifest/cache_invalidate")
+
+      obj_response = Typhoeus::Request.post(DERIVATIVE_CONFIG_GLOBAL['url'] + "/processor/objectcacheinvalidation.json", :params => {:object_pid=>self.pid, :environment=>Bplmodels.environment})
+      as_json = JSON.parse(obj_response.body)
 
       if as_json['result'] == "false"
         raise "Error Deleting the Cache! Server error!"
