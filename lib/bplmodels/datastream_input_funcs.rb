@@ -76,25 +76,23 @@ module Bplmodels
       end
     end
 
-    #Problems: A . Some Name and A & R
+    # return an array:
+    # [nonSort leading article (with spaces), remaining title]
     def self.getProperTitle(title)
-      nonSort = nil
-      title = title
-
-      if title[0..1].downcase == "a " && (title[0..2].downcase != "a ." && title[0..2].downcase != "a &")
-        nonSort = title[0..1]
-        title = title[2..title.length]
-      elsif title[0..3].downcase == "the "
-        nonSort = title[0..3]
-        title = title[4..title.length]
-      elsif title[0..2].downcase == "an "
-        nonSort = title[0..2]
-        title = title[3..title.length]
-        #elsif title[0..6].downcase == "in the "
-        #return [title[0..5], title[7..title.length]]
+      non_sort = nil
+      title_array = title.split(' ')
+      spec_char_regex = /\A[\S]{1,2}['-]/
+      string_to_eval = if title_array[0].match?(spec_char_regex)
+                         title_array[0].match(spec_char_regex)[0]
+                       else
+                         title_array[0]
+                       end
+      if Bplmodels::Constants::NONSORT_ARTICLES.include?(string_to_eval.downcase)
+        non_sort = string_to_eval
       end
-
-      return [nonSort, title]
+      title_minus_sort = title.sub(/#{non_sort}/, '')
+      non_sort += ' ' if title_minus_sort[0].match?(/\A\s/)
+      [non_sort, title_minus_sort.lstrip]
     end
 
     def self.parse_language(language_value)
