@@ -881,14 +881,14 @@ module Bplmodels
               # Get rid of less specific matches... city level info should trump state
               if self.mods(0).subject(subject_index).hierarchical_geographic(0).city.blank? &&
                   self.mods(0).subject(subject_index).hierarchical_geographic(0).state == [api_result[:hier_geo][:state]]
-                #Check to not remove non-hier geo cases... as actually more specific than just a state
+                # Check to not remove non-hier geo cases... as actually more specific than just a state
                 if self.mods(0).subject(subject_index).geographic(0).blank?
                   self.mods(0).subject(subject_index, nil)
                 end
 
               # Exit if same city match
               elsif self.mods(0).subject(subject_index).hierarchical_geographic(0).city == [api_result[:hier_geo][:city]]
-                #Case of more specific in non_hier_geo...
+                # Case of more specific in non_hier_geo...
                 if self.mods(0).subject(subject_index).geographic(0).blank? && api_result[:non_hier_geo].present?
                   self.mods(0).subject(subject_index, nil)
                 else
@@ -901,9 +901,12 @@ module Bplmodels
               # Exit check if trying to insert same state twice with no city
               if api_result[:hier_geo][:state].present?
                 if self.mods(0).subject(subject_index).hierarchical_geographic(0).state == [api_result[:hier_geo][:state]]
-                  #Case of more specific in non_hier_geo...
-                  if self.mods(0).subject(subject_index).geographic(0).blank? && api_result[:non_hier_geo].present?
-                    self.mods(0).subject(subject_index, nil)
+                  # Case of more specific in non_hier_geo or area...
+                  if api_result[:non_hier_geo].present? || api_result[:hier_geo][:area].present?
+                    if self.mods(0).subject(subject_index).geographic(0).blank? &&
+                       self.mods(0).subject(subject_index).hierarchical_geographic(0).area.blank?
+                      self.mods(0).subject(subject_index, nil)
+                    end
                   else
                     return false
                   end
@@ -912,22 +915,27 @@ module Bplmodels
               # Exit check if trying to insert the same area...
               elsif api_result[:hier_geo][:area].present?
                 if self.mods(0).subject(subject_index).hierarchical_geographic(0).area == [api_result[:hier_geo][:area]]
-                  #Case of more specific in non_hier_geo...
-                  if self.mods(0).subject(subject_index).geographic(0).blank? && api_result[:non_hier_geo].present?
-                    self.mods(0).subject(subject_index, nil)
+                  # Case of more specific in non_hier_geo...
+                  if api_result[:non_hier_geo].present?
+                    if self.mods(0).subject(subject_index).geographic(0).blank?
+                      self.mods(0).subject(subject_index, nil)
+                    end
                   else
                     return false
                   end
                 end
 
               # Finally exit if inserting the same country...
-              elsif api_result[:hier_geo][:state].blank? &&
-                  api_result[:hier_geo][:area].blank? &&
-                  api_result[:hier_geo][:country].present?
+              elsif api_result[:hier_geo][:country].present?
                 if self.mods(0).subject(subject_index).hierarchical_geographic(0).country == [api_result[:hier_geo][:country]]
-                  #Case of more specific in non_hier_geo...
-                  if self.mods(0).subject(subject_index).geographic(0).blank? && api_result[:non_hier_geo].present?
-                    self.mods(0).subject(subject_index, nil)
+                  # Case of more specific in non_hier_geo, but don't overwrite existing city/state
+                  if api_result[:non_hier_geo].present?
+                    if self.mods(0).subject(subject_index).geographic(0).blank?
+                      unless self.mods(0).subject(subject_index).hierarchical_geographic(0).city.present? ||
+                          self.mods(0).subject(subject_index).hierarchical_geographic(0).state.present?
+                        self.mods(0).subject(subject_index, nil)
+                      end
+                    end
                   else
                     return false
                   end
