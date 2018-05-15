@@ -30,6 +30,17 @@ module Bplmodels
       'three dimensional object', 'software, multimedia', 'mixed material'
     ].freeze
 
+    MIME_TYPES = {
+        'pdf' => 'application/pdf', 'jpeg' => 'image/jpeg',
+        'jpg' => 'image/jpeg', 'png' => 'image/png',
+        'tif' => 'image/tiff', 'wav' => 'audio/vnd.wave',
+        'mp4' => 'video/mp4', 'mov' => 'video/quicktime',
+        'avi' => 'video/avi', 'mpg' => 'video/mpeg',
+        'video/mpeg' => 'video/mpeg', 'msword' => 'application/msword',
+        'html' => 'text/html', 'mp3' => 'audio/mpeg',
+        'audio/mpeg' => 'audio/mpeg', 'mp4' => 'video/mp4'
+    }
+
     COUNTRY_TGN_LOOKUP = {
       'United States' => {tgn_id: 7012149, tgn_country_name: 'United States'},
       'Canada' => {tgn_id: 7005685, tgn_country_name: 'Canada'},
