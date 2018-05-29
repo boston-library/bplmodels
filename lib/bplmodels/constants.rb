@@ -38,7 +38,7 @@ module Bplmodels
         'avi' => 'video/avi', 'mpg' => 'video/mpeg',
         'video/mpeg' => 'video/mpeg', 'msword' => 'application/msword',
         'html' => 'text/html', 'mp3' => 'audio/mpeg',
-        'audio/mpeg' => 'audio/mpeg', 'mp4' => 'video/mp4'
+        'audio/mpeg' => 'audio/mpeg'
     }
 
     COUNTRY_TGN_LOOKUP = {

@@ -57,6 +57,7 @@ module Bplmodels
     def to_solr(doc = {} )
       doc = super(doc)
 
+      # basic genre
       basic_genre_array = ['Collections']
       Bplmodels::ObjectBase.find_in_batches('is_member_of_collection_ssim'=>"info:fedora/#{self.pid}") do |group|
         group.each { |object_id|
@@ -70,13 +71,6 @@ module Bplmodels
       # description
       doc['abstract_tsim'] = self.descMetadata.abstract
 
-      # basic genre
-=begin
-      basic_genre = 'Collections'
-      doc['genre_basic_ssim'] = basic_genre
-      doc['genre_basic_tsim'] = basic_genre
-=end
-
       # institution
       if self.institutions
         collex_location = self.institutions.label.to_s
@@ -87,15 +81,14 @@ module Bplmodels
         doc['institution_pid_ssi'] = self.institutions.pid
       end
 
+      # thumbnail
       exemplary_check = Bplmodels::File.find_with_conditions({"is_exemplary_image_of_ssim"=>"info:fedora/#{self.pid}"}, rows: '1', fl: 'id' )
       if exemplary_check.present?
         doc['exemplary_image_ssi'] = exemplary_check.first["id"]
+        if exemplary_check.first["active_fedora_model_ssi"] != "Bplmodels::ImageFile"
+          doc['exemplary_image_iiif_bsi'] = false
+        end
       end
-=begin
-      if self.exemplary_image.first != nil
-        doc['exemplary_image_ssi'] = self.exemplary_image.first.pid
-      end
-=end
 
       doc
 
