@@ -91,7 +91,7 @@ module Bplmodels
         non_sort = string_to_eval
       end
       title_minus_sort = title.sub(/#{non_sort}/, '')
-      non_sort += ' ' if title_minus_sort[0].match?(/\A\s/)
+      non_sort += ' ' if title_minus_sort.first.match?(/\A\s/)
       [non_sort, title_minus_sort.lstrip]
     end
 
