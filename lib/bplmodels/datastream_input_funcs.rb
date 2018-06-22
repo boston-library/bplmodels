@@ -17,7 +17,7 @@ module Bplmodels
         else
           splitNamePartsHash[:namePart] = inputstring.gsub(/,[\d\- \.\w?]*$/,"")
           splitArray = inputstring.split(/.*,/)
-          splitNamePartsHash[:datePart] = splitArray[1].strip
+          splitNamePartsHash[:datePart] = splitArray[1].strip if splitArray[1]
         end
       end
       return splitNamePartsHash
