@@ -1250,6 +1250,9 @@ module Bplmodels
         end
 =end
         inserted_obj = self.insert_new_document_file(files_hash, institution_pid,set_exemplary)
+      elsif production_master[:file_name].downcase.include?('.txt')
+        self.descMetadata.insert_media_type('text/plain')
+        inserted_obj = self.insert_new_document_file(files_hash, institution_pid, false)
       elsif production_master[:file_name].downcase.include?('.epub')
         self.descMetadata.insert_media_type('application/epub+zip')
         inserted_obj = self.insert_new_ereader_file(files_hash, institution_pid)
