@@ -853,100 +853,61 @@ module Bplmodels
 
     def insert_tgn(tgn_id)
       puts 'TGN ID is: ' + tgn_id
-
-      # check for duplicate TGN value
-      return false if self.subject.valueURI.include?(tgn_id)
+      return false if self.subject.valueURI.include?(tgn_id) # check for dupe TGN value
 
       api_result = Geomash::TGN.get_tgn_data(tgn_id)
       puts 'API Result is: ' + api_result.to_s
 
       #FIXME: Only works for hier_geo places....
       if api_result[:hier_geo].present? && self.subject.hierarchical_geographic.present?
-        self.mods(0).subject.each_with_index do |_ignored, subject_index|
+        existing_subjects = []
+        self.mods(0).subject.each_with_index do |_subject, subject_index|
           if self.mods(0).subject(subject_index).authority == ['tgn']
-
-            if api_result[:hier_geo][:city_section].present?
-
-              # Get rid of less specific matches... city_section level info should trump city
-              if self.mods(0).subject(subject_index).hierarchical_geographic(0).city_section.blank? &&
-                  self.mods(0).subject(subject_index).hierarchical_geographic(0).city == [api_result[:hier_geo][:city]]
-                # Check to not remove non-hier geo cases
-                if self.mods(0).subject(subject_index).geographic(0).blank?
-                  self.mods(0).subject(subject_index, nil)
-                end
-              end
-
-            elsif api_result[:hier_geo][:city].present?
-
-              # Get rid of less specific matches... city level info should trump state
-              if self.mods(0).subject(subject_index).hierarchical_geographic(0).city.blank? &&
-                  self.mods(0).subject(subject_index).hierarchical_geographic(0).state == [api_result[:hier_geo][:state]]
-                # Check to not remove non-hier geo cases... as actually more specific than just a state
-                if self.mods(0).subject(subject_index).geographic(0).blank?
-                  self.mods(0).subject(subject_index, nil)
-                end
-
-              # Exit if same city match
-              elsif self.mods(0).subject(subject_index).hierarchical_geographic(0).city == [api_result[:hier_geo][:city]]
-                # Case of more specific in non_hier_geo...
-                if self.mods(0).subject(subject_index).geographic(0).blank? && api_result[:non_hier_geo].present?
-                  self.mods(0).subject(subject_index, nil)
-                else
-                  return false
-                end
-              end
-
-            elsif api_result[:hier_geo][:city].blank?
-
-              # Exit check if trying to insert same state twice with no city
-              if api_result[:hier_geo][:state].present?
-                if self.mods(0).subject(subject_index).hierarchical_geographic(0).state == [api_result[:hier_geo][:state]]
-                  # Case of more specific in non_hier_geo or area...
-                  if api_result[:non_hier_geo].present? || api_result[:hier_geo][:area].present?
-                    if self.mods(0).subject(subject_index).geographic(0).blank? &&
-                       self.mods(0).subject(subject_index).hierarchical_geographic(0).area.blank?
-                      self.mods(0).subject(subject_index, nil)
-                    end
-                  else
-                    return false
-                  end
-                end
-
-              # Exit check if trying to insert the same area...
-              elsif api_result[:hier_geo][:area].present?
-                if self.mods(0).subject(subject_index).hierarchical_geographic(0).area == [api_result[:hier_geo][:area]]
-                  # Case of more specific in non_hier_geo...
-                  if api_result[:non_hier_geo].present?
-                    if self.mods(0).subject(subject_index).geographic(0).blank?
-                      self.mods(0).subject(subject_index, nil)
-                    end
-                  else
-                    return false
-                  end
-                end
-
-              # Finally exit if inserting the same country...
-              elsif api_result[:hier_geo][:country].present?
-                if self.mods(0).subject(subject_index).hierarchical_geographic(0).country == [api_result[:hier_geo][:country]]
-                  # Case of more specific in non_hier_geo, but don't overwrite existing city/state
-                  if api_result[:non_hier_geo].present?
-                    if self.mods(0).subject(subject_index).geographic(0).blank?
-                      unless self.mods(0).subject(subject_index).hierarchical_geographic(0).city.present? ||
-                          self.mods(0).subject(subject_index).hierarchical_geographic(0).state.present?
-                        self.mods(0).subject(subject_index, nil)
-                      end
-                    end
-                  else
-                    return false
-                  end
-                end
-              end
-
-            end
-
+            existing_subjects << { index: subject_index,
+                                   geo_hash: Bplmodels::GeographicDataFuncs.hiergeo_hash(self.mods(0).subject(subject_index)) }
           end
         end
-
+        # now we check existing subjects, delete if we're adding more specific geo entity
+        # lots of edge cases with non-trad geo subjects (areas, mountains, rivers)
+        existing_subjects.each do |esub|
+          remove_esub = false
+          if api_result[:hier_geo][:city_section].present?
+            if esub[:geo_hash][:city_section].blank? && esub[:geo_hash][:city] == api_result[:hier_geo][:city]
+              remove_esub = true
+            end
+          elsif api_result[:hier_geo][:city].present?
+            if esub[:geo_hash][:city].blank? && esub[:geo_hash][:state] == api_result[:hier_geo][:state]
+              remove_esub = true
+            elsif esub[:geo_hash][:city] == api_result[:hier_geo][:city]
+              return false unless api_result[:non_hier_geo].present?
+              remove_esub = true
+            end
+          elsif api_result[:hier_geo][:state].present?
+            if esub[:geo_hash][:state].blank? && esub[:geo_hash][:country] == api_result[:hier_geo][:country]
+              remove_esub = true
+            elsif esub[:geo_hash][:state] == api_result[:hier_geo][:state]
+              return false unless api_result[:non_hier_geo].present? || api_result[:hier_geo][:area].present?
+              remove_esub = true if self.mods(0).subject(esub[:index]).hierarchical_geographic(0).area.blank?
+            end
+          elsif api_result[:hier_geo][:area].present?
+            if esub[:geo_hash][:area] == api_result[:hier_geo][:area]
+              return false unless api_result[:non_hier_geo].present?
+              remove_esub = true
+            end
+          elsif api_result[:hier_geo][:country].present?
+            if esub[:geo_hash][:country] == api_result[:hier_geo][:country]
+              return false unless api_result[:non_hier_geo].present?
+              unless self.mods(0).subject(esub[:index]).hierarchical_geographic(0).city.present? ||
+                  self.mods(0).subject(esub[:index]).hierarchical_geographic(0).state.present?
+                remove_esub = true
+              end
+            end
+          end
+          # but don't remove existing subject if it has non-hier-geo elements
+          if remove_esub && self.mods(0).subject(esub[:index]).geographic(0).blank?
+            self.mods(0).subject(esub[:index], nil)
+          end
+        end
       end
 
       if api_result[:non_hier_geo].present?

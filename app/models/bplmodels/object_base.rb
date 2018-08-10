@@ -670,14 +670,7 @@ module Bplmodels
           hiergeo_geojson_hash = geojson_hash_base.dup
 
           # get the hierGeo elements, except 'continent'
-          hiergeo_hash = {}
-          ModsDescMetadata.terminology.retrieve_node(:subject,:hierarchical_geographic).children.each do |hgterm|
-            hiergeo_hash[hgterm[0]] = '' unless hgterm[0].to_s == 'continent'
-          end
-          hiergeo_hash.each_key do |k|
-            hiergeo_hash[k] = this_subject.hierarchical_geographic.send(k)[0].presence
-          end
-          hiergeo_hash.reject! {|k,v| !v } # remove any nil values
+          hiergeo_hash = GeographicDataFuncs.hiergeo_hash(this_subject)
 
           if this_subject.geographic[0]
             other_geo_value = this_subject.geographic[0]
