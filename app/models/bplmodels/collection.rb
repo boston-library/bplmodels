@@ -82,10 +82,12 @@ module Bplmodels
       end
 
       # thumbnail
-      exemplary_check = Bplmodels::File.find_with_conditions({"is_exemplary_image_of_ssim"=>"info:fedora/#{self.pid}"}, rows: '1', fl: 'id' )
+      exemplary_check = Bplmodels::File.find_with_conditions({'is_exemplary_image_of_ssim' => "info:fedora/#{self.pid}"},
+                                                             rows: 1,
+                                                             fl: 'id, active_fedora_model_ssi')
       if exemplary_check.present?
-        doc['exemplary_image_ssi'] = exemplary_check.first["id"]
-        if exemplary_check.first["active_fedora_model_ssi"] != "Bplmodels::ImageFile"
+        doc['exemplary_image_ssi'] = exemplary_check.first['id']
+        if exemplary_check.first['active_fedora_model_ssi'] != 'Bplmodels::ImageFile'
           doc['exemplary_image_iiif_bsi'] = false
         end
       end
