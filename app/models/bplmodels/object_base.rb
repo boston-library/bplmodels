@@ -896,6 +896,7 @@ module Bplmodels
       doc['note_ownership_tsim'] = []
       doc['note_citation_tsim'] = []
       doc['note_reference_tsim'] = []
+      doc['note_venue_tsim'] = []
       doc['note_physical_tsim'] = []
 
       0.upto self.descMetadata.note.length-1 do |index|
@@ -913,6 +914,8 @@ module Bplmodels
           doc['note_citation_tsim'].append(self.descMetadata.mods(0).note(index).first)
         elsif self.descMetadata.note(index).type_at.first == 'citation/reference'
           doc['note_reference_tsim'].append(self.descMetadata.mods(0).note(index).first)
+        elsif self.descMetadata.note(index).type_at.first == 'venue'
+          doc['note_venue_tsim'].append(self.descMetadata.mods(0).note(index).first)
         else
           doc['note_tsim'].append(self.descMetadata.mods(0).note(index).first)
         end
