@@ -19,7 +19,7 @@ module Bplmodels
       'Motion pictures' => {id: 'tgm006804', authority: 'lctgm'},
       'Periodicals' => {id: 'tgm007641', authority: 'gmgpc'},
       'Books' => {id: 'tgm001221', authority: 'gmgpc'},
-      'Albums' => {id: 'tgm000229', authority: 'gmgpc'},
+      'Albums (Books)' => {id: 'tgm000229', authority: 'gmgpc'},
       'Musical notation' => {id: 'tgm006926', authority: 'lctgm'},
       'Music' => {id: 'tgm006906', authority: 'lctgm'},
     }
