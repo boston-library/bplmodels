@@ -1003,7 +1003,7 @@ module Bplmodels
 =end
 
       if self.plainText.present?
-        doc['ocr_tiv'] = self.plainText.content.squish
+        doc['ocr_tiv'] = self.plainText.content.squish.force_encoding(Encoding::UTF_8)
 
         pages_ocr_check = Bplmodels::ImageFile.find_with_conditions({"is_image_of_ssim"=>"info:fedora/#{self.pid}","has_ocr_text_bsi"=>"true"}, rows: '1', fl: 'id,has_ocr_text_bsi' )
         doc['has_searchable_text_bsi'] = true if pages_ocr_check.present?
@@ -1023,7 +1023,8 @@ module Bplmodels
           volume_check.each do |volume|
             #FIXME!!!
             volume_object = ActiveFedora::Base.find(volume['id']).adapt_to_cmodel
-            doc['ocr_tiv'] += volume_object.plainText.content.squish + ' ' if volume_object.plainText.present?
+            plain_text = volume_object.plainText.content.squish.force_encoding(Encoding::UTF_8) + ' ' if volume_object.plainText.present?
+            doc['ocr_tiv'] += plain_text
           end
         end
       end
