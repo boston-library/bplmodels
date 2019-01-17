@@ -372,31 +372,32 @@ module Bplmodels
       doc['genre_basic_ssim'] = self.descMetadata.genre_basic
       doc['genre_specific_ssim'] = self.descMetadata.genre_specific
 
-      # will need to make this more generic when we have more id fields with @invalid
-      if self.descMetadata.local_other
-        doc['identifier_local_other_tsim'] = []
-        doc['identifier_local_other_invalid_tsim'] = []
+      # identifiers
+      doc['identifier_local_other_tsim'] = []
+      doc['identifier_local_other_invalid_tsim'] = []
+      doc['identifier_local_call_tsim'] = []
+      doc['identifier_local_call_invalid_tsim'] = []
+      doc['identifier_local_barcode_tsim'] = []
+      doc['identifier_local_barcode_invalid_tsim'] = []
+      doc['identifier_local_accession_tsim']
+      if self.descMetadata.local_other || self.descMetadata.local_call || self.descMetadata.local_barcode
         self.descMetadata.identifier.each_with_index do |id_val, index|
-          if self.descMetadata.identifier(index).type_at[0] == 'local-other'
-            if self.descMetadata.identifier(index).invalid[0]
-              doc['identifier_local_other_invalid_tsim'].append(id_val)
+          id_type = self.descMetadata.identifier(index).type_at[0].underscore
+          if id_type.include?('local')
+            invalid = self.descMetadata.identifier(index).invalid[0] ? true : false
+            if invalid
+              doc["identifier_#{id_type}_invalid_tsim"] << id_val
             else
-              doc['identifier_local_other_tsim'].append(id_val)
+              doc["identifier_#{id_type}_tsim"] << id_val
             end
           end
         end
       end
 
-
-      doc['identifier_local_call_tsim'] = self.descMetadata.local_call
-      doc['identifier_local_barcode_tsim'] = self.descMetadata.local_barcode
       doc['identifier_isbn_tsim'] = self.descMetadata.isbn
       doc['identifier_lccn_tsim'] = self.descMetadata.lccn
       doc['identifier_ia_id_ssi'] = self.descMetadata.ia_id
-
       doc['identifier_ark_ssi'] = ''
-
-      doc['local_accession_id_tsim'] = self.descMetadata.local_accession[0].to_s
 
       #Assign collection, admin, and institution labels
       doc['collection_name_ssim'] = []
@@ -553,9 +554,7 @@ module Bplmodels
         end
 
       end
-
       doc['name_facet_ssim'] = doc['name_personal_tsim'] + doc['name_corporate_tsim'] + doc['name_generic_tsim']
-
 
       doc['type_of_resource_ssim'] = self.descMetadata.type_of_resource
 
@@ -883,7 +882,21 @@ module Bplmodels
           when 'rights'
             doc['rights_ssm'] << self.descMetadata.use_and_reproduction(index).first
           when 'license'
-            doc['license_ssm'] << self.descMetadata.use_and_reproduction(index).first
+            license_text = self.descMetadata.use_and_reproduction(index).first
+            reuse = if license_text.downcase.include?('public domain') ||
+                         license_text.downcase.include?('no known restrictions')
+                      'no restrictions'
+                    elsif license_text.downcase.include?('creative commons')
+                      'creative commons'
+                    elsif license_text.downcase.include?('contact host')
+                      'contact host'
+                    elsif license_text.downcase.include?('all rights reserved')
+                      'all rights reserved'
+                    else
+                      nil
+                    end
+            doc['reuse_allowed_ssi'] = reuse
+            doc['license_ssm'] << license_text
         end
       end
 
@@ -971,6 +984,12 @@ module Bplmodels
 
       doc['subtitle_tsim'] = self.descMetadata.title_info.subtitle
 
+      # index filenames
+      doc['filenames_ssim'] = []
+      files = Bplmodels::File.find_with_conditions(is_file_of_ssim: "info:fedora/#{self.pid}")
+      files.each do |file|
+        doc['filenames_ssim'] << file['filename_base_ssi']
+      end
 
       if self.workflowMetadata
         doc['workflow_state_ssi'] = self.workflowMetadata.item_status.state
