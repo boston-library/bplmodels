@@ -379,17 +379,15 @@ module Bplmodels
       doc['identifier_local_call_invalid_tsim'] = []
       doc['identifier_local_barcode_tsim'] = []
       doc['identifier_local_barcode_invalid_tsim'] = []
-      doc['identifier_local_accession_tsim']
-      if self.descMetadata.local_other || self.descMetadata.local_call || self.descMetadata.local_barcode
-        self.descMetadata.identifier.each_with_index do |id_val, index|
-          id_type = self.descMetadata.identifier(index).type_at[0].underscore
-          if id_type.include?('local')
-            invalid = self.descMetadata.identifier(index).invalid[0] ? true : false
-            if invalid
-              doc["identifier_#{id_type}_invalid_tsim"] << id_val
-            else
-              doc["identifier_#{id_type}_tsim"] << id_val
-            end
+      doc['identifier_local_accession_tsim'] = []
+      self.descMetadata.identifier.each_with_index do |id_val, index|
+        id_type = self.descMetadata.identifier(index).type_at[0].underscore
+        if id_type.include?('local')
+          invalid = self.descMetadata.identifier(index).invalid[0] ? true : false
+          if invalid
+            doc["identifier_#{id_type}_invalid_tsim"] << id_val
+          else
+            doc["identifier_#{id_type}_tsim"] << id_val
           end
         end
       end
@@ -397,7 +395,6 @@ module Bplmodels
       doc['identifier_isbn_tsim'] = self.descMetadata.isbn
       doc['identifier_lccn_tsim'] = self.descMetadata.lccn
       doc['identifier_ia_id_ssi'] = self.descMetadata.ia_id
-      doc['identifier_ark_ssi'] = ''
 
       #Assign collection, admin, and institution labels
       doc['collection_name_ssim'] = []
