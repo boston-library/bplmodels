@@ -690,7 +690,7 @@ module Bplmodels
               geojson_hash[:bbox] = coords.split(' ').map(&:to_f)
               geojson_hash[:geometry][:type] = 'Polygon'
               geojson_hash[:geometry][:coordinates] = [
-                  Bplmodels::GeographicDataFuncs.bbox_to_wkt(coords, 'wkt_array')
+                  Bplmodels::GeographicDataFuncs.bbox_formatter(coords, 'wkt_array')
               ]
             end
           elsif coords.match(/^[-]?[\d]+[\.]?[\d]*,[\s]?[-]?[\d]+[\.]?[\d]*$/)
