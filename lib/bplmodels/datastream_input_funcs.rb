@@ -97,8 +97,8 @@ module Bplmodels
 
     def self.parse_language(language_value)
       return_hash = {}
-      authority_check = Qa::Authorities::Loc.new
-      authority_result = authority_check.search(URI.escape(language_value), 'iso639-2')
+      authority_check = Qa::Authorities::Loc.subauthority_for('iso639-2')
+      authority_result = authority_check.search(CGI.escape(language_value))
 
       if authority_result.present?
         authority_result = authority_result.select{|hash| hash['label'].downcase == language_value.downcase || hash['id'].split('/').last.downcase == language_value.downcase }
@@ -113,8 +113,8 @@ module Bplmodels
 
     def self.parse_role(role_value)
       return_hash = {}
-      authority_check = Qa::Authorities::Loc.new
-      authority_result = authority_check.search(URI.escape(role_value), 'relators')
+      authority_check = Qa::Authorities::Loc.subauthority_for('relators')
+      authority_result = authority_check.search(CGI.escape(role_value))
       if authority_result.present?
         authority_result = authority_result.select{|hash| hash['label'].downcase == role_value.downcase}
         if  authority_result.present?
@@ -134,11 +134,11 @@ module Bplmodels
       potential_role_check = name.match(/[\(\"\',]*\w\w+[\),\"\']* [\w\.,\d\-\"]*[\w\d][\w\d][\w\.,\d\-\"]* [\(\"\',]*\w\w+[\),\"\']*$/) || name.split(/[ ]+/).length >= 4
 
       if potential_role_check.present?
-        authority_check = Qa::Authorities::Loc.new
+        authority_check = Qa::Authorities::Loc.subauthority_for('relators')
 
         #Check the last value of the name string...
         role_value = name.match(/(?<=[\(\"\', ])\w+(?=[\),\"\']*$)/).to_s
-        authority_result = authority_check.search(URI.escape(role_value), 'relators')
+        authority_result = authority_check.search(CGI.escape(role_value))
         if authority_result.present?
 
           authority_result = authority_result.select{|hash| hash['label'].downcase == role_value.downcase}
@@ -153,7 +153,7 @@ module Bplmodels
 
         #Check the last value of the name string...
         role_value = name.match(/\w+(?=[\),\"\']*)/).to_s
-        authority_result = authority_check.search(URI.escape(role_value), 'relators')
+        authority_result = authority_check.search(CGI.escape(role_value))
         if authority_result.present? && return_hash.blank?
 
           authority_result = authority_result.select{|hash| hash['label'].downcase == role_value.downcase}
