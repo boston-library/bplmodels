@@ -20,7 +20,7 @@ module Bplmodels
     def to_solr(doc = {} )
       doc = super(doc)
       doc['active_fedora_model_ssi'] = self.class.name
-
+      doc['exemplary_image_ssi'] = self.pid if self.thumbnail300.present?
       doc
     end
 
