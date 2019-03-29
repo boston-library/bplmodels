@@ -3,6 +3,7 @@
 *.rbc
 *.sassc
 .sass-cache
+.ruby-version
 capybara-*.html
 .rspec
 /.bundle

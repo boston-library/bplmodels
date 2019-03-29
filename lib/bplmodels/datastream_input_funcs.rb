@@ -1,7 +1,7 @@
 #!/bin/env ruby
 # encoding: utf-8
 require 'htmlentities'
-
+require 'hydra-file_characterization'
 module Bplmodels
   class DatastreamInputFuncs
 
@@ -204,6 +204,13 @@ module Bplmodels
         placename.join(', ').gsub(/(\A,\s)|(,\s\z)/,'')
       else
         nil
+      end
+    end
+
+    def self.get_fits_xml(datastream)
+      return unless datastream.has_content?
+      Hydra::FileCharacterization.characterize(datastream.content, datastream.filename_for_characterization.join(""), :fits) do |config|
+        config[:fits] = ENV.fetch("FITS_PATH", "#{ENV['HOME']}/tools/Fits/fits.sh")
       end
     end
 

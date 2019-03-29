@@ -7,8 +7,8 @@ require "bplmodels/version"
 Gem::Specification.new do |s|
   s.name        = "bplmodels"
   s.version     = Bplmodels::VERSION
-  s.authors     = ["Steven Anderson"]
-  s.email       = ["sanderson@bpl.org"]
+  s.authors     = ["Steven Anderson", "Ben Barber", "Eben English"]
+  s.email       = ["sanderson@bpl.org", "bbarber@bpl.org", "eenglish@bpl.org"]
   s.homepage    = "http://www.bpl.org"
   s.summary     = "Common Boston Library repository models."
   s.description = "Common Boston Library repository models."
@@ -16,11 +16,9 @@ Gem::Specification.new do |s|
   s.files = Dir["{app,config,db,lib}/**/*"] + ["MIT-LICENSE", "Rakefile", "README.rdoc"]
   s.test_files = Dir["test/**/*"]
 
-  s.add_dependency "rails"
-  s.add_dependency "mods"
-  s.add_dependency "timeliness" #TODO: REMOVE THIS, in Bpl_enrich now
-  s.add_dependency "hydra-derivatives"
-  # s.add_dependency "jquery-rails"
-
-  s.add_development_dependency "sqlite3"
+  s.add_dependency 'rails', '>= 5', '< 6'
+  s.add_dependency 'mods', '~> 2.3', '>= 2.3.1'
+  s.add_dependency 'active-fedora', '>= 8.0.1', '< 9'
+  s.add_dependency 'hydra-file_characterization', '~> 1.0.0'
+  # s.add_development_dependency "sqlite3"
 end

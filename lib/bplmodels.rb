@@ -3,7 +3,6 @@ require "bplmodels/datastream_input_funcs"
 require "bplmodels/finder"
 require "bplmodels/constants"
 require "bplmodels/geographic_data_funcs"
-require "timeliness"
 
 module Bplmodels
   def self.environment

@@ -6,13 +6,11 @@ module Bplmodels
     has_many :prev_image, :class_name => "Bplmodels::ImageFile", :property=> :is_following_image_of
 
     # Use a callback method to declare which derivatives you want
-    makes_derivatives :generate_derivatives
+    # makes_derivatives :generate_derivatives
 
     def fedora_name
       'image_file'
     end
-
-
 
   end
 end

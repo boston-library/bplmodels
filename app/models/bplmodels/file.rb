@@ -6,7 +6,7 @@ module Bplmodels
     include Bplmodels::Characterization
 
     include ActiveFedora::Auditable
-    include Hydra::Derivatives
+    include BPL::Derivatives
 
     has_file_datastream 'geoEncodedMaster', versionable: false, label: 'geoEncodedMaster datastream'
 
@@ -108,42 +108,40 @@ module Bplmodels
         when 'application/pdf'
           #transform_datastream :productionMaster, { :thumb => "100x100>" }
 
-          pdffile = Tempfile.new(['derivative','.pdf'])
-          pdffile.binmode
-          pdffile.write(self.productionMaster.content) #ActiveFedora.config.credentials[:url] + '/objects/' + self.pid + '/datastreams/productionMaster/content'
-          pdffile.close
+          # pdffile = Tempfile.new(['derivative','.pdf'])
+          # pdffile.binmode
+          # pdffile.write(self.productionMaster.content) #ActiveFedora.config.credentials[:url] + '/objects/' + self.pid + '/datastreams/productionMaster/content'
+          # pdffile.close
+          #
+          # current_page = 0
+          # total_colors = 0
+          # until total_colors > 1 do
+          #   #Won't work... asks for login with the brackets...
+          #   img = Magick::Image.read(pdffile.path + '[' + current_page.to_s + ']'){
+          #     self.quality = 100
+          #     self.density = 200
+          #   }.first
+          #   total_colors = img.total_colors
+          #   current_page = current_page + 1
+          # end
+          #
+          # #This is horrible. But if you don't do this, some PDF files won't come out right at all.
+          # #Multiple attempts have failed to fix this but perhaps the bug will be patched in ImageMagick.
+          # #To duplicate, one can use the PDF files at: http://libspace.uml.edu/omeka/files/original/7ecb4dc9579b11e2b53ccc2040e58d36.pdf
+          # img = Magick::Image.from_blob( img.to_blob { self.format = "jpg" } ).first
+          #
+          # thumb = img.resize_to_fit(300,300)
 
-          current_page = 0
-          total_colors = 0
-          until total_colors > 1 do
-            #Won't work... asks for login with the brackets...
-            img = Magick::Image.read(pdffile.path + '[' + current_page.to_s + ']'){
-              self.quality = 100
-              self.density = 200
-            }.first
-            total_colors = img.total_colors
-            current_page = current_page + 1
-          end
-
-          #This is horrible. But if you don't do this, some PDF files won't come out right at all.
-          #Multiple attempts have failed to fix this but perhaps the bug will be patched in ImageMagick.
-          #To duplicate, one can use the PDF files at: http://libspace.uml.edu/omeka/files/original/7ecb4dc9579b11e2b53ccc2040e58d36.pdf
-          img = Magick::Image.from_blob( img.to_blob { self.format = "jpg" } ).first
-
-          thumb = img.resize_to_fit(300,300)
-
-          self.thumbnail300.content = thumb.to_blob { self.format = "jpg" }
+          derivatize runner: :image, source_datastream: "productionMaster", outputs: [{label: :thumb, size: "300x300>", dsid: 'thumbnail300', format: 'jpg', quality: 100, density: 200, layer: 0}]
           self.thumbnail300.mimeType = 'image/jpeg'
           self.thumbnail300.dsLabel = self.productionMaster.label
-
-          pdffile.delete
         when 'audio/wav'
           #transform_datastream :productionMaster, { :mp3 => {format: 'mp3'}, :ogg => {format: 'ogg'} }, processor: :audio
         when 'video/avi'
           #transform_datastream :productionMaster, { :mp4 => {format: 'mp4'}, :webm => {format: 'webm'} }, processor: :video
         when 'image/tiff'
           begin
-            transform_datastream :productionMaster, { :testJP2k => { recipe: :default, datastream: 'accessMaster'  } }, processor: 'jpeg2k_image'
+            derivatize runner: :jpeg2k_image, source_datastream: "productionMaster", outputs: [ {recipe: :default, dsid:  'accessMaster'  } ]
           rescue => error
             # First one is from Blue Books collection. Second one is from commonwealth:xd07m887b
             if error.message.include?('compressed TIFF files') || error.message.include?("The number of colours associated with the colour space specified using")
@@ -153,23 +151,26 @@ module Bplmodels
               raise error
             end
           end
-          transform_datastream :productionMaster, { :thumb => {size: "300x300>", datastream: 'thumbnail300', format: 'jpg'} }
-          transform_datastream :productionMaster, { :thumb => {size: "x800>", datastream: 'access800', format: 'jpg'} }
+          derivatize runner: :image, source_datastream: "productionMaster", outputs: [
+             { label: :thumb, size: "300x300>", dsid: 'thumbnail300', format: 'jpg' },
+             { label: :thumb, size: "x800>", dsid: 'access800', format: 'jpg' }
+           ]
           self.accessMaster.dsLabel = self.productionMaster.label
           self.thumbnail300.dsLabel = self.productionMaster.label
           self.access800.dsLabel = self.productionMaster.label
         when 'image/jpeg', 'image/png', 'image/jpg'
           self.manually_generate_jp2
 
-          transform_datastream :productionMaster, { :thumb => {size: "300x300>", datastream: 'thumbnail300', format: 'jpg'} }
-          transform_datastream :productionMaster, { :thumb => {size: "x800>", datastream: 'access800', format: 'jpg'} }
+          derivatize runner: :image, source_datastream: 'productionMaster', outputs: [
+            { label: :thumb, size: "300x300>", datastream: 'thumbnail300', format: 'jpg' },
+            { label: :thumb, size: "x800>", datastream: 'access800', format: 'jpg' }
+          ]
           self.accessMaster.dsLabel = self.productionMaster.label
           self.thumbnail300.dsLabel = self.productionMaster.label
           self.access800.dsLabel = self.productionMaster.label
         when 'image/jp2'
           self.accessMaster.content = self.productionMaster.content
           self.accessMaster.mimeType = 'image/jp2'
-
 
 =begin
           source_path = "#{ActiveFedora.config.credentials[:url]}/#{self.productionMaster.url}"
@@ -196,12 +197,13 @@ module Bplmodels
           File.unlink(file_path)
 =end
 
-          transform_datastream :productionMaster, { :thumb => {size: "300x300>", datastream: 'thumbnail300', format: 'jpg'} }
-          transform_datastream :productionMaster, { :thumb => {size: "x800>", datastream: 'access800', format: 'jpg'} }
+          derivatize runner: :image, source_datastream: 'productionMaster', outputs: [
+           { label: :thumb, size: "300x300>", dsid: 'thumbnail300', format: 'jpg'},
+           { label: :thumb,  size: "x800>", dsid: 'access800', format: 'jpg'}
+         ]
           self.accessMaster.dsLabel = self.productionMaster.label
           self.thumbnail300.dsLabel = self.productionMaster.label
           self.access800.dsLabel = self.productionMaster.label
-
 
       end
 
