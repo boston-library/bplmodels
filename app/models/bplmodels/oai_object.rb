@@ -13,6 +13,7 @@ module Bplmodels
     #has_file_datastream :name => 'productionMaster', :type => ActiveFedora::Datastream
 
 
+
     def fedora_name
       'oai_object'
     end
@@ -23,6 +24,19 @@ module Bplmodels
       doc['exemplary_image_ssi'] = self.pid if self.thumbnail300.present?
       doc
     end
+
+    def add_thumbnail_300(thumb_content, ds_label)
+      self.thumbnail300.content = thumb_content.read
+      self.thumbnail300.mimeType = 'image/jpeg'
+      self.thumbnail300.dsLabel = ds_label
+    end
+
+    def add_thumbnail_relationship(thumbnail_url)
+      self.descMetadata.insert_location_url(thumbnail_url, 'preview', nil)
+      self.add_relationship(:is_image_of, "info:fedora/#{self.pid}")
+      self.add_relationship(:is_exemplary_image_of, "info:fedora/#{self.pid}")
+    end
+
 
     #Expects the following args:
     #parent_pid => id of the parent object

@@ -1729,6 +1729,13 @@ module Bplmodels
       return true
     end
 
+    def mark_workflow_complete
+      if self.workflowMetadata.item_status.processing != ["complete"]
+        self.workflowMetadata.item_status.processing = "complete"
+        self.workflowMetadata.item_status.processing_comment = "Object Processing Complete"
+        self.save
+      end
+    end
 
     def calculate_volume_match_md5s
       self.workflowMetadata.volume_match_md5s.marc = Digest::MD5.hexdigest(self.marc.content)
