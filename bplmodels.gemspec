@@ -20,5 +20,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'mods', '~> 2.3', '>= 2.3.1'
   s.add_dependency 'active-fedora', '>= 8.0.1', '< 9'
   s.add_dependency 'hydra-file_characterization', '~> 1.0.0'
+  s.add_dependency 'typhoeus'
+  s.add_dependency 'om', '~> 3.0'
   # s.add_development_dependency "sqlite3"
 end

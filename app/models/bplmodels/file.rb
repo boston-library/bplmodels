@@ -225,7 +225,7 @@ module Bplmodels
     end
 
     def derivative_service(is_new)
-      response = Typhoeus::Request.post(DERIVATIVE_CONFIG_GLOBAL['url'] + "/processor/byfile.json", :params => {:pid=>self.pid, :new=>is_new, :environment=>Bplmodels.environment})
+      response = Typhoeus::Request.post(DERIVATIVE_CONFIG_GLOBAL['url'] + "/processor/byfile.json", :params => {:derivative => {:pid=>self.pid, :new=>is_new, :environment=>Bplmodels.environment}})
       puts response.body.to_s
       as_json = JSON.parse(response.body)
 
@@ -286,14 +286,19 @@ module Bplmodels
 
 
     def cache_invalidate
-      response = Typhoeus::Request.post(DERIVATIVE_CONFIG_GLOBAL['url'] + "/processor/objectcacheinvalidation.json", :params => {:file_pid=>self.pid, :environment=>Bplmodels.environment})
-      as_json = JSON.parse(response.body)
+      response = Typhoeus::Request.new(
+        "#{DERIVATIVE_CONFIG_GLOBAL['url']}/processor/objectcacheinvalidation",
+        :method => :post,
+        :params => {
+          :invalid_cache => {:file_pid=>self.pid, :environment=>Bplmodels.environment}},
+        :headers => {Authorization: "Basic #{Base64.urlsafe_encode64([DERIVATIVE_CONFIG_GLOBAL['client_id'], ':', DERIVATIVE_CONFIG_GLOBAL['client_secret']].join )}"}
+      )
+      json_response = JSON.parse(response.body)
 
-      if as_json['result'] == "false"
+      if json_response['result'] == "false"
         raise "Error Deleting the Cache! Server error!"
       end
-
-      return true
+      true
     end
 
 

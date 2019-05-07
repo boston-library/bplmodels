@@ -1682,8 +1682,7 @@ module Bplmodels
     end
 
     def derivative_service(is_new)
-      response = Typhoeus::Request.post(DERIVATIVE_CONFIG_GLOBAL['url'] + "/processor/byobject.json", :params => {:pid=>self.pid, :new=>is_new, :environment=>Bplmodels.environment})
-      puts response.body.to_s
+      response = Typhoeus::Request.post(DERIVATIVE_CONFIG_GLOBAL['url'] + "/processor/byobject", :params => {:derivative => {:pid=>self.pid, :new=>is_new, :environment=>Bplmodels.environment}})
       as_json = JSON.parse(response.body)
 
       if as_json['result'] == "false"
@@ -1697,13 +1696,14 @@ module Bplmodels
     end
 
     def oai_thumbnail_service(is_new, urls, system_type, thumbnail_url=nil)
-      response = Typhoeus::Request.post(DERIVATIVE_CONFIG_GLOBAL['url'] + "/processor/oaithumbnail.json",
-                                        :params => {:pid=>self.pid,
-                                                    :new=>is_new,
+      response = Typhoeus::Request.post(DERIVATIVE_CONFIG_GLOBAL['url'] + "/processor/oaithumbnail",
+                                        :params => {:oai_thumnbail =>
+                                                    {:pid=>self.pid,
+                                                    :new=> is_new,
                                                     :environment=>Bplmodels.environment,
                                                     :image_urls=>urls,
                                                     :system_type=>system_type,
-                                                    :thumbnail_url=>thumbnail_url})
+                                                    :thumbnail_url=>thumbnail_url}})
       as_json = JSON.parse(response.body)
 
       if as_json['result'] == "false"
@@ -1719,7 +1719,7 @@ module Bplmodels
       # remove the cached IIIF manifest (may not exist, so no worry about response)
       Typhoeus::Request.post("#{BPL_CONFIG_GLOBAL['commonwealth_public']}/search/#{self.pid}/manifest/cache_invalidate")
 
-      obj_response = Typhoeus::Request.post(DERIVATIVE_CONFIG_GLOBAL['url'] + "/processor/objectcacheinvalidation.json", :params => {:object_pid=>self.pid, :environment=>Bplmodels.environment})
+      obj_response = Typhoeus::Request.post(DERIVATIVE_CONFIG_GLOBAL['url'] + "/processor/objectcacheinvalidation", :params => {:invalid_cache => {:pid=>self.pid, :environment=>Bplmodels.environment, :type => 'object'}})
       as_json = JSON.parse(obj_response.body)
 
       if as_json['result'] == "false"

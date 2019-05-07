@@ -200,7 +200,6 @@ module Bplmodels
     #local_id_type => type of that local ID
     #label => label of the collection
     def self.mint(args)
-
       args[:namespace_id] ||= ARK_CONFIG_GLOBAL['namespace_commonwealth_pid']
 
       #TODO: Duplication check here to prevent over-writes?
