@@ -152,18 +152,27 @@ module Bplmodels
             end
           end
           derivatize runner: :image, source_datastream: "productionMaster", outputs: [
-             { label: :thumb, size: "300x300>", dsid: 'thumbnail300', format: 'jpg' },
-             { label: :thumb, size: "x800>", dsid: 'access800', format: 'jpg' }
+             { label: :thumb, size: "x800>", dsid: 'access800', format: 'jpg' },
+             { label: :thumb, size: "300x300>", dsid: 'thumbnail300', format: 'jpg' }
            ]
           self.accessMaster.dsLabel = self.productionMaster.label
           self.thumbnail300.dsLabel = self.productionMaster.label
           self.access800.dsLabel = self.productionMaster.label
         when 'image/jpeg', 'image/png', 'image/jpg'
-          self.manually_generate_jp2
+          begin
+            derivatize runner: :jpeg2k_image, source_datastream: "productionMaster", outputs: [ {recipe: :default, dsid:  'accessMaster'  } ]
+          rescue => error
+            # First one is from Blue Books collection. Second one is from commonwealth:xd07m887b
+            if error.message.include?("The number of colours associated with the colour space specified using")
+             self.manually_generate_jp2
+            else
+              raise error
+            end
+          end
 
           derivatize runner: :image, source_datastream: 'productionMaster', outputs: [
-            { label: :thumb, size: "300x300>", datastream: 'thumbnail300', format: 'jpg' },
-            { label: :thumb, size: "x800>", datastream: 'access800', format: 'jpg' }
+            { label: :thumb, size: "x800>", datastream: 'access800', format: 'jpg' },
+            { label: :thumb, size: "300x300>", datastream: 'thumbnail300', format: 'jpg' }
           ]
           self.accessMaster.dsLabel = self.productionMaster.label
           self.thumbnail300.dsLabel = self.productionMaster.label
@@ -198,8 +207,8 @@ module Bplmodels
 =end
 
           derivatize runner: :image, source_datastream: 'productionMaster', outputs: [
-           { label: :thumb, size: "300x300>", dsid: 'thumbnail300', format: 'jpg'},
-           { label: :thumb,  size: "x800>", dsid: 'access800', format: 'jpg'}
+           { label: :thumb,  size: "x800>", dsid: 'access800', format: 'jpg'},
+           { label: :thumb, size: "300x300>", dsid: 'thumbnail300', format: 'jpg'}
          ]
           self.accessMaster.dsLabel = self.productionMaster.label
           self.thumbnail300.dsLabel = self.productionMaster.label
