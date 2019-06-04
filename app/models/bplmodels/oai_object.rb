@@ -26,7 +26,7 @@ module Bplmodels
     end
 
     def add_thumbnail_300(thumb_content, ds_label)
-      self.thumbnail300.content = thumb_content.read
+      self.thumbnail300.content = thumb_content
       self.thumbnail300.mimeType = 'image/jpeg'
       self.thumbnail300.dsLabel = ds_label
     end
