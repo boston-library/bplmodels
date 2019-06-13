@@ -1682,51 +1682,129 @@ module Bplmodels
     end
 
     def derivative_service(is_new)
-      response = Typhoeus::Request.post(DERIVATIVE_CONFIG_GLOBAL['url'] + "/processor/byobject", :params => {:derivative => {:pid=>self.pid, :new=>is_new, :environment=>Bplmodels.environment}})
-      as_json = JSON.parse(response.body)
+      url = "#{Bplmodels.avi_url}/processor/byobject"
 
-      if as_json['result'] == "false"
-        pid = self.object.pid
-        self.deleteAllFiles
-        self.delete
-        raise "Error Generating Derivatives For Object: " + pid
+      params = {
+        derivative: {
+          pid: self.pid,
+          environment: Bplmodels.environment,
+          new: is_new,
+          type: 'object'
+        }
+      }
+
+      headers = {
+        'Authorization' => "Basic #{Bplmodels.avi_credentials}",
+        'Content-Type' => 'application/json',
+        'Accept' => 'application/json'
+      }
+
+      obj_response = Typhoeus::Request.post(url, params: params, headers: headers)
+
+      json_response = avi_json_response(obj_response.body)
+      if json_response
+        unless json_response[:status] == 202
+          error = "Error Generating Derivatives for Object #{self.pid}\n"
+          error << "=============AVI Processor Returned and Error!===================="
+          error << "STATUS #{json_response[:status]}"
+          error <<  "INFO: #{json_response[:info]}\n"
+          error << "ERRORS: #{json_response[:errors].join("\n")}"
+          raise info
+        end
+      else
+        error = "Error Generating Derivatives for Object #{self.pid}\n"
+        error << "Unable to parse JSON! Server Fault!\n"
+        error << "Response code is #{obj_response.code}"
+        raise error
       end
-
-      return true
+      true
     end
 
     def oai_thumbnail_service(is_new, urls, system_type, thumbnail_url=nil)
-      response = Typhoeus::Request.post(DERIVATIVE_CONFIG_GLOBAL['url'] + "/processor/oaithumbnail",
-                                        :params => {:oai_thumnbail =>
-                                                    {:pid=>self.pid,
-                                                    :new=> is_new,
-                                                    :environment=>Bplmodels.environment,
-                                                    :image_urls=>urls,
-                                                    :system_type=>system_type,
-                                                    :thumbnail_url=>thumbnail_url}})
-      as_json = JSON.parse(response.body)
 
-      if as_json['result'] == "false"
-        pid = self.object.pid
-        self.delete
-        raise "Error Generating OAI Thumbnail For Object: " + pid
+      url = "#{Bplmodels.avi_url}/processor/oaithumbnail"
+
+      params = {
+        oai_thumbnail: {
+          object_pid: self.pid,
+          environment: Bplmodels.environment,
+          thumbnail_url: thumbnail_url,
+          system_type: system_type,
+          image_urls: image_urls
+        }
+      }
+
+      headers = {
+        'Authorization' => "Basic #{Bplmodels.avi_credentials}",
+        'Content-Type' => 'application/json',
+        'Accept' => 'application/json'
+      }
+
+      obj_response = Typhoeus::Request.post(url, params: params, headers: headers)
+
+
+      json_response = avi_json_response(obj_response.body)
+      if json_response
+        unless json_response[:status] == 202
+          error =  "Unable to generate Thumnbnail of OAIObject #{self.pid}\n"
+          error = "=============AVI Processor Returned and Error!====================\n"
+          error << "STATUS #{json_response[:status]}\n"
+          error <<  "INFO: #{json_response[:info]}\n"
+          error << "ERRORS: #{json_response[:errors].join("\n")}\n"
+          raise error
+        end
+      else
+        error =  "Unable to generate Thumnbanail of OAIObject #{self.pid}\n"
+        error << "Unable to parse JSON! Server Fault! response code is #{obj_response.code}\n"
+        raise error
       end
-
-      return true
+      true
     end
 
     def cache_invalidate
       # remove the cached IIIF manifest (may not exist, so no worry about response)
       Typhoeus::Request.post("#{BPL_CONFIG_GLOBAL['commonwealth_public']}/search/#{self.pid}/manifest/cache_invalidate")
 
-      obj_response = Typhoeus::Request.post(DERIVATIVE_CONFIG_GLOBAL['url'] + "/processor/objectcacheinvalidation", :params => {:invalid_cache => {:pid=>self.pid, :environment=>Bplmodels.environment, :type => 'object'}})
-      as_json = JSON.parse(obj_response.body)
+      url = "#{Bplmodels.avi_url}/processor/objectcacheinvalidation"
 
-      if as_json['result'] == "false"
-        raise "Error Deleting the Cache! Server error!"
+      params = {
+        cache: {
+          pid: self.pid,
+          environment: Bplmodels.environment,
+          type: 'object'
+        }
+      }
+
+      headers = {
+        'Authorization' => "Basic #{Bplmodels.avi_credentials}",
+        'Content-Type' => 'application/json',
+        'Accept' => 'application/json'
+      }
+
+      obj_response = Typhoeus::Request.post(url, params: params, headers: headers)
+
+
+      json_response = avi_json_response(obj_response.body)
+      if json_response
+        unless json_response[:status] == 202
+          error = "=============AVI Processor Returned and Error!====================\n"
+          error << "STATUS #{json_response[:status]}\n"
+          error <<  "INFO: #{json_response[:info]}\n"
+          error << "ERRORS: #{json_response[:errors].join("\n")}"
+          raise error
+        end
+      else
+        raise "Unable to parse JSON! Server Fault! response code is #{obj_response.code}"
       end
+      true
+    end
 
-      return true
+    def avi_json_response(response_body)
+      begin
+        JSON.parse(response.body)
+      rescue
+        nil
+      end
     end
 
     def mark_workflow_complete

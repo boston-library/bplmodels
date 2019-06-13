@@ -234,15 +234,42 @@ module Bplmodels
     end
 
     def derivative_service(is_new)
-      response = Typhoeus::Request.post(DERIVATIVE_CONFIG_GLOBAL['url'] + "/processor/byfile.json", :params => {:derivative => {:pid=>self.pid, :new=>is_new, :environment=>Bplmodels.environment}})
-      puts response.body.to_s
-      as_json = JSON.parse(response.body)
+      url = "#{Bplmodels.avi_url}/processor/byfile"
 
-      if as_json['result'] == "false"
-        raise "Error Generating Derivatives For Object: " + pid
+      params = {
+        derivative: {
+          pid: self.pid,
+          environment: Bplmodels.environment,
+          new: is_new,
+          type: 'file'
+        }
+      }
+
+      headers = {
+        'Authorization' => "Basic #{Bplmodels.avi_credentials}",
+        'Content-Type' => 'application/json',
+        'Accept' => 'application/json'
+      }
+
+      file_response = Typhoeus::Request.post(url, params: params, headers: headers)
+
+      json_response = avi_json_response(file_response.body)
+      if json_response
+        unless json_response[:status] == 202
+          error = "Error Generating Derivatives for File #{self.pid}\n"
+          error << "=============AVI Processor Returned and Error!===================="
+          error << "STATUS #{json_response[:status]}"
+          error <<  "INFO: #{json_response[:info]}\n"
+          error << "ERRORS: #{json_response[:errors].join("\n")}"
+          raise info
+        end
+      else
+        error = "Error Generating Derivatives for File #{self.pid}\n"
+        error << "Unable to parse JSON! Server Fault!\n"
+        error << "Response code is #{file_response.code}"
+        raise error
       end
-
-      return true
+      true
     end
 
 
@@ -295,21 +322,49 @@ module Bplmodels
 
 
     def cache_invalidate
-      response = Typhoeus::Request.new(
-        "#{DERIVATIVE_CONFIG_GLOBAL['url']}/processor/objectcacheinvalidation",
-        :method => :post,
-        :params => {
-          :invalid_cache => {:file_pid=>self.pid, :environment=>Bplmodels.environment}},
-        :headers => {Authorization: "Basic #{Base64.urlsafe_encode64([DERIVATIVE_CONFIG_GLOBAL['client_id'], ':', DERIVATIVE_CONFIG_GLOBAL['client_secret']].join )}"}
-      )
-      json_response = JSON.parse(response.body)
+      url = "#{Bplmodels.avi_url}/processor/objectcacheinvalidation"
 
-      if json_response['result'] == "false"
-        raise "Error Deleting the Cache! Server error!"
+      params = {
+        cache: {
+          pid: self.pid,
+          environment: Bplmodels.environment,
+          type: 'file'
+        }
+      }
+
+      headers = {
+        'Authorization' => "Basic #{Bplmodels.avi_credentials}",
+        'Content-Type' => 'application/json',
+        'Accept' => 'application/json'
+      }
+
+      file_response = Typhoeus::Request.post(url, params: params, headers: headers)
+
+      json_response = avi_json_response(file_response.body)
+      if json_response
+        unless json_response[:status] == 202
+          error = "Unable to clear cache for File #{self.pid}\n"
+          error = "=============AVI Processor Returned and Error!====================\n"
+          error << "STATUS #{json_response[:status]}\n"
+          error <<  "INFO: #{json_response[:info]}\n"
+          error << "ERRORS: #{json_response[:errors].join("\n")}\n"
+          raise error
+        end
+      else
+        error = "Unable to clear cache for File #{self.pid}\n"
+        error << "Unable to parse JSON! Server Fault! response code is #{file_response.code}\n"
+        raise error
       end
       true
     end
 
+    def avi_json_response(response_body)
+      begin
+        JSON.parse(response.body)
+      rescue
+        nil
+      end
+    end
 
   end
 end
