@@ -22,7 +22,7 @@ module Bplmodels
   #For "Authorization" Header
   def self.avi_credentials(type=:processor)
     if use_avi_rails_credentials?(type)
-      auth = "#{rails_avi_credentials[type][:client]}:#{rails_avi_credentials[type][:avi_secret]}"
+      auth = "#{rails_avi_credentials[type][:client]}:#{rails_avi_credentials[type][:secret]}"
       return Base64.urlsafe_encode64(auth)
     elsif defined?(DERIVATIVE_CONFIG_GLOBAL)  && DERIVATIVE_CONFIG_GLOBAL.present? && DERIVATIVE_CONFIG_GLOBAL['avi_client'].present? && DERIVATIVE_CONFIG_GLOBAL['avi_secret'].present?
       auth = "#{DERIVATIVE_CONFIG_GLOBAL['avi_client']}:#{DERIVATIVE_CONFIG_GLOBAL['avi_secret']}"
