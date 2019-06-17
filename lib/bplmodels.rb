@@ -20,7 +20,7 @@ module Bplmodels
   end
 
   #For "Authorization" Header
-  def self.avi_processor_credentials(type=:processor)
+  def self.avi_credentials(type=:processor)
     if use_avi_rails_credentials?(type)
       auth = "#{rails_avi_credentials[type][:client]}:#{rails_avi_credentials[type][:avi_secret]}"
       return Base64.urlsafe_encode64(auth)
