@@ -360,7 +360,7 @@ module Bplmodels
 
     def avi_json_response(response_body)
       begin
-        JSON.parse(response.body).with_indifferent_access
+        JSON.parse(response_body).with_indifferent_access
       rescue
         nil
       end
