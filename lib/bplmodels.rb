@@ -48,7 +48,7 @@ module Bplmodels
   end
 
   def self.rails_avi_credentials
-    Rails.application.credentials[Rails.env.to_sym][:avi]
+    Rails.application.credentials[Rails.env.to_sym][:avi] if Rails.application.credentials.present?
   end
 
 
