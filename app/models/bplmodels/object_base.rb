@@ -1688,8 +1688,8 @@ module Bplmodels
         derivative: {
           pid: self.pid,
           environment: Bplmodels.environment,
-          new: is_new,
-          type: 'object'
+          characterize: is_new,
+          object_type: 'object'
         }
       }
 
@@ -1771,7 +1771,7 @@ module Bplmodels
         cache: {
           pid: self.pid,
           environment: Bplmodels.environment,
-          type: 'object'
+          cache_type: 'object'
         }
       }
 
@@ -1801,7 +1801,7 @@ module Bplmodels
 
     def avi_json_response(response_body)
       begin
-        JSON.parse(response.body)
+        JSON.parse(response.body).with_indifferent_access
       rescue
         nil
       end
