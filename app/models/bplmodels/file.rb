@@ -237,9 +237,9 @@ module Bplmodels
       url = "#{Bplmodels.avi_url}/processor/byfile"
 
       params = {
+        environment: Bplmodels.environment,
         derivative: {
           pid: self.pid,
-          environment: Bplmodels.environment,
           characterize: is_new,
           object_type: 'file'
         }
@@ -325,9 +325,9 @@ module Bplmodels
       url = "#{Bplmodels.avi_url}/processor/objectcacheinvalidation"
 
       params = {
+        environment: Bplmodesl.environment,
         cache: {
           pid: self.pid,
-          environment: Bplmodels.environment,
           cache_type: 'file'
         }
       }

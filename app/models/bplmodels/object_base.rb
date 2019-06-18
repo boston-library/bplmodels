@@ -1685,9 +1685,9 @@ module Bplmodels
       url = "#{Bplmodels.avi_url}/processor/byobject"
 
       params = {
+        environment: Bplmodels.environment
         derivative: {
           pid: self.pid,
-          environment: Bplmodels.environment,
           characterize: is_new,
           object_type: 'object'
         }
@@ -1725,9 +1725,9 @@ module Bplmodels
       url = "#{Bplmodels.avi_url}/processor/oaithumbnail"
 
       params = {
+        environment: Bplmodels.environment,
         oai_thumbnail: {
           object_pid: self.pid,
-          environment: Bplmodels.environment,
           thumbnail_url: thumbnail_url,
           system_type: system_type,
           image_urls: image_urls
@@ -1768,9 +1768,9 @@ module Bplmodels
       url = "#{Bplmodels.avi_url}/processor/objectcacheinvalidation"
 
       params = {
+        environment: Bplmodels.environment
         cache: {
           pid: self.pid,
-          environment: Bplmodels.environment,
           cache_type: 'object'
         }
       }
