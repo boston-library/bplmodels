@@ -1685,7 +1685,7 @@ module Bplmodels
       url = "#{Bplmodels.avi_url}/processor/byobject"
 
       params = {
-        environment: Bplmodels.environment
+        environment: Bplmodels.environment,
         derivative: {
           pid: self.pid,
           characterize: is_new,
@@ -1768,7 +1768,7 @@ module Bplmodels
       url = "#{Bplmodels.avi_url}/processor/objectcacheinvalidation"
 
       params = {
-        environment: Bplmodels.environment
+        environment: Bplmodels.environment,
         cache: {
           pid: self.pid,
           cache_type: 'object'
