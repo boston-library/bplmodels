@@ -260,7 +260,7 @@ module Bplmodels
           error << "=============AVI Processor Returned and Error!===================="
           error << "STATUS #{json_response[:status]}"
           error <<  "INFO: #{json_response[:info]}\n"
-          error << "ERRORS: #{json_response[:errors].join("\n")}"
+          error << "ERRORS: #{json_response[:errors].join("\n")}" if json_response[:errors]
           raise info
         end
       else
@@ -347,7 +347,7 @@ module Bplmodels
           error = "=============AVI Processor Returned and Error!====================\n"
           error << "STATUS #{json_response[:status]}\n"
           error <<  "INFO: #{json_response[:info]}\n"
-          error << "ERRORS: #{json_response[:errors].join("\n")}\n"
+          error << "ERRORS: #{json_response[:errors].join("\n")}\n" if json_response[:errors]
           raise error
         end
       else
