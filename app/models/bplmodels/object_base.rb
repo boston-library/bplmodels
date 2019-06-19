@@ -1727,12 +1727,12 @@ module Bplmodels
       params = {
         environment: Bplmodels.environment,
         oai_thumbnail: {
-          object_pid: self.pid,
+          pid: self.pid,
           thumbnail_url: thumbnail_url,
           system_type: system_type,
           image_urls: image_urls
         }
-      }
+      }.to_json
 
       headers = {
         'Authorization' => "Basic #{Bplmodels.avi_credentials}",
@@ -1740,7 +1740,7 @@ module Bplmodels
         'Accept' => 'application/json'
       }
 
-      obj_response = Typhoeus::Request.post(url, params: params, headers: headers)
+      obj_response = Typhoeus::Request.post(url, body: params, headers: headers)
 
 
       json_response = avi_json_response(obj_response.body)
