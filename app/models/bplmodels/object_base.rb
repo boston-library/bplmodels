@@ -1720,7 +1720,7 @@ module Bplmodels
       true
     end
 
-    def oai_thumbnail_service(is_new, urls, system_type, thumbnail_url=nil)
+    def oai_thumbnail_service(is_new, image_urls, system_type, thumbnail_url=nil)
 
       url = "#{Bplmodels.avi_url}/processor/oaithumbnail"
 
