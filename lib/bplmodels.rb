@@ -47,6 +47,16 @@ module Bplmodels
     end
   end
 
+
+  def self.iiif_admin
+    begin
+      YAML.load_file(Rails.root.join('config', 'iiif_admin.yml'))[environment].with_indifferent_access
+    rescue
+      raise RuntimeError, "Could Not Find Credentials for IIIF Server"
+    end
+  end
+
+
   def self.rails_avi_credentials
     Rails.application.credentials[Rails.env.to_sym][:avi] if Rails.application.credentials.present?
   end

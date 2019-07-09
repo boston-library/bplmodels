@@ -40,10 +40,7 @@ module Bplmodels
     has_metadata :name => "pageMetadata", :type => PageMetadata
 
     def delete
-      #FIXME: This should just not be hardcoded in AVI Processor
-      if ActiveFedora.config.credentials[:url].match('fedora.digitalcommonwealth.org/fedora')
-        #cache_invalidate
-      end
+      self.cache_invalidate
       super()
     end
 
@@ -322,40 +319,22 @@ module Bplmodels
 
 
     def cache_invalidate
-      url = "#{Bplmodels.avi_url}/processor/objectcacheinvalidation"
+      url = "#{Bplmodels.iiif_admin[:url]}"
 
-      params = {
-        environment: Bplmodesl.environment,
-        cache: {
-          pid: self.pid,
-          cache_type: 'file'
-        }
-      }
+      body = {
+        "verb": "PurgeItemFromCache",
+        "identifer": self.pid
+      }.to_json
+
+      userpwd = "#{Bplmodels.iiif_admin[:username]}:#{Bplmodels.iiif_admin[:secret]}"
 
       headers = {
-        'Authorization' => "Basic #{Bplmodels.avi_credentials}",
         'Content-Type' => 'application/json',
-        'Accept' => 'application/json'
       }
 
-      file_response = Typhoeus::Request.post(url, params: params, headers: headers)
+      file_response = Typhoeus::Request.post(url, body: body, headers: headers, userpwd: userpwd)
+      raise "#{file_response.body}" unless [202, 204].include?(file_response.code)
 
-      json_response = avi_json_response(file_response.body)
-      if json_response
-        unless json_response[:status] == 202
-          error = "Unable to clear cache for File #{self.pid}\n"
-          error = "=============AVI Processor Returned and Error!====================\n"
-          error << "STATUS #{json_response[:status]}\n"
-          error <<  "INFO: #{json_response[:info]}\n"
-          error << "ERRORS: #{json_response[:errors].join("\n")}\n" if json_response[:errors]
-          raise error
-        end
-      else
-        error = "Unable to clear cache for File #{self.pid}\n"
-        error << "Unable to parse JSON! Server Fault! response code is #{file_response.code}\n"
-        raise error
-      end
-      true
     end
 
     def avi_json_response(response_body)

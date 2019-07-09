@@ -1764,39 +1764,14 @@ module Bplmodels
     def cache_invalidate
       # remove the cached IIIF manifest (may not exist, so no worry about response)
       Typhoeus::Request.post("#{BPL_CONFIG_GLOBAL['commonwealth_public']}/search/#{self.pid}/manifest/cache_invalidate")
-
-      url = "#{Bplmodels.avi_url}/processor/objectcacheinvalidation"
-
-      params = {
-        environment: Bplmodels.environment,
-        cache: {
-          pid: self.pid,
-          cache_type: 'object'
+      #Have to invalidate the files one by one
+      Bplmodels::File.find_in_batches('is_file_of_ssim'=>"info:fedora/#{self.pid}") do |group|
+        group.each { |solr_file|
+          file = Bplmodels::File.find(solr_file['id']).adapt_to_cmodel
+          file.cache_invalidate
+          sleep(0.2)
         }
-      }
-
-      headers = {
-        'Authorization' => "Basic #{Bplmodels.avi_credentials}",
-        'Content-Type' => 'application/json',
-        'Accept' => 'application/json'
-      }
-
-      obj_response = Typhoeus::Request.post(url, params: params, headers: headers)
-
-
-      json_response = avi_json_response(obj_response.body)
-      if json_response
-        unless json_response[:status] == 202
-          error = "=============AVI Processor Returned and Error!====================\n"
-          error << "STATUS #{json_response[:status]}\n"
-          error <<  "INFO: #{json_response[:info]}\n"
-          error << "ERRORS: #{json_response[:errors].join("\n")}" if json_response[:errors]
-          raise error
-        end
-      else
-        raise "Unable to parse JSON! Server Fault! response code is #{obj_response.code}"
       end
-      true
     end
 
     def avi_json_response(response_body)
