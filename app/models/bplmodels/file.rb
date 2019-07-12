@@ -40,7 +40,6 @@ module Bplmodels
     has_metadata :name => "pageMetadata", :type => PageMetadata
 
     def delete
-      self.cache_invalidate
       super()
     end
 
