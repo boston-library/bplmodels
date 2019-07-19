@@ -169,8 +169,8 @@ module Bplmodels
           end
 
           derivatize runner: :image, source_datastream: 'productionMaster', outputs: [
-            { label: :thumb, size: "x800>", datastream: 'access800', format: 'jpg' },
-            { label: :thumb, size: "300x300>", datastream: 'thumbnail300', format: 'jpg' }
+            { label: :thumb, size: "x800>", dsid: 'access800', format: 'jpg' },
+            { label: :thumb, size: "300x300>", dsid: 'thumbnail300', format: 'jpg' }
           ]
           self.accessMaster.dsLabel = self.productionMaster.label
           self.thumbnail300.dsLabel = self.productionMaster.label
