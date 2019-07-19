@@ -156,14 +156,16 @@ module Bplmodels
           self.access800.dsLabel = self.productionMaster.label
         when 'image/jpeg', 'image/png', 'image/jpg'
           begin
-            derivatize runner: :jpeg2k_image, source_datastream: "productionMaster", outputs: [ {recipe: :default, dsid:  'accessMaster'  } ]
+            self.manually_generate_jp2
+            #kakadu doesn't seem to like these images now no matter how much i attempoted to ensure this. Since this inly appears to be called when a thumbnail is set for an institution We will have it only manually_generate_jp2
+            # derivatize runner: :jpeg2k_image, source_datastream: "productionMaster", outputs: [ {recipe: :default, dsid:  'accessMaster'  } ]
           rescue => error
             # First one is from Blue Books collection. Second one is from commonwealth:xd07m887b
-            if error.message.include?("The number of colours associated with the colour space specified using")
-             self.manually_generate_jp2
-            else
-              raise error
-            end
+            raise error
+            # if error.message.include?("The number of colours associated with the colour space specified using")
+            # else
+            #   raise error
+            # end
           end
 
           derivatize runner: :image, source_datastream: 'productionMaster', outputs: [
