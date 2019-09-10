@@ -97,6 +97,131 @@ module Bplmodels
 
     end
 
+    def export_fileset_for_bpl_api
+      export_hash = {}
+      export_hash[:ark_id] = pid
+      export_hash[:file_of] = {
+        ark_id: object_id
+      }
+      exemplary_ids = []
+      relationships.each_statement do |statement|
+        if statement.predicate =~ /isExemplaryImageOf/
+          exemplary_ids << statement.object.to_s.gsub(/info:fedora\//,'')
+        end
+      end
+      unless exemplary_ids.blank?
+        export_hash[:exemplary_image_of] = []
+        exemplary_ids.uniq.each do |pid|
+          export_hash[:exemplary_image_of] << { ark_id: pid }
+        end
+      end
+      file_type = self.class.to_s.split("::").last.match(/[A-Z][a-z]*/).to_s.downcase
+      export_hash[:type] = file_type
+      export_hash[:sequence] = get_file_sequence
+      export_hash[:filename_base] = filename.first.gsub(/\.[a-z0-9]*\z/,'')
+      export_hash[:metastreams] = {}
+      unless datastreams["pageMetadata"].blank?
+        export_hash[:metastreams][:pagination] = {
+            label: pageMetadata.pageData.page.page_number[0],
+            page_type: pageMetadata.pageData.page.page_type[0],
+            hand_side: pageMetadata.pageData.page.hand_side[0]
+        }
+      end
+      export_hash[:metastreams][:administrative] = {
+        access_edit_group: rightsMetadata.access(2).machine.group
+      }
+      export_hash[:metastreams][:workflow] = {
+          ingest_origin: nil,
+          ingest_filepath: workflowMetadata.source.ingest_filepath[0],
+          ingest_filename: workflowMetadata.source.ingest_filename[0],
+          ingest_datastream: workflowMetadata.source.ingest_datastream[0],
+          ingest_datastream_md5: original_checksum[0],
+          processing_state: workflowMetadata.item_status.state[0] == 'published' ? 'complete' : 'derivatives'
+      }
+      { file_set: export_hash }
+    end
+
+    def export_files_for_bpl_api
+      datastream_hashes = []
+      datastreams_for_export = %w[productionMaster accessMaster thumbnail300 characterization
+                                  access800 georectifiedMaster preProductionNegativeMaster
+                                  ocrMaster djvuCoords]
+      datastreams_for_export.each do |ds|
+        datastream = datastreams[ds]
+        if datastream.present?
+          file_hash = {
+              filename: filename_for_datastream(datastream, datastreams["productionMaster"].label),
+              type: ds,
+              mime_type: datastream.mimeType,
+              size: datastream.size,
+              md5_checksum: datastream.checksum,
+              filestream_of: {
+                  ark_id: pid
+              }
+          }
+          datastream_hashes << { file: file_hash }
+        end
+      end
+      { files: datastream_hashes }
+    end
+
+    # sequence will be nil if this is the only file
+    def get_file_sequence
+      sequence = nil
+      all_files = Bplmodels::Finder.getFiles(object_id)
+      all_files.each do |_file_type, files_array|
+        files_array.each_with_index do |img, index|
+          sequence = index + 1 if img['id'] == pid
+        end
+      end
+      sequence
+    end
+
+    def filename_for_datastream(datastream, label)
+      ds_id = datastream.dsid
+      if ds_id == 'productionMaster'
+        filename.first
+      else
+        ds_id = 'wordCoords' if ds_id == 'djvuCoords'
+        "#{label}_#{ds_id}.#{filename_extension(datastream.mimeType)}"
+      end
+    end
+
+    def filename_extension(mime_type)
+      case mime_type
+      when 'image/tiff'
+        'tif'
+      when 'image/jp2'
+        'jp2'
+      when 'image/jpeg'
+        'jpg'
+      when 'application/xml', 'text/xml'
+        'xml'
+      when 'text/plain'
+        'txt'
+      when 'application/json'
+        'json'
+      when 'application/pdf'
+        'pdf'
+      when 'audio/mpeg'
+        'mp3'
+      when 'application/epub+zip'
+        'epub'
+      when 'application/x-mobipocket-ebook'
+        'mobi'
+      when 'application/zip'
+        'zip'
+      when 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        'doc'
+      when 'audio/x-wav'
+        'wav'
+      when 'image/png'
+        'png'
+      else
+        raise Error
+      end
+    end
+
     def generate_derivatives
       #Sample object on prod: https://fedora.digitalcommonwealth.org/fedora/objects/commonwealth:9w032896b/datastreams/productionMaster/content
       #Sample object from test book object: https://fedoratest.bpl.org/fedora/objects/bpl-test:rf55zp77f/datastreams/productionMaster/content

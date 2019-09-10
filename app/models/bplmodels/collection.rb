@@ -96,6 +96,32 @@ module Bplmodels
 
     end
 
+    def export_for_bpl_api
+      export_hash = {}
+      export_hash[:ark_id] = pid
+      export_hash[:institution] = { ark_id: institutions.pid }
+      export_hash[:metastreams] = {}
+      export_hash[:metastreams][:descriptive] = {
+          name: descMetadata.title.first,
+          abstract: abstract
+      }
+      export_hash[:metastreams][:administrative] = {
+          destination_site: workflowMetadata.destination.site,
+          harvestable: if workflowMetadata.item_status.harvestable[0] =~ /[Ff]alse/ ||
+                          workflowMetadata.item_status.harvestable[0] == false
+                         false
+                       else
+                         true
+                       end,
+          access_edit_group: rightsMetadata.access(2).machine.group
+      }
+      export_hash[:metastreams][:workflow] = {
+          ingest_origin: nil,
+          publishing_state: workflowMetadata.item_status.state[0]
+      }
+      { collection: export_hash }
+    end
+
     #Expects the following args:
     #parent_pid => id of the parent object
     #local_id => local ID of the object
