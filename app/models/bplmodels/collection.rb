@@ -99,6 +99,8 @@ module Bplmodels
     def export_for_bpl_api
       export_hash = {}
       export_hash[:ark_id] = pid
+      export_hash[:created_at] = create_date
+      export_hash[:updated_at] = modified_date
       export_hash[:institution] = { ark_id: institutions.pid }
       export_hash[:metastreams] = {}
       export_hash[:metastreams][:descriptive] = {

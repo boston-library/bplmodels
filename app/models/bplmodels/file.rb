@@ -100,6 +100,8 @@ module Bplmodels
     def export_fileset_for_bpl_api
       export_hash = {}
       export_hash[:ark_id] = pid
+      export_hash[:created_at] = create_date
+      export_hash[:updated_at] = modified_date
       export_hash[:file_of] = {
         ark_id: object_id
       }
@@ -149,8 +151,11 @@ module Bplmodels
       datastreams_for_export.each do |ds|
         datastream = datastreams[ds]
         if datastream.present?
+          created = datastream.createDate&.strftime('%Y-%m-%dT%T.%LZ')
           file_hash = {
               filename: filename_for_datastream(datastream, datastreams["productionMaster"].label),
+              created_at: created,
+              updated_at: (datastream.lastModifiedDate&.strftime('%Y-%m-%dT%T.%LZ') || created),
               type: ds,
               mime_type: datastream.mimeType,
               size: datastream.size,
