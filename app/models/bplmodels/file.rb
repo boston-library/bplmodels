@@ -133,7 +133,6 @@ module Bplmodels
         access_edit_group: rightsMetadata.access(2).machine.group
       }
       export_hash[:metastreams][:workflow] = {
-          ingest_origin: nil,
           ingest_filepath: workflowMetadata.source.ingest_filepath[0],
           ingest_filename: workflowMetadata.source.ingest_filename[0],
           ingest_datastream: workflowMetadata.source.ingest_datastream[0],

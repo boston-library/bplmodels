@@ -218,7 +218,6 @@ module Bplmodels
         access_edit_group: rightsMetadata.access(2).machine.group
       }
       export_hash[:metastreams][:workflow] = {
-        ingest_origin: nil,
         publishing_state: workflowMetadata.item_status.state[0]
       }
       { institution: export_hash }
