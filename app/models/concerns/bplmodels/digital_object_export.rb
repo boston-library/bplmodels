@@ -19,61 +19,61 @@ module Bplmodels
         export[:is_member_of_collection] = collection.map { |col| { ark_id: col.pid, name: col.label } }
         export[:metastreams] = {}
         descriptive_metadata = {
-            identifiers: identifiers_for_export_hash,
-            title_primary: titles[:primary],
-            title_other: titles[:other],
-            name_role: names_for_export_hash,
-            resource_type: rt_for_export_hash,
-            resource_type_manuscript: (descMetadata.mods(0).type_of_resource.manuscript.first == 'yes' ? true : nil),
-            genre: genres_for_export_hash,
-            digital_origin: descMetadata.mods(0).physical_description.digital_origin[0].presence,
-            origin_event: descMetadata.mods(0).origin_info.event_type[0].presence,
-            place_of_publication: descMetadata.mods(0).origin_info.place.place_term[0].presence,
-            publisher: descMetadata.mods(0).origin_info.publisher[0].presence,
-            date: dates_for_export_hash,
-            edition: descMetadata.mods(0).origin_info.edition[0].presence,
-            issuance: descMetadata.mods(0).origin_info.issuance[0].presence,
-            frequency: descMetadata.mods(0).origin_info.frequency[0].presence,
-            language: langs_for_export_hash,
-            note: notes_for_export_hash,
-            extent: descMetadata.mods(0).physical_description(0).extent.join(' '),
-            abstract: descMetadata.mods(0).abstract.join(' '),
-            toc: descMetadata.mods(0).table_of_contents.join(' '),
-            toc_url: descMetadata.mods(0).table_of_contents.href[0].presence,
-            subject: subjects_for_export_hash,
-            scale: descMetadata.mods(0).subject.cartographics.scale.presence,
-            projection: descMetadata.mods(0).subject.cartographics.projection[0].presence,
-            host_collection: related_items[:host],
-            series: related_items[:series],
-            subseries: related_items[:subseries],
-            related_referenced_by_url: related_items[:referenced_by_url],
-            related_constituent: related_items[:constituent],
-            physical_location: { label: physical_location[:label], name_type: 'corporate' },
-            physical_location_department: physical_location[:department],
-            physical_location_shelf_locator: physical_location[:shelf_locator],
-            rights: rights[:rights],
-            license: rights[:license],
-            access_restrictions: descMetadata.mods(0).restriction_on_access[0].presence
+          identifiers: identifiers_for_export_hash,
+          title_primary: titles[:primary],
+          title_other: titles[:other],
+          name_role: names_for_export_hash,
+          resource_type: rt_for_export_hash,
+          resource_type_manuscript: (descMetadata.mods(0).type_of_resource.manuscript.first == 'yes' ? true : nil),
+          genre: genres_for_export_hash,
+          digital_origin: descMetadata.mods(0).physical_description.digital_origin[0].presence,
+          origin_event: descMetadata.mods(0).origin_info.event_type[0].presence,
+          place_of_publication: descMetadata.mods(0).origin_info.place.place_term[0].presence,
+          publisher: descMetadata.mods(0).origin_info.publisher[0].presence,
+          date: dates_for_export_hash,
+          edition: descMetadata.mods(0).origin_info.edition[0].presence,
+          issuance: descMetadata.mods(0).origin_info.issuance[0].presence,
+          frequency: descMetadata.mods(0).origin_info.frequency[0].presence,
+          language: langs_for_export_hash,
+          note: notes_for_export_hash,
+          extent: descMetadata.mods(0).physical_description(0).extent.join(' '),
+          abstract: descMetadata.mods(0).abstract.join(' '),
+          toc: descMetadata.mods(0).table_of_contents.join(' '),
+          toc_url: descMetadata.mods(0).table_of_contents.href[0].presence,
+          subject: subjects_for_export_hash,
+          scale: descMetadata.mods(0).subject.cartographics.scale.presence,
+          projection: descMetadata.mods(0).subject.cartographics.projection[0].presence,
+          host_collection: related_items[:host],
+          series: related_items[:series],
+          subseries: related_items[:subseries],
+          related_referenced_by_url: related_items[:referenced_by_url],
+          related_constituent: related_items[:constituent],
+          physical_location: { label: physical_location[:label], name_type: 'corporate' },
+          physical_location_department: physical_location[:department],
+          physical_location_shelf_locator: physical_location[:shelf_locator],
+          rights: rights[:rights],
+          license: rights[:license],
+          access_restrictions: descMetadata.mods(0).restriction_on_access[0].presence
         }
         export[:metastreams][:descriptve] = descriptive_metadata.compact.reject { |_k, v| v.blank? }
         export[:metastreams][:administrative] = {
-            description_standard: descMetadata.mods(0).record_info.description_standard[0],
-            flagged: (workflowMetadata.item_designations(0).flagged_for_content[0] == "true" ? true : false),
-            destination_site: workflowMetadata.destination.site,
-            harvestable: if workflowMetadata.item_status.harvestable[0] =~ /[Ff]alse/ ||
-                workflowMetadata.item_status.harvestable[0] == false
-                           false
-                         else
-                           true
-                         end,
-            access_edit_group: rightsMetadata.access(2).machine.group
+          description_standard: descMetadata.mods(0).record_info.description_standard[0],
+          flagged: (workflowMetadata.item_designations(0).flagged_for_content[0] == "true" ? true : false),
+          destination_site: workflowMetadata.destination.site,
+          harvestable: if workflowMetadata.item_status.harvestable[0] =~ /[Ff]alse/ ||
+              workflowMetadata.item_status.harvestable[0] == false
+                         false
+                       else
+                         true
+                       end,
+          access_edit_group: rightsMetadata.access(2).machine.group
         }.compact
         export[:metastreams][:workflow] = {
-            ingest_filepath: workflowMetadata.source.ingest_filepath[0],
-            ingest_filename: workflowMetadata.source.ingest_filename[0],
-            ingest_datastream: workflowMetadata.source.ingest_datastream[0],
-            processing_state: workflowMetadata.item_status.processing[0],
-            publishing_state: workflowMetadata.item_status.state[0]
+          ingest_filepath: workflowMetadata.source.ingest_filepath[0],
+          ingest_filename: workflowMetadata.source.ingest_filename[0],
+          ingest_datastream: workflowMetadata.source.ingest_datastream[0],
+          processing_state: workflowMetadata.item_status.processing[0],
+          publishing_state: workflowMetadata.item_status.state[0]
         }.compact
         { digital_object: export }
       end
@@ -81,11 +81,12 @@ module Bplmodels
       def identifiers_for_export_hash
         ids = []
         descMetadata.identifier.each_with_index.map do |id, index|
-          id_hash = { label: id, type: descMetadata.identifier(index).type_at[0] }
+          id_type = descMetadata.identifier(index).type_at[0]
+          next if id_type == 'uri' && self.class != Bplmodels::OAIObject
+          id_hash = { label: id, type: id_type }
           id_hash[:invalid] = true if descMetadata.identifier(index).invalid[0] == 'yes'
           ids << id_hash
         end
-
         ids
       end
 
@@ -95,18 +96,19 @@ module Bplmodels
           title_prefix = self.descMetadata.mods(0).title_info(index).nonSort[0].presence || ''
           supplied = descMetadata.mods(0).title_info(index).supplied[0].presence
           title_id = descMetadata.mods(0).title_info(index).valueURI[0].presence
+          display_label = descMetadata.mods(0).title_info(index).display_label[0].presence
           title_hash = {
-              label: title_prefix + title,
-              subtitle: descMetadata.mods(0).title_info(index).subtitle[0].presence,
-              type: descMetadata.mods(0).title_info(index).type[0],
-              display: descMetadata.mods(0).title_info(index).display_label[0].presence,
-              usage: descMetadata.mods(0).title_info(index).usage[0].presence,
-              supplied: (supplied == 'yes' ? true : nil),
-              language: descMetadata.mods(0).title_info(index).language[0].presence,
-              authority_code: descMetadata.mods(0).title_info(index).authority[0].presence,
-              id_from_auth: (title_id ? title_id.match(/[A-Za-z0-9]*\z/).to_s : nil),
-              part_number: descMetadata.mods(0).title_info(index).part_number[0].presence,
-              part_name: descMetadata.mods(0).title_info(index).part_name[0].presence
+            label: title_prefix + title,
+            subtitle: descMetadata.mods(0).title_info(index).subtitle[0].presence,
+            type: descMetadata.mods(0).title_info(index).type[0],
+            display: (display_label == 'primary_display' ? 'primary' : display_label),
+            usage: descMetadata.mods(0).title_info(index).usage[0].presence,
+            supplied: (supplied == 'yes' ? true : nil),
+            language: descMetadata.mods(0).title_info(index).language[0].presence,
+            authority_code: descMetadata.mods(0).title_info(index).authority[0].presence,
+            id_from_auth: (title_id ? title_id.match(/[A-Za-z0-9]*\z/).to_s : nil),
+            part_number: descMetadata.mods(0).title_info(index).part_number[0].presence,
+            part_name: descMetadata.mods(0).title_info(index).part_name[0].presence
           }
           title_hash.compact!
           if title_hash[:display] == "primary_display"
@@ -124,9 +126,9 @@ module Bplmodels
           nametype = descMetadata.mods(0).name(index).type[0].presence
           name_id = descMetadata.mods(0).name(index).valueURI[0].presence
           name_hash = {
-              name_type: nametype,
-              authority_code: descMetadata.mods(0).name(index).authority[0].presence,
-              id_from_auth: (name_id ? name_id.match(/[A-Za-z0-9]*\z/).to_s : nil)
+            name_type: nametype,
+            authority_code: descMetadata.mods(0).name(index).authority[0].presence,
+            id_from_auth: (name_id ? name_id.match(/[A-Za-z0-9]*\z/).to_s : nil)
           }
           name_hash[:label] = if nametype == 'corporate'
                                 descMetadata.mods(0).name(index).namePart.join(". ").gsub(/\.\./,'.')
@@ -137,9 +139,9 @@ module Bplmodels
           descMetadata.mods(0).name(index).role.each_with_index do |_role, role_index|
             role_id = descMetadata.mods(0).name(index).role.text.valueURI[role_index]
             role_hash = {
-                label: descMetadata.mods(0).name(index).role.text[role_index],
-                authority_code: 'relators',
-                id_from_auth: (role_id ? role_id.match(/[A-Za-z0-9]*\z/).to_s : nil)
+              label: descMetadata.mods(0).name(index).role.text[role_index],
+              authority_code: 'relators',
+              id_from_auth: (role_id ? role_id.match(/[A-Za-z0-9]*\z/).to_s : nil)
             }
             roles << role_hash.compact
           end
@@ -185,9 +187,9 @@ module Bplmodels
         descMetadata.mods(0).genre.each_with_index do |genre, index|
           genre_id = descMetadata.mods(0).genre(index).valueURI[0].presence
           genre_hash = {
-              label: genre,
-              authority_code: descMetadata.mods(0).genre(index).authority[0].presence,
-              id_from_auth: (genre_id ? genre_id.match(/[A-Za-z0-9]*\z/).to_s : nil)
+            label: genre,
+            authority_code: descMetadata.mods(0).genre(index).authority[0].presence,
+            id_from_auth: (genre_id ? genre_id.match(/[A-Za-z0-9]*\z/).to_s : nil)
           }
           genre_hash[:basic] = true if descMetadata.mods(0).genre(index).displayLabel[0] == 'general'
           genres << genre_hash.compact
@@ -233,10 +235,8 @@ module Bplmodels
                               else
                                 date_hash[:date_value]
                               end
-          puts "INDEX is #{index} AND DATE HASH is: #{date_hash} AND DATE V STRING is: #{date_value_string}"
           output << (date_value_string ? date_value_string + qualifier_string : nil)
         end
-        puts "DATE TO EDTF FINISHED OK"
         output.compact.join('/').presence
       end
 
@@ -246,9 +246,9 @@ module Bplmodels
           lang_term = descMetadata.mods(0).language(index).language_term[0]
           lang_id = descMetadata.mods(0).language(index).language_term.lang_val_uri[0].presence
           lang_hash = {
-              label: lang_term,
-              authority_code: (lang_id ? 'iso639-2' : nil),
-              id_from_auth: (lang_id ? lang_id.match(/[A-Za-z0-9]*\z/).to_s : nil)
+            label: lang_term,
+            authority_code: (lang_id ? 'iso639-2' : nil),
+            id_from_auth: (lang_id ? lang_id.match(/[A-Za-z0-9]*\z/).to_s : nil)
           }
           langs << lang_hash.compact
         end
@@ -259,8 +259,8 @@ module Bplmodels
         notes = []
         descMetadata.mods(0).note.each_with_index do |note, index|
           note_hash = {
-              label: note,
-              type: descMetadata.mods(0).note(index).type_at[0].presence
+            label: note,
+            type: descMetadata.mods(0).note(index).type_at[0].presence
           }
           notes << note_hash.compact
         end
@@ -285,10 +285,10 @@ module Bplmodels
 
           # check if this is a multipart subject, like we get from MODS records in OAI feeds
           multipart = true if this_subject.topic.length > 1 ||
-              (this_subject.topic.any? &&
-                  (this_subject.geographic.any? || this_subject.genre.any? ||
-                      this_subject.temporal.any? || this_subject.name.any? ||
-                      this_subject.title_info.any?))
+                              (this_subject.topic.any? &&
+                               (this_subject.geographic.any? || this_subject.genre.any? ||
+                                this_subject.temporal.any? || this_subject.name.any? ||
+                                this_subject.title_info.any?))
 
           if multipart == false
             # TOPICS
@@ -349,9 +349,9 @@ module Bplmodels
               this_subject.hierarchical_geographic.any?
             coords = this_subject.cartographics.coordinates[0]
             geo_hash = {
-                authority_code: authority,
-                id_from_auth: id_from_auth,
-                coordinates: coords
+              authority_code: authority,
+              id_from_auth: id_from_auth,
+              coordinates: coords
             }
             raw_geo = this_subject.geographic[0]
             continent = this_subject.hierarchical_geographic.continent[0]
@@ -366,7 +366,7 @@ module Bplmodels
             island = this_subject.hierarchical_geographic.island[0]
             area = this_subject.hierarchical_geographic.area[0]
             geo_hash[:label] = raw_geo || city_section || city || island || county || territory ||
-                area || state || region || province || country || continent
+                               area || state || region || province || country || continent
             subjects[:geo] << geo_hash if geo_hash[:label] || coords
           end
         end
@@ -406,9 +406,9 @@ module Bplmodels
 
       def physical_location_for_export_hash
         physical_location = {
-            label: descMetadata.mods(0).item_location.physical_location[0],
-            department: descMetadata.mods(0).item_location.holding_simple.copy_information.sub_location[0],
-            shelf_locator: descMetadata.mods(0).item_location.holding_simple.copy_information.shelf_locator[0]
+          label: descMetadata.mods(0).item_location.physical_location[0],
+          department: descMetadata.mods(0).item_location.holding_simple.copy_information.sub_location[0],
+          shelf_locator: descMetadata.mods(0).item_location.holding_simple.copy_information.shelf_locator[0]
         }
         physical_location.compact
       end
