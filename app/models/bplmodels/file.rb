@@ -8,6 +8,8 @@ module Bplmodels
     include ActiveFedora::Auditable
     include BPL::Derivatives
 
+    include Bplmodels::DatastreamExport
+
     has_file_datastream 'geoEncodedMaster', versionable: false, label: 'geoEncodedMaster datastream'
 
     has_file_datastream 'georectifiedMaster', versionable: false, label: 'georectifiedMaster datastream'
@@ -119,14 +121,14 @@ module Bplmodels
       end
       file_type = self.class.to_s.split("::").last.match(/[A-Z][a-z]*/).to_s.downcase
       export_hash[:type] = file_type
-      export_hash[:sequence] = get_file_sequence
+      export_hash[:position] = get_file_sequence
       export_hash[:filename_base] = filename.first.gsub(/\.[a-z0-9]*\z/,'')
       export_hash[:metastreams] = {}
       unless datastreams["pageMetadata"].blank?
         export_hash[:metastreams][:pagination] = {
             label: pageMetadata.pageData.page.page_number[0],
             page_type: pageMetadata.pageData.page.page_type[0],
-            hand_side: pageMetadata.pageData.page.hand_side[0]
+            hand_side: pageMetadata.pageData.page.hand_side[0]&.downcase
         }
       end
       export_hash[:metastreams][:administrative] = {
@@ -143,30 +145,10 @@ module Bplmodels
     end
 
     def export_files_for_bpl_api
-      datastream_hashes = []
       datastreams_for_export = %w[productionMaster accessMaster thumbnail300 characterization
                                   access800 georectifiedMaster preProductionNegativeMaster
                                   ocrMaster djvuCoords]
-      datastreams_for_export.each do |ds|
-        datastream = datastreams[ds]
-        if datastream.present?
-          created = datastream.createDate&.strftime('%Y-%m-%dT%T.%LZ')
-          file_hash = {
-              filename: filename_for_datastream(datastream, datastreams["productionMaster"].label),
-              created_at: created,
-              updated_at: (datastream.lastModifiedDate&.strftime('%Y-%m-%dT%T.%LZ') || created),
-              type: ds,
-              mime_type: datastream.mimeType,
-              size: datastream.size,
-              md5_checksum: datastream.checksum,
-              filestream_of: {
-                  ark_id: pid
-              }
-          }
-          datastream_hashes << { file: file_hash }
-        end
-      end
-      { files: datastream_hashes }
+      files_for_export(datastreams_for_export)
     end
 
     # sequence will be nil if this is the only file
@@ -179,51 +161,6 @@ module Bplmodels
         end
       end
       sequence
-    end
-
-    def filename_for_datastream(datastream, label)
-      ds_id = datastream.dsid
-      if ds_id == 'productionMaster'
-        filename.first
-      else
-        ds_id = 'wordCoords' if ds_id == 'djvuCoords'
-        "#{label}_#{ds_id}.#{filename_extension(datastream.mimeType)}"
-      end
-    end
-
-    def filename_extension(mime_type)
-      case mime_type
-      when 'image/tiff'
-        'tif'
-      when 'image/jp2'
-        'jp2'
-      when 'image/jpeg'
-        'jpg'
-      when 'application/xml', 'text/xml'
-        'xml'
-      when 'text/plain'
-        'txt'
-      when 'application/json'
-        'json'
-      when 'application/pdf'
-        'pdf'
-      when 'audio/mpeg'
-        'mp3'
-      when 'application/epub+zip'
-        'epub'
-      when 'application/x-mobipocket-ebook'
-        'mobi'
-      when 'application/zip'
-        'zip'
-      when 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-        'doc'
-      when 'audio/x-wav'
-        'wav'
-      when 'image/png'
-        'png'
-      else
-        raise Error
-      end
     end
 
     def generate_derivatives

@@ -37,6 +37,7 @@ module Bplmodels
           language: langs_for_export_hash,
           note: notes_for_export_hash,
           extent: descMetadata.mods(0).physical_description(0).extent.join(' '),
+          text_direction: td_for_export_hash,
           abstract: descMetadata.mods(0).abstract.join(' '),
           toc: descMetadata.mods(0).table_of_contents.join(' '),
           toc_url: descMetadata.mods(0).table_of_contents.href[0].presence,
@@ -271,6 +272,16 @@ module Bplmodels
           notes << { label: date_other, type: 'date' }
         end
         notes
+      end
+
+      def td_for_export_hash
+        ia_metadata = iaMeta.content
+        return nil unless ia_metadata
+        td_data = ia_metadata.body.match(/<page-progression>[a-z]*/)
+        if td_data
+          td = td_data.to_s.match(/[a-z]*\z/)
+        end
+        td ? td.to_s.insert(1, 't') : nil
       end
 
       # TODO: multipart subjects from OAI providers -- can't use same auth for all subelements,

@@ -5,6 +5,7 @@ module Bplmodels
     include Hydra::AccessControls::Permissions
     include Hydra::ModelMethods
     include Bplmodels::DigitalObjectExport
+    include Bplmodels::DatastreamExport
 
     has_many :exemplary_image, :class_name => "Bplmodels::File", :property=> :is_exemplary_image_of
 
@@ -1070,6 +1071,12 @@ module Bplmodels
       #doc['all_text_timv'] = [self.descMetadata.abstract, main_title, self.rels_ext.model.class.to_s.gsub(/\A[\w]*::/,''),self.descMetadata.item_location(0).physical_location[0]]
 
       doc
+    end
+
+    def export_files_for_bpl_api
+      datastreams_for_export = %w[oaiMetadata descMetadata marcXML iaMeta scanData plainText
+                                  djvuXML thumbnail300]
+      files_for_export(datastreams_for_export)
     end
 
     #Expects the following args:
