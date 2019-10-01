@@ -99,13 +99,12 @@ module Bplmodels
 
     end
 
-    def export_fileset_for_bpl_api
-      export_hash = {}
-      export_hash[:ark_id] = pid
-      export_hash[:created_at] = create_date
-      export_hash[:updated_at] = modified_date
-      export_hash[:file_of] = {
-        ark_id: object_id
+    def export_fileset_for_bpl_api(include_files = true)
+      export_hash = {
+        ark_id: pid,
+        created_at: create_date,
+        updated_at: modified_date,
+        fileset_of: { ark_id: object_id }
       }
       exemplary_ids = []
       relationships.each_statement do |statement|
@@ -120,27 +119,28 @@ module Bplmodels
         end
       end
       file_type = self.class.to_s.split("::").last.match(/[A-Z][a-z]*/).to_s.downcase
-      export_hash[:type] = file_type
+      export_hash[:fileset_type] = file_type
       export_hash[:position] = get_file_sequence
       export_hash[:filename_base] = filename.first.gsub(/\.[a-z0-9]*\z/,'')
       export_hash[:metastreams] = {}
       unless datastreams["pageMetadata"].blank?
-        export_hash[:metastreams][:pagination] = {
-            label: pageMetadata.pageData.page.page_number[0],
-            page_type: pageMetadata.pageData.page.page_type[0],
-            hand_side: pageMetadata.pageData.page.hand_side[0]&.downcase
+        export_hash[:pagination] = {
+          page_label: pageMetadata.pageData.page.page_number[0],
+          page_type: pageMetadata.pageData.page.page_type[0],
+          hand_side: pageMetadata.pageData.page.hand_side[0]&.downcase
         }
       end
       export_hash[:metastreams][:administrative] = {
         access_edit_group: rightsMetadata.access(2).machine.group
       }
       export_hash[:metastreams][:workflow] = {
-          ingest_filepath: workflowMetadata.source.ingest_filepath[0],
-          ingest_filename: workflowMetadata.source.ingest_filename[0],
-          ingest_datastream: workflowMetadata.source.ingest_datastream[0],
-          ingest_datastream_md5: original_checksum[0],
-          processing_state: workflowMetadata.item_status.state[0] == 'published' ? 'complete' : 'derivatives'
+        ingest_filepath: workflowMetadata.source.ingest_filepath[0],
+        ingest_filename: workflowMetadata.source.ingest_filename[0],
+        ingest_datastream: workflowMetadata.source.ingest_datastream[0],
+        ingest_datastream_md5: original_checksum[0],
+        processing_state: workflowMetadata.item_status.state[0] == 'published' ? 'complete' : 'derivatives'
       }
+      export_hash[:files] = export_files_for_bpl_api[:files] if include_files
       { file_set: export_hash }
     end
 

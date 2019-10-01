@@ -195,32 +195,29 @@ module Bplmodels
     end
 
     def export_for_bpl_api
-      export_hash = { institution: {} }
-      export_hash[:ark_id] = pid
-      export_hash[:created_at] = create_date
-      export_hash[:updated_at] = modified_date
-      export_hash[:metastreams] = {}
-      export_hash[:metastreams][:descriptive] = {
+      export_hash = {
+        ark_id: pid,
+        created_at: create_date,
+        updated_at: modified_date,
         name: descMetadata.title.first,
         abstract: abstract,
-        subject: {
-          geo: {
-            label: descMetadata.subject(0).hierarchical_geographic(0).city.first,
-            authority_code: "tgn",
-            id_from_auth: descMetadata.subject(0).valueURI.first.match(/[0-9]*\z/).to_s,
-            coordinates: descMetadata.subject(0).cartographics.coordinates.first
-          }
+        location: {
+          label: descMetadata.subject(0).hierarchical_geographic(0).city.first,
+          authority_code: "tgn",
+          id_from_auth: descMetadata.subject(0).valueURI.first.match(/[0-9]*\z/).to_s,
+          coordinates: descMetadata.subject(0).cartographics.coordinates.first
         },
-        url: descMetadata.identifier.first
+        metastreams: {
+          administrative: {
+            destination_site: workflowMetadata.destination.site,
+            access_edit_group: rightsMetadata.access(2).machine.group
+          },
+          workflow: {
+            publishing_state: workflowMetadata.item_status.state[0]
+          }
+        }
       }
-      export_hash[:metastreams][:administrative] = {
-        destination_site: workflowMetadata.destination.site,
-        access_edit_group: rightsMetadata.access(2).machine.group
-      }
-      export_hash[:metastreams][:workflow] = {
-        publishing_state: workflowMetadata.item_status.state[0]
-      }
-      { institution: export_hash }
+      { institution: export_hash.compact }
     end
 
     #Expects the following args:

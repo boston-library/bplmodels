@@ -1073,12 +1073,6 @@ module Bplmodels
       doc
     end
 
-    def export_files_for_bpl_api
-      datastreams_for_export = %w[oaiMetadata descMetadata marcXML iaMeta scanData plainText
-                                  djvuXML thumbnail300]
-      files_for_export(datastreams_for_export)
-    end
-
     #Expects the following args:
     #parent_pid => id of the parent object
     #local_id => local ID of the object

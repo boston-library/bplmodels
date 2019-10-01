@@ -97,30 +97,30 @@ module Bplmodels
     end
 
     def export_for_bpl_api
-      export_hash = {}
-      export_hash[:ark_id] = pid
-      export_hash[:created_at] = create_date
-      export_hash[:updated_at] = modified_date
-      export_hash[:institution] = { ark_id: institutions.pid }
-      export_hash[:metastreams] = {}
-      export_hash[:metastreams][:descriptive] = {
-          name: descMetadata.title.first,
-          abstract: abstract
+      export_hash = {
+        ark_id: pid,
+        created_at: create_date,
+        updated_at: modified_date,
+        institution: { ark_id: institutions.pid },
+        name: descMetadata.title.first,
+        abstract: abstract,
+        metastreams: {
+          administrative: {
+            destination_site: workflowMetadata.destination.site,
+            harvestable: if workflowMetadata.item_status.harvestable[0] =~ /[Ff]alse/ ||
+                            workflowMetadata.item_status.harvestable[0] == false
+                           false
+                         else
+                           true
+                         end,
+            access_edit_group: rightsMetadata.access(2).machine.group
+          },
+          workflow: {
+            publishing_state: workflowMetadata.item_status.state[0]
+          }
+        }
       }
-      export_hash[:metastreams][:administrative] = {
-          destination_site: workflowMetadata.destination.site,
-          harvestable: if workflowMetadata.item_status.harvestable[0] =~ /[Ff]alse/ ||
-                          workflowMetadata.item_status.harvestable[0] == false
-                         false
-                       else
-                         true
-                       end,
-          access_edit_group: rightsMetadata.access(2).machine.group
-      }
-      export_hash[:metastreams][:workflow] = {
-          publishing_state: workflowMetadata.item_status.state[0]
-      }
-      { collection: export_hash }
+      { collection: export_hash.compact }
     end
 
     #Expects the following args:

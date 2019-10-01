@@ -3,28 +3,30 @@ module Bplmodels
     extend ActiveSupport::Concern
     included do
 
-      def files_for_export(datastreams_for_export)
+      # if JP2 is both productionMaster and accessMaster, remove dupe and modify
+      def files_for_export(datastreams_for_export, include_foxml = true)
+        jp2_master = false
         datastream_hashes = []
         datastreams_for_export.each do |ds|
+          next if ds == 'accessMaster' && jp2_master = true
           datastream = datastreams[ds]
           if datastream.present?
+            jp2_master = true if ds == 'productionMaster' && datastream.mimeType == 'image/jp2'
             created = datastream.createDate&.strftime('%Y-%m-%dT%T.%LZ')
             file_hash = {
               filename: filename_for_datastream(datastream, datastreams["productionMaster"]&.label),
               created_at: created,
               updated_at: (datastream.lastModifiedDate&.strftime('%Y-%m-%dT%T.%LZ') || created),
-              type: ds,
+              file_type: [type_for_dsid(ds, datastream.mimeType)],
               mime_type: datastream.mimeType,
               size: datastream.size,
               md5_checksum: datastream.checksum,
-              filestream_of: {
-                ark_id: pid
-              }
+              filestream_of: { ark_id: pid }
             }
             datastream_hashes << { file: file_hash }
           end
         end
-        datastream_hashes << { file: foxml_hash }
+        datastream_hashes << { file: foxml_hash } if include_foxml
         { files: datastream_hashes }
       end
 
@@ -33,8 +35,57 @@ module Bplmodels
         if ds_id == 'productionMaster'
           filename.first
         else
-          ds_id = 'wordCoords' if ds_id == 'djvuCoords'
-          "#{(label || pid.gsub(/:/, '_'))}_#{ds_id}.#{filename_extension(datastream.mimeType)}"
+          new_type = type_for_dsid(ds_id, datastream.mimeType)
+          "#{(label || pid.gsub(/:/, '_'))}_#{new_type}.#{filename_extension(datastream.mimeType)}"
+        end
+      end
+
+      def type_for_dsid(legacy_dsid, mime_type)
+        file_type = filename_extension(mime_type)
+        if legacy_dsid == 'productionMaster'
+          case file_type
+          when 'tif', 'jpg', 'png', 'jp2'
+            'ImageMaster'
+          when 'doc', 'pdf'
+            'DocumentMaster'
+          when 'wav', 'mp3'
+            'AudioMaster'
+          when 'epub', 'mobi', 'zip'
+            'EbookAccess'
+          end
+        else
+          case legacy_dsid
+          when 'preProductionNegativeMaster'
+            'ImageNegativeMaster'
+          when 'ocrMaster', 'plainText'
+            'TextPlain'
+          when 'djvuXML'
+            'TextCoordinatesMaster'
+          when 'djvuCoords'
+            'TextCoordinatesAccess'
+          when 'accessMaster'
+            'ImageService'
+          when 'access800'
+            'ImageAccess800'
+          when 'thumbnail300'
+            'ImageThumbnail300'
+          when 'characterization'
+            legacy_dsid.capitalize
+          when 'georectifiedMaster'
+            'ImageGeorectifiedMaster'
+          when 'oaiMetadata'
+            'MetadataOAI'
+          when 'marcXML'
+            'MetadataMARCXML'
+          when 'iaMeta'
+            'MetadataIA'
+          when 'scanData'
+            'MetadataIAScan'
+          when 'descMetadata'
+            'MetadataMODS'
+          else
+            raise Error
+          end
         end
       end
 
@@ -82,7 +133,7 @@ module Bplmodels
           filename: "#{pid.gsub(/:/, '_')}_foxml.xml",
           created_at: create_date,
           updated_at: modified_date,
-          type: 'fedoraObjectXML',
+          type: 'MetadataFOXML',
           mime_type: 'application/xml',
           size: foxml_string.bytesize,
           md5_checksum: Digest::MD5.hexdigest(foxml_string),
