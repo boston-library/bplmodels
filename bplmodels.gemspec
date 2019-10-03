@@ -16,12 +16,12 @@ Gem::Specification.new do |s|
   s.files = Dir["{app,config,db,lib}/**/*"] + ["MIT-LICENSE", "Rakefile", "README.rdoc"]
   s.test_files = Dir["test/**/*"]
 
-  s.add_dependency 'rails', '>= 5', '< 6'
+  s.add_dependency 'rails', '>= 4.2.11', '< 6'
   s.add_dependency 'mods', '~> 2.3', '>= 2.3.1'
   s.add_dependency 'active-fedora', '>= 8.0.1', '< 9'
   s.add_dependency 'hydra-file_characterization', '~> 1.0.0'
   s.add_dependency 'typhoeus'
   s.add_dependency 'om', '~> 3.0'
-  s.add_dependency 'bpl-derivatives', '~> 0.2'
+  s.add_dependency 'bpl-derivatives', '~> 0.2.1'
   # s.add_development_dependency "sqlite3"
 end
