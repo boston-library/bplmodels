@@ -119,6 +119,16 @@ module Bplmodels
           genre_hash[:basic] = true if descMetadata.mods(0).genre(index).displayLabel[0] == 'general'
           genres << genre_hash.compact
         end
+        # volume stuff from DC2 is deprecated
+        # volumes = Bplmodels::Finder.getVolumeObjects(pid)
+        # if volumes.present?
+        #   genres << {
+        #     label: 'Serial publications',
+        #     authority_code: 'lcgft',
+        #     id_from_auth: 'gf2014026174',
+        #     basic: true
+        #   }
+        # end
         genres
       end
 
@@ -208,8 +218,7 @@ module Bplmodels
         td ? td.to_s.insert(1, 't') : nil
       end
 
-      # TODO: multipart subjects from OAI providers -- can't use same auth for all subelements,
-      #       weird geographics with display labels
+      # TODO: weird geographics with display labels
       def subjects_for_export_hash
         subjects = { topic: [], name: [], geo: [], title: [], temporal: [], date: [] }
         descMetadata.mods(0).subject.each_with_index do |_subject, index|

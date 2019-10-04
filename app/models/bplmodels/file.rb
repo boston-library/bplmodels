@@ -134,14 +134,15 @@ module Bplmodels
         access_edit_group: rightsMetadata.access(2).machine.group
       }
       export_hash[:metastreams][:workflow] = {
-        ingest_filepath: workflowMetadata.source.ingest_filepath[0],
-        ingest_filename: workflowMetadata.source.ingest_filename[0],
-        ingest_datastream: workflowMetadata.source.ingest_datastream[0],
-        ingest_datastream_md5: original_checksum[0],
+        # these were moved to Bplmodels::DatastreamExport#files_for_export
+        # ingest_filepath: workflowMetadata.source.ingest_filepath[0],
+        # ingest_filename: workflowMetadata.source.ingest_filename[0],
+        # ingest_datastream: workflowMetadata.source.ingest_datastream[0],
+        # ingest_datastream_md5: original_checksum[0],
         processing_state: workflowMetadata.item_status.state[0] == 'published' ? 'complete' : 'derivatives'
       }
       export_hash[:files] = export_files_for_bpl_api[:files] if include_files
-      { file_set: export_hash }
+      { file_set: export_hash.compact }
     end
 
     def export_files_for_bpl_api
@@ -151,13 +152,13 @@ module Bplmodels
       files_for_export(datastreams_for_export)
     end
 
-    # sequence will be nil if this is the only file
+    # sequence will be 0 if this is the only file
     def get_file_sequence
-      sequence = nil
-      all_files = Bplmodels::Finder.getFiles(object_id)
-      all_files.each do |_file_type, files_array|
+      sequence = 0
+      @all_files ||= Bplmodels::Finder.getFiles(object_id)
+      @all_files.each do |_file_type, files_array|
         files_array.each_with_index do |img, index|
-          sequence = index + 1 if img['id'] == pid
+          sequence = index if img['id'] == pid
         end
       end
       sequence

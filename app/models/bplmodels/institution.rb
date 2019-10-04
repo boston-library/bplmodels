@@ -217,6 +217,8 @@ module Bplmodels
           }
         }
       }
+      thumbnail = Bplmodels::Finder.getImageFiles(pid)
+      export_hash[:thumbnail_pid] = thumbnail.first['id'] if thumbnail.present?
       { institution: export_hash.compact }
     end
 

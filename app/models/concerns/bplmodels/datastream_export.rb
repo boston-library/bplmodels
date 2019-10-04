@@ -7,23 +7,26 @@ module Bplmodels
       def files_for_export(datastreams_for_export, include_foxml = true)
         jp2_master = false
         datastream_hashes = []
+        @file_source_data = file_source_data
         datastreams_for_export.each do |ds|
-          next if ds == 'accessMaster' && jp2_master = true
+          next if ds == 'accessMaster' && jp2_master == true
           datastream = datastreams[ds]
           if datastream.present?
+            checksum = datastream.checksum
             jp2_master = true if ds == 'productionMaster' && datastream.mimeType == 'image/jp2'
             created = datastream.createDate&.strftime('%Y-%m-%dT%T.%LZ')
             file_hash = {
               filename: filename_for_datastream(datastream, datastreams["productionMaster"]&.label),
               created_at: created,
               updated_at: (datastream.lastModifiedDate&.strftime('%Y-%m-%dT%T.%LZ') || created),
-              file_type: [type_for_dsid(ds, datastream.mimeType)],
-              mime_type: datastream.mimeType,
-              size: datastream.size,
-              md5_checksum: datastream.checksum,
+              file_type: type_for_dsid(ds, datastream.mimeType),
+              content_type: datastream.mimeType,
+              byte_size: datastream.size,
+              checksum: (checksum == 'none' || checksum.blank? ? nil : checksum),
+              metadata: metadata_for_datastream(datastream),
               filestream_of: { ark_id: pid }
             }
-            datastream_hashes << { file: file_hash }
+            datastream_hashes << { file: file_hash.compact }
           end
         end
         datastream_hashes << { file: foxml_hash } if include_foxml
@@ -32,8 +35,10 @@ module Bplmodels
 
       def filename_for_datastream(datastream, label = nil)
         ds_id = datastream.dsid
-        if ds_id == 'productionMaster'
-          filename.first
+        if ds_id =~ /Master\z/ && ds_id != 'accessMaster' # TODO: what about IA stuff (djvuXML, djvuCoords, plainText etc)
+          puts "@file_source_data = #{@file_source_data}"
+          puts "ds_id = #{ds_id}"
+          @file_source_data[ds_id][:ingest_filename]
         else
           new_type = type_for_dsid(ds_id, datastream.mimeType)
           "#{(label || pid.gsub(/:/, '_'))}_#{new_type}.#{filename_extension(datastream.mimeType)}"
@@ -124,6 +129,34 @@ module Bplmodels
         end
       end
 
+      def file_source_data
+        filesources = {}
+        workflowMetadata.source.each_with_index do |_source, index|
+          filesources[workflowMetadata.source.ingest_datastream[index]] = {
+            ingest_filename: workflowMetadata.source.ingest_filename[index],
+            ingest_filepath: workflowMetadata.source.ingest_filepath[index]
+          }
+        end
+        filesources
+      end
+
+      def filepath_for_datastream(datastream)
+        ds_id = datastream.dsid
+        return nil unless ds_id =~ /Master\z/ && ds_id != 'accessMaster'
+        @file_source_data[ds_id][:ingest_filepath]
+      end
+
+      def metadata_for_datastream(datastream)
+        metadata = {}
+        metadata['ingest_filepath'] = filepath_for_datastream(datastream)
+        if datastream.dsid == 'productionMaster' && self.class == Bplmodels::ImageFile
+          metadata['height'] = height&.first
+          metadata['width'] = width&.first
+        end
+        metadata.compact!
+        metadata.present? ? metadata : nil
+      end
+
       def foxml_hash
         repo =  ActiveFedora::Base.connection_for_pid(pid)
         fc3 = Rubydora::Fc3Service.new(repo.config)
@@ -133,7 +166,7 @@ module Bplmodels
           filename: "#{pid.gsub(/:/, '_')}_foxml.xml",
           created_at: create_date,
           updated_at: modified_date,
-          type: 'MetadataFOXML',
+          file_type: 'MetadataFOXML',
           mime_type: 'application/xml',
           size: foxml_string.bytesize,
           md5_checksum: Digest::MD5.hexdigest(foxml_string),

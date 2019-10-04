@@ -5,20 +5,44 @@ module Bplmodels
       include Bplmodels::DescMetadataExport
 
       def export_for_bpl_api(include_filesets = true)
+        return nil if is_volume_wrapper?
         export = {}
-        titles = titles_for_export_hash
-        related_items = related_items_for_export_hash
-        physical_location = physical_location_for_export_hash
-        rights = rights_for_export_hash
         export[:ark_id] = pid
         export[:created_at] = create_date
         export[:updated_at] = modified_date
         export[:admin_set] = {
-            ark_id: admin_set.pid,
-            name: admin_set.label
+          ark_id: admin_set.pid,
+          name: admin_set.label
         }
         export[:is_member_of_collection] = collection.map { |col| { ark_id: col.pid, name: col.label } }
+        # export[:is_issue_of] = find_issues_for_volume
         export[:metastreams] = {}
+        export[:metastreams][:descriptve] = desc_metadata_for_export_hash
+        export[:metastreams][:administrative] = {
+          description_standard: descMetadata.mods(0).record_info.description_standard[0],
+          flagged: (workflowMetadata.item_designations(0).flagged_for_content[0] == "true" ? true : false),
+          destination_site: workflowMetadata.destination.site,
+          harvestable: if workflowMetadata.item_status.harvestable[0] =~ /[Ff]alse/ ||
+              workflowMetadata.item_status.harvestable[0] == false
+                         false
+                       else
+                         true
+                       end,
+          access_edit_group: rightsMetadata.access(2).machine.group
+        }.compact
+        export[:metastreams][:workflow] = {
+          processing_state: workflowMetadata.item_status.processing[0],
+          publishing_state: workflowMetadata.item_status.state[0]
+        }.compact
+        export[:filesets] = filesets_for_export_hash if include_filesets
+        { digital_object: export.compact }
+      end
+
+      def desc_metadata_for_export_hash
+        titles = titles_for_export_hash
+        related_items = related_items_for_export_hash
+        physical_location = physical_location_for_export_hash
+        rights = rights_for_export_hash
         descriptive_metadata = {
           identifiers: identifiers_for_export_hash,
           title_primary: titles[:primary],
@@ -57,32 +81,23 @@ module Bplmodels
           license: rights[:license],
           access_restrictions: descMetadata.mods(0).restriction_on_access[0].presence
         }
-        export[:metastreams][:descriptve] = descriptive_metadata.compact.reject { |_k, v| v.blank? }
-        export[:metastreams][:administrative] = {
-          description_standard: descMetadata.mods(0).record_info.description_standard[0],
-          flagged: (workflowMetadata.item_designations(0).flagged_for_content[0] == "true" ? true : false),
-          destination_site: workflowMetadata.destination.site,
-          harvestable: if workflowMetadata.item_status.harvestable[0] =~ /[Ff]alse/ ||
-              workflowMetadata.item_status.harvestable[0] == false
-                         false
-                       else
-                         true
-                       end,
-          access_edit_group: rightsMetadata.access(2).machine.group
-        }.compact
-        export[:metastreams][:workflow] = {
-          ingest_filepath: workflowMetadata.source.ingest_filepath[0],
-          ingest_filename: workflowMetadata.source.ingest_filename[0],
-          ingest_datastream: workflowMetadata.source.ingest_datastream[0],
-          processing_state: workflowMetadata.item_status.processing[0],
-          publishing_state: workflowMetadata.item_status.state[0]
-        }.compact
-        export[:filesets] = filesets_for_export_hash if include_filesets
-        { digital_object: export }
+        descriptive_metadata.compact.reject { |_k, v| v.blank? }
+      end
+
+      # if this is a volume in series, add the relationship
+      def find_issues_for_volume
+        issue_ids = []
+        relationships.each_statement do |statement|
+          if statement.predicate =~ /isVolumeOf/
+            issue_ids << statement.object.to_s.gsub(/info:fedora\//,'')
+          end
+        end
+        issue_ids.map { |v| { ark_id: v } } unless issue_ids.blank?
       end
 
       def filesets_for_export_hash(include_files = true)
         filesets = []
+        # get file-level filesets (image, documemt, ereader, etc)
         all_files = Bplmodels::Finder.getFiles(pid)
         all_files.each_value do |files_array|
           files_array.each do |file_doc|
@@ -91,6 +106,33 @@ module Bplmodels
             filesets << fileset_hash
           end
         end
+        # combine EReader filesets, make EPub the 'master'
+        ereader_filesets = []
+        filesets.each_with_index do |fileset, index|
+          if fileset[:file_set][:fileset_type] == 'ereader'
+            ereader_filesets << fileset
+            filesets.delete_at(index)
+          end
+        end
+        if ereader_filesets.present?
+          ereader_fileset_for_export = nil
+          ereader_filesets.each_with_index do |er_fileset, index|
+            if er_fileset[:file_set][:files][0][:file][:mime_type] == 'application/epub+zip'
+              ereader_fileset_for_export = er_fileset
+              ereader_filesets.delete_at(index)
+            end
+          end
+          ereader_filesets.each do |er_fileset|
+            er_fileset[:file_set][:files].each do |er_file|
+              if er_file[:file][:file_type] == 'EbookAccess'
+                er_file[:file][:filestream_of][:ark_id] = ereader_fileset_for_export[:ark_id]
+                ereader_fileset_for_export[:file_set][:files] << er_file
+              end
+            end
+          end
+          filesets << ereader_fileset_for_export
+        end
+        # get the object-level filesets (metadata, plainText, etc)
         object_filesets = object_filesets_for_export(object_files_for_export)
         filesets + object_filesets
       end
@@ -129,6 +171,13 @@ module Bplmodels
           object_filesets << { fileset: object_fileset }
         end
         object_filesets
+      end
+
+      # if this is a wrapper object for Book/Volume, skip it
+      # volume stuff from DC2 is deprecated (and there are only 2 of these anyway)
+      def is_volume_wrapper?
+        volumes = Bplmodels::Finder.getVolumeObjects(pid)
+        volumes.present? ? true : false
       end
     end
   end
