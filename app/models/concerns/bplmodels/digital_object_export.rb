@@ -44,13 +44,13 @@ module Bplmodels
         physical_location = physical_location_for_export_hash
         rights = rights_for_export_hash
         descriptive_metadata = {
-          identifiers: identifiers_for_export_hash,
+          identifier: identifiers_for_export_hash,
           title_primary: titles[:primary],
           title_other: titles[:other],
-          name_role: names_for_export_hash,
-          resource_type: rt_for_export_hash,
+          name_roles: names_for_export_hash,
+          resource_types: rt_for_export_hash,
           resource_type_manuscript: (descMetadata.mods(0).type_of_resource.manuscript.first == 'yes' ? true : nil),
-          genre: genres_for_export_hash,
+          genres: genres_for_export_hash,
           digital_origin: descMetadata.mods(0).physical_description.digital_origin[0].presence,
           origin_event: descMetadata.mods(0).origin_info.event_type[0].presence,
           place_of_publication: descMetadata.mods(0).origin_info.place.place_term[0].presence,
@@ -59,7 +59,7 @@ module Bplmodels
           edition_name: descMetadata.mods(0).origin_info.edition[0].presence,
           issuance: descMetadata.mods(0).origin_info.issuance[0].presence,
           frequency: descMetadata.mods(0).origin_info.frequency[0].presence,
-          language: langs_for_export_hash,
+          languages: langs_for_export_hash,
           note: notes_for_export_hash,
           extent: descMetadata.mods(0).physical_description(0).extent.join(' '),
           text_direction: td_for_export_hash,
@@ -69,7 +69,7 @@ module Bplmodels
           subject: subjects_for_export_hash,
           scale: descMetadata.mods(0).subject.cartographics.scale.presence,
           projection: descMetadata.mods(0).subject.cartographics.projection[0].presence,
-          host_collection: related_items[:host],
+          host_collections: related_items[:host],
           series: related_items[:series],
           subseries: related_items[:subseries],
           related_referenced_by_url: related_items[:referenced_by_url],
@@ -78,7 +78,7 @@ module Bplmodels
           physical_location_department: physical_location[:department],
           physical_location_shelf_locator: physical_location[:shelf_locator],
           rights: rights[:rights],
-          license: rights[:license],
+          licenses: rights[:license],
           access_restrictions: descMetadata.mods(0).restriction_on_access[0].presence
         }
         descriptive_metadata.compact.reject { |_k, v| v.blank? }

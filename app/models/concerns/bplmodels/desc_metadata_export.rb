@@ -220,7 +220,7 @@ module Bplmodels
 
       # TODO: weird geographics with display labels
       def subjects_for_export_hash
-        subjects = { topic: [], name: [], geo: [], title: [], temporal: [], date: [] }
+        subjects = { topics: [], names: [], geos: [], titles: [], temporals: [], dates: [] }
         descMetadata.mods(0).subject.each_with_index do |_subject, index|
           this_subject = descMetadata.mods(0).subject(index)
           authority = this_subject.authority[0]
