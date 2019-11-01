@@ -16,7 +16,7 @@ module Bplmodels
             jp2_master = true if ds == 'productionMaster' && datastream.mimeType == 'image/jp2'
             created = datastream.createDate&.strftime('%Y-%m-%dT%T.%LZ')
             file_hash = {
-              filename: filename_for_datastream(datastream, datastreams["productionMaster"]&.label),
+              file_name: filename_for_datastream(datastream, datastreams["productionMaster"]&.label),
               created_at: created,
               updated_at: (datastream.lastModifiedDate&.strftime('%Y-%m-%dT%T.%LZ') || created),
               file_type: type_for_dsid(ds, datastream.mimeType),

@@ -150,8 +150,8 @@ module Bplmodels
           object_fileset = {
             created_at: create_date,
             updated_at: modified_date,
-            fileset_of: { ark_id: pid },
-            fileset_type: fileset_type,
+            file_set_of: { ark_id: pid },
+            file_set_type: fileset_type,
             metastreams: {
               administrative: { access_edit_group: rightsMetadata.access(2).machine.group },
               workflow: {
