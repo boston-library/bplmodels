@@ -1260,6 +1260,12 @@ module Bplmodels
       elsif production_master[:file_name].downcase.include?('daisy.zip')
         self.descMetadata.insert_media_type('application/zip')
         inserted_obj = self.insert_new_ereader_file(files_hash, institution_pid)
+      elsif production_master[:file_name].downcase.include?('.mov')
+        self.descMetadata.insert_media_type('video/quicktime')
+        inserted_obj =self.insert_new_video_file(files_hash, institution_pid)
+      elsif productionMaster[:file_name].downcase.include?('.avi')
+        self.descMetadata.insert_media_type('video/x-msvideo')
+        inserted_obj =self.insert_new_video_file(files_hash, institution_pid)
       else
         self.descMetadata.insert_media_type('image/jpeg')
         self.descMetadata.insert_media_type('image/jp2')
