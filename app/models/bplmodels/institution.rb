@@ -194,6 +194,34 @@ module Bplmodels
 
     end
 
+    def export_for_bpl_api
+      export_hash = {
+        ark_id: pid,
+        created_at: create_date,
+        updated_at: modified_date,
+        name: descMetadata.title.first,
+        abstract: abstract,
+        location: {
+          label: descMetadata.subject(0).hierarchical_geographic(0).city.first,
+          authority_code: "tgn",
+          id_from_auth: descMetadata.subject(0).valueURI.first.match(/[0-9]*\z/).to_s,
+          coordinates: descMetadata.subject(0).cartographics.coordinates.first
+        },
+        metastreams: {
+          administrative: {
+            destination_site: workflowMetadata.destination.site,
+            access_edit_group: rightsMetadata.access(2).machine.group
+          },
+          workflow: {
+            publishing_state: workflowMetadata.item_status.state[0]
+          }
+        }
+      }
+      thumbnail = Bplmodels::Finder.getImageFiles(pid)
+      export_hash[:thumbnail_pid] = thumbnail.first['id'] if thumbnail.present?
+      { institution: export_hash.compact }
+    end
+
     #Expects the following args:
     #parent_pid => id of the parent object
     #local_id => local ID of the object

@@ -4,6 +4,8 @@ module Bplmodels
     include ActiveFedora::Auditable
     include Hydra::AccessControls::Permissions
     include Hydra::ModelMethods
+    include Bplmodels::DigitalObjectExport
+    include Bplmodels::DatastreamExport
 
     has_many :exemplary_image, :class_name => "Bplmodels::File", :property=> :is_exemplary_image_of
 

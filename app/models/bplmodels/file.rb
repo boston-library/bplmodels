@@ -8,6 +8,8 @@ module Bplmodels
     include ActiveFedora::Auditable
     include BPL::Derivatives
 
+    include Bplmodels::DatastreamExport
+
     has_file_datastream 'geoEncodedMaster', versionable: false, label: 'geoEncodedMaster datastream'
 
     has_file_datastream 'georectifiedMaster', versionable: false, label: 'georectifiedMaster datastream'
@@ -95,6 +97,71 @@ module Bplmodels
 
       doc
 
+    end
+
+    def export_fileset_for_bpl_api(include_files = true)
+      export_hash = {
+        ark_id: pid,
+        created_at: create_date,
+        updated_at: modified_date,
+        fileset_of: { ark_id: object_id }
+      }
+      exemplary_ids = []
+      relationships.each_statement do |statement|
+        if statement.predicate =~ /isExemplaryImageOf/
+          exemplary_ids << statement.object.to_s.gsub(/info:fedora\//,'')
+        end
+      end
+      unless exemplary_ids.blank?
+        export_hash[:exemplary_image_of] = []
+        exemplary_ids.uniq.each do |pid|
+          export_hash[:exemplary_image_of] << { ark_id: pid }
+        end
+      end
+      file_type = self.class.to_s.split("::").last.match(/[A-Z][a-z]*/).to_s.downcase
+      export_hash[:file_set_type] = file_type
+      export_hash[:position] = get_file_sequence
+      export_hash[:file_name_base] = filename.first.gsub(/\.[a-z0-9]*\z/,'')
+      export_hash[:metastreams] = {}
+      unless datastreams["pageMetadata"].blank?
+        export_hash[:pagination] = {
+          page_label: pageMetadata.pageData.page.page_number[0],
+          page_type: pageMetadata.pageData.page.page_type[0],
+          hand_side: pageMetadata.pageData.page.hand_side[0]&.downcase
+        }
+      end
+      export_hash[:metastreams][:administrative] = {
+        access_edit_group: rightsMetadata.access(2).machine.group
+      }
+      export_hash[:metastreams][:workflow] = {
+        # these were moved to Bplmodels::DatastreamExport#files_for_export
+        # ingest_filepath: workflowMetadata.source.ingest_filepath[0],
+        # ingest_filename: workflowMetadata.source.ingest_filename[0],
+        # ingest_datastream: workflowMetadata.source.ingest_datastream[0],
+        # ingest_datastream_md5: original_checksum[0],
+        processing_state: workflowMetadata.item_status.state[0] == 'published' ? 'complete' : 'derivatives'
+      }
+      export_hash[:files] = export_files_for_bpl_api[:files] if include_files
+      { file_set: export_hash.compact }
+    end
+
+    def export_files_for_bpl_api
+      datastreams_for_export = %w[productionMaster accessMaster thumbnail300 characterization
+                                  access800 georectifiedMaster preProductionNegativeMaster
+                                  ocrMaster djvuCoords]
+      files_for_export(datastreams_for_export)
+    end
+
+    # sequence will be 0 if this is the only file
+    def get_file_sequence
+      sequence = 0
+      @all_files ||= Bplmodels::Finder.getFiles(object_id)
+      @all_files.each do |_file_type, files_array|
+        files_array.each_with_index do |img, index|
+          sequence = index if img['id'] == pid
+        end
+      end
+      sequence
     end
 
     def generate_derivatives
