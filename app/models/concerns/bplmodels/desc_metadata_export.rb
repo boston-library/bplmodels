@@ -238,7 +238,7 @@ module Bplmodels
             # TOPICS
             if this_subject.topic.any?
               this_subject.topic.each do |topic|
-                subjects[:topic] << { label: topic, authority_code: authority, id_from_auth: id_from_auth }
+                subjects[:topics] << { label: topic, authority_code: authority, id_from_auth: id_from_auth }
               end
             end
 
@@ -253,7 +253,7 @@ module Bplmodels
                              else
                                this_subject.name.name_part_actual.join(", ")
                              end
-                subjects[:name] << { label: name_value, name_type: nametype,
+                subjects[:names] << { label: name_value, name_type: nametype,
                                      authority_code: authority, id_from_auth: id_from_auth }
               end
             end
@@ -263,7 +263,7 @@ module Bplmodels
               authority = this_subject.title_info.authority[0]
               id_from_auth = this_subject.title_info.valueURI[0]
               title_type = this_subject.title_info.type[0]
-              subjects[:title] << { label: this_subject.title_info.title[0], type: title_type,
+              subjects[:titles] << { label: this_subject.title_info.title[0], type: title_type,
                                     authority_code: authority, id_from_auth: id_from_auth }
             end
 
@@ -280,43 +280,55 @@ module Bplmodels
                   start_date = date_hash
                 end
               end
-              subjects[:temporal] << date_to_edtf(start_date, end_date, range)
+              subjects[:dates] << date_to_edtf(start_date, end_date, range)
             end
           else
             # concat all children LCSH style (Foo--Bar)
             topic_label = this_subject[0].gsub(/\n/, '').strip.gsub(/[\s]{2,}/, '--')
-            subjects[:topic] << { label: topic_label, authority_code: authority, id_from_auth: id_from_auth }
+            subjects[:topics] << { label: topic_label, authority_code: authority, id_from_auth: id_from_auth }
           end
 
           # GEOGRAPHIC
           if this_subject.cartographics.coordinates.any? || this_subject.geographic.any? ||
               this_subject.hierarchical_geographic.any?
-            coords = this_subject.cartographics.coordinates[0]
             geo_hash = {
               authority_code: authority,
               id_from_auth: id_from_auth,
-              coordinates: coords
             }
-            raw_geo = this_subject.geographic[0]
-            continent = this_subject.hierarchical_geographic.continent[0]
-            country = this_subject.hierarchical_geographic.country[0]
-            province = this_subject.hierarchical_geographic.province[0]
-            region = this_subject.hierarchical_geographic.region[0]
-            state = this_subject.hierarchical_geographic.state[0]
-            territory = this_subject.hierarchical_geographic.territory[0]
-            county = this_subject.hierarchical_geographic.county[0]
-            city = this_subject.hierarchical_geographic.city[0]
-            city_section = this_subject.hierarchical_geographic.city_section[0]
-            island = this_subject.hierarchical_geographic.island[0]
-            area = this_subject.hierarchical_geographic.area[0]
-            geo_hash[:label] = raw_geo || city_section || city || island || county || territory ||
-                area || state || region || province || country || continent
-            subjects[:geo] << geo_hash if geo_hash[:label] || coords
+            geo_display_label = this_subject.geographic.display_label.first
+            coords = this_subject.cartographics.coordinates[0]
+            if coords.match(/,/)
+              geo_hash[:coordinates] = coords
+            else
+              geo_hash[:bounding_box] = coords
+            end
+            geo_data = {}
+            geo_data[:raw_geo] = this_subject.geographic[0]
+            geo_data[:area] = this_subject.hierarchical_geographic.area[0]
+            geo_data[:island] = this_subject.hierarchical_geographic.island[0]
+            geo_data[:city_section] = this_subject.hierarchical_geographic.city_section[0]
+            geo_data[:city] = this_subject.hierarchical_geographic.city[0]
+            geo_data[:county] = this_subject.hierarchical_geographic.county[0]
+            geo_data[:province] = this_subject.hierarchical_geographic.province[0]
+            geo_data[:territory] = this_subject.hierarchical_geographic.territory[0]
+            geo_data[:state] = this_subject.hierarchical_geographic.state[0]
+            geo_data[:region] = this_subject.hierarchical_geographic.region[0]
+            geo_data[:country] = this_subject.hierarchical_geographic.country[0]
+            geo_data[:continent] = this_subject.hierarchical_geographic.continent[0]
+            geo_data.each do |k, v|
+              geo_hash[:area_type] = geo_display_label
+              break if geo_hash[:label]
+              if v
+                geo_hash[:label] = v
+                geo_hash[:area_type] ||= k.to_s unless k == :raw_geo # TODO test set type from displayLabel
+              end
+            end
+            subjects[:geos] << geo_hash if geo_hash[:label] || coords
           end
         end
 
         # remove all nils, parse URIs for IDs
-        %i[topic name geo title].each do |subject_type|
+        %i[topics names geos titles].each do |subject_type|
           subjects[subject_type].map!(&:compact)
           subjects[subject_type].each do |subject|
             subject[:id_from_auth] = subject[:id_from_auth].match(/[A-Za-z0-9]*\z/).to_s if subject[:id_from_auth]
@@ -344,6 +356,10 @@ module Bplmodels
         if descMetadata.related_item.subseries.any?
           ri_title = (descMetadata.mods(0).related_item.subseries(0).title_info.nonSort[0].presence || '') + descMetadata.mods(0).related_item.subseries(0).title_info.title[0]
           related_items[:subseries] = ri_title
+        end
+        if descMetadata.related_item.subseries.subsubseries.any?
+          ri_title = (descMetadata.mods(0).related_item.subseries.subsubseries(0).title_info.nonSort[0].presence || '') + descMetadata.mods(0).related_item.subseries.subsubseries(0).title_info.title[0]
+          related_items[:subsubseries] = ri_title
         end
         related_items.compact.reject { |_k, v| v.blank? }
       end

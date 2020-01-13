@@ -4,6 +4,7 @@ module Bplmodels
     included do
       include Bplmodels::DescMetadataExport
 
+      # TODO: check subsubseries export is working
       def export_for_bpl_api(include_filesets = true)
         return nil if is_volume_wrapper?
         export = {}
@@ -72,6 +73,7 @@ module Bplmodels
           host_collections: related_items[:host],
           series: related_items[:series],
           subseries: related_items[:subseries],
+          subsubseries: related_items[:subsubseries],
           related_referenced_by_url: related_items[:referenced_by_url],
           related_constituent: related_items[:constituent],
           physical_location: { label: physical_location[:label], name_type: 'corporate' },
