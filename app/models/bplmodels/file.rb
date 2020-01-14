@@ -55,6 +55,10 @@ module Bplmodels
       super()
     end
 
+    def is_video?
+      false
+    end
+
     def to_solr(doc = {} )
       doc = super(doc)
 

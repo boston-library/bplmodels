@@ -5,6 +5,10 @@ module Bplmodels
 
     has_many :prev_video, :class_name => 'Bplmodels::VideoFile', :property => :is_following_video_of
 
+    def is_video?
+      true
+    end
+
     def fedora_name
       'video_file'
     end

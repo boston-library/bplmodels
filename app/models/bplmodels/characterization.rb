@@ -45,9 +45,30 @@ module Bplmodels
       characterization.sample_rate.blank? ? characterization.video_sample_rate : characterization.sample_rate
     end
 
+    def production_master_ingest_origin_path
+      self.workflowMetadata.source.each_with_index do |src, i|
+        return self.workflow.source(i).ingest_filepath.first if self.workflowMetadata.source(i).ingest_datastream == 'productionMaster'
+      end
+      nil
+    end
+
+    def local_production_master_path
+      local_path = production_master_file_path.to_s
+
+      return local_path.gsub("hydra", "#{ENV['USER']}") if local_path.match("hydra")
+
+      local_path
+    end
+
     ## Extract the metadata from the content datastream and record it in the characterization datastream
     def characterize
-      self.characterization.ng_xml = self.productionMaster.extract_metadata
+
+      if self.is_video?
+        self.characterization.ng_xml = self.productionMaster.extract_metadata(self.local_production_master_path)
+      else
+        self.characterization.ng_xml = self.productionMaster.extract_metadata
+      end
+
       self.append_metadata
 
       if self.label.class == Array
