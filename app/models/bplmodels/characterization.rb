@@ -46,10 +46,14 @@ module Bplmodels
     end
 
     def production_master_ingest_origin_path
-      self.workflowMetadata.source.each_with_index do |src, i|
-        return self.workflow.source(i).ingest_filepath.first if self.workflowMetadata.source(i).ingest_datastream == 'productionMaster'
-      end
-      nil
+      ->(obj){
+        obj.workflowMetadata.source.each_with_index do |src, i|
+          if obj.workflowMetadata.source(i).ingest_datastream.first == 'productionMaster'
+            return obj.workflowMetadata.source(i).ingest_filepath.first
+          end
+        end
+        nil
+      }.call(self)
     end
 
     def local_production_master_path
