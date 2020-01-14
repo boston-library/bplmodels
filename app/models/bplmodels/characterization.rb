@@ -53,7 +53,7 @@ module Bplmodels
     end
 
     def local_production_master_path
-      local_path = production_master_file_path.to_s
+      local_path = production_master_ingest_origin_path.to_s
 
       return local_path.gsub("hydra", "#{ENV['USER']}") if local_path.match("hydra")
 
