@@ -204,7 +204,7 @@ module Bplmodels
           outputs = []
           outputs << { dsid: 'accessMaster', format: 'mp4' } unless self.accessMaster.has_content?
           outputs << { label: :thumb, dsid: 'thumbnail300', format: 'jpg' }
-          source_datastream = self.accessMaster.has_content? 'accessMaster' : 'productionMaster'
+          source_datastream = self.accessMaster.has_content? ? 'accessMaster' : 'productionMaster'
           # NOTE: since the production masters are quite large (Tested with ~16GB one) generating derviatives can be very memory insensive.
           # Therfore if the file already has an accessMaster use thta as the source datastream for generating derivatives
           derivatize runner: :video, source_datastream: source_datastream, outputs: outputs
