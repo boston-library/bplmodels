@@ -11,7 +11,7 @@ module Bplmodels
 
       return Bplmodels::DatastreamInputFuncs.get_fits_xml(self.content, self.filename_for_characterization.join('')) if local_file_path.blank?
 
-      Bplmodels::DatastreamInputFuncs.get_fits_xml(File.open(local_file_path), self.filename_for_characterization.join(''))
+      Bplmodels::DatastreamInputFuncs.get_fits_xml(::File.open(local_file_path), self.filename_for_characterization.join(''))
     end
 
     def filename_for_characterization
