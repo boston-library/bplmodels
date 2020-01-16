@@ -1571,7 +1571,7 @@ module Bplmodels
       document_file
     end
 
-    def insert_new_video_file(files_hash, institution_pid, set_exemplary=false)
+    def insert_new_video_file(files_hash, institution_pid, set_exemplary)
       puts 'processing image of: ' + self.pid.to_s + ' with file_hash: ' + files_hash.to_s
       production_master = files_hash.select{ |hash| hash[:datastream] == 'productionMaster' }.first
 
@@ -1632,7 +1632,7 @@ module Bplmodels
       video_file.add_relationship(:is_file_of, "info:fedora/" + self.pid)
       video_file.add_relationship(:is_video_of, "info:fedora/" + self.pid)
 
-      if set_exemplary
+      if set_exemplary.nil? || set_exemplary
         if ActiveFedora::Base.find_with_conditions("is_exemplary_image_of_ssim"=>"info:fedora/#{self.pid}").blank?
           video_file.add_relationship(:is_exemplary_image_of, "info:fedora/" + self.pid)
         end
@@ -1756,6 +1756,13 @@ module Bplmodels
       end
 
       Bplmodels::DocumentFile.find_in_batches('is_document_of_ssim'=>"info:fedora/#{self.pid}") do |group|
+        group.each { |solr_object|
+          object = ActiveFedora::Base.find(solr_object['id']).adapt_to_cmodel
+          object.delete
+        }
+      end
+
+      Bplmodels::VideoFile.find_in_batches('is_video_of_ssim'=>"info:fedora/#{self.pid}") do |group|
         group.each { |solr_object|
           object = ActiveFedora::Base.find(solr_object['id']).adapt_to_cmodel
           object.delete
