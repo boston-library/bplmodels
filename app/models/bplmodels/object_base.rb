@@ -1262,10 +1262,10 @@ module Bplmodels
         inserted_obj = self.insert_new_ereader_file(files_hash, institution_pid)
       elsif production_master[:file_name].downcase.include?('.mov')
         self.descMetadata.insert_media_type('video/quicktime')
-        inserted_obj =self.insert_new_video_file(files_hash, institution_pid)
+        inserted_obj =self.insert_new_video_file(files_hash, institution_pid,set_exemplary)
       elsif productionMaster[:file_name].downcase.include?('.avi')
         self.descMetadata.insert_media_type('video/x-msvideo')
-        inserted_obj =self.insert_new_video_file(files_hash, institution_pid)
+        inserted_obj =self.insert_new_video_file(files_hash, institution_pid, set_exemplary)
       else
         self.descMetadata.insert_media_type('image/jpeg')
         self.descMetadata.insert_media_type('image/jp2')
