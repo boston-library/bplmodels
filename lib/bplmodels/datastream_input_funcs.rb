@@ -207,10 +207,10 @@ module Bplmodels
       end
     end
 
-    def self.get_fits_xml(datastream)
-      return unless datastream.has_content?
-      Hydra::FileCharacterization.characterize(datastream.content, datastream.filename_for_characterization.join(""), :fits) do |config|
-        config[:fits] = ENV.fetch("FITS_PATH", "#{ENV['HOME']}/tools/Fits/fits.sh")
+    def self.get_fits_xml(content, filename_for_characterization)
+      return if content.blank?
+      Hydra::FileCharacterization.characterize(content, filename_for_characterization, :fits) do |config|
+        config[:fits] = ENV.fetch("FITS_PATH", "#{ENV['HOME']}/tools/fits-1.5.0/fits.sh")
       end
     end
 

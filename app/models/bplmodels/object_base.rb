@@ -17,6 +17,8 @@ module Bplmodels
 
     has_many :ereader_files, :class_name => "Bplmodels::EreaderFile", :property=> :is_ereader_of
 
+    has_many :video_files, :class_name => 'Bplmodels::VideoFile', :property => :is_video_of
+
     has_many :files, :class_name => "Bplmodels::File", :property=> :is_file_of
 
 
@@ -1258,6 +1260,12 @@ module Bplmodels
       elsif production_master[:file_name].downcase.include?('daisy.zip')
         self.descMetadata.insert_media_type('application/zip')
         inserted_obj = self.insert_new_ereader_file(files_hash, institution_pid)
+      elsif production_master[:file_name].downcase.include?('.mov')
+        self.descMetadata.insert_media_type('video/quicktime')
+        inserted_obj =self.insert_new_video_file(files_hash, institution_pid)
+      elsif productionMaster[:file_name].downcase.include?('.avi')
+        self.descMetadata.insert_media_type('video/x-msvideo')
+        inserted_obj =self.insert_new_video_file(files_hash, institution_pid)
       else
         self.descMetadata.insert_media_type('image/jpeg')
         self.descMetadata.insert_media_type('image/jp2')
@@ -1562,6 +1570,78 @@ module Bplmodels
 
       document_file
     end
+
+    def insert_new_video_file(files_hash, institution_pid, set_exemplary=false)
+      puts 'processing image of: ' + self.pid.to_s + ' with file_hash: ' + files_hash.to_s
+      production_master = files_hash.select{ |hash| hash[:datastream] == 'productionMaster' }.first
+
+      video_file = Bplmodels::VideoFile.mint(:parent_pid=>self.pid,
+                                             :local_id=>production_master[:file_name],
+                                             :local_id_type=>'File Name',
+                                             :label=>production_master[:file_name],
+                                             :institution_pid=>institution_pid)
+
+      return Bplmodels::VideoFile.find(video_file) if video_file.is_a?(String)
+
+      files_hash.each_with_index do |file, file_index|
+        datastream = file[:datastream]
+
+        video_file.send(datastream).content = ::File.open(file[:file_path])
+
+        case file[:file_name].split('.').last.downcase
+        when 'mp4'
+          video_file.send(datastream).mimeType = 'video/mp4'
+        when 'mov'
+          video_file.send(datastream).mimeType = 'video/quicktime'
+        when 'avi'
+          video_file.send(datastream).mimeType = 'video/x-msvideo'
+        when 'webm'
+          video_file.send(datastream).mimeType = 'video/webm'
+        when 'jpg', 'jpeg'
+          video_file.send(datastream).mimeType = 'image/jpeg'
+        else
+          raise "Could not find a mimeType for #{file[:file_name].split('.').last.downcase}"
+        end
+
+
+        video_file.send(datastream).dsLabel = file[:file_name].gsub(/\.(mp4|MP4|avi|AVI|mov|MOV|jpg|JPG|jpeg|JPEG)$/, '')
+
+        #FIXME!!!
+        original_file_location = file[:original_file_location]
+        original_file_location ||= file[:file_path]
+        video_file.workflowMetadata.insert_file_source(original_file_location,file[:file_name],datastream)
+        video_file.workflowMetadata.item_status.state = "published"
+        video_file.workflowMetadata.item_status.state_comment = "Added via the ingest image object base method on #{Date.today.strftime('%Y/%m/%d')}"
+      end
+
+      other_videos_exist = false
+      Bplmodels::VideoFile.find_in_batches('is_video_of_ssim'=>"info:fedora/#{self.pid}", 'is_preceding_video_of_ssim'=>'') do |group|
+        group.each { |video_id|
+          if other_videos_exist
+            raise 'This object has an error... likely was interupted during a previous ingest so multiple starting files. Pid: ' + self.pid
+          else
+            other_images_exist = true
+            preceding_video = Bplmodels::ImageFile.find(video_id['id'])
+            preceding_video.add_relationship(:is_preceding_image_of, "info:fedora/#{video_file.pid}", true)
+            preceding_video.save
+            video_file.add_relationship(:is_following_video_of, "info:fedora/#{video_id['id']}", true)
+          end
+        }
+      end
+
+      video_file.add_relationship(:is_file_of, "info:fedora/" + self.pid)
+      video_file.add_relationship(:is_video_of, "info:fedora/" + self.pid)
+
+      if set_exemplary
+        if ActiveFedora::Base.find_with_conditions("is_exemplary_image_of_ssim"=>"info:fedora/#{self.pid}").blank?
+          video_file.add_relationship(:is_exemplary_image_of, "info:fedora/" + self.pid)
+        end
+      end
+
+      video_file.save
+      video_file
+    end
+
 
     def add_new_volume(pid)
       #raise 'insert new image called with no files or more than one!' if file.blank? || file.is_a?(Array)

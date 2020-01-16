@@ -6,8 +6,12 @@ module Bplmodels
       return ''
     end
 
-    def extract_metadata
-      Bplmodels::DatastreamInputFuncs.get_fits_xml(self)
+    def extract_metadata(local_file_path='')
+      return unless self.has_content?
+
+      return Bplmodels::DatastreamInputFuncs.get_fits_xml(self.content, self.filename_for_characterization.join('')) if local_file_path.blank?
+
+      Bplmodels::DatastreamInputFuncs.get_fits_xml(::File.open(local_file_path), self.filename_for_characterization.join(''))
     end
 
     def filename_for_characterization

@@ -55,6 +55,10 @@ module Bplmodels
       super()
     end
 
+    def is_video?
+      false
+    end
+
     def to_solr(doc = {} )
       doc = super(doc)
 
@@ -200,8 +204,15 @@ module Bplmodels
           self.thumbnail300.dsLabel = self.productionMaster.label
         when 'audio/wav'
           #transform_datastream :productionMaster, { :mp3 => {format: 'mp3'}, :ogg => {format: 'ogg'} }, processor: :audio
-        when 'video/avi'
-          #transform_datastream :productionMaster, { :mp4 => {format: 'mp4'}, :webm => {format: 'webm'} }, processor: :video
+        when 'video/avi', 'video/mov', 'video/quicktime'
+          outputs = []
+          outputs << { dsid: 'accessMaster', format: 'mp4' } unless self.accessMaster.has_content?
+          outputs << { label: :thumb, dsid: 'thumbnail300', format: 'jpg' } unless self.thumbnail300.has_content?
+          unless outputs.blank?
+            derivatize runner: :video, source_datastream: 'productionMaster', outputs: outputs
+          end
+          self.accessMaster.dsLabel = self.productionMaster.label
+          self.thumbnail300.dsLabel = self.productionMaster.label
         when 'image/tiff'
           begin
             derivatize runner: :jpeg2k_image, source_datastream: "productionMaster", outputs: [ {recipe: :default, dsid:  'accessMaster'  } ]
