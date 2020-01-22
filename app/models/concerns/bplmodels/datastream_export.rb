@@ -24,7 +24,8 @@ module Bplmodels
               byte_size: datastream.size,
               checksum: (checksum == 'none' || checksum.blank? ? nil : checksum),
               metadata: metadata_for_datastream(datastream),
-              filestream_of: { ark_id: pid }
+              filestream_of: { ark_id: pid },
+              fedora_content_location: "#{FEDORA_URL['url']}/objects/#{pid}/#{ds}/content"
             }
             datastream_hashes << { file: file_hash.compact }
           end
@@ -33,9 +34,11 @@ module Bplmodels
         { files: datastream_hashes }
       end
 
+      # TODO: test this, especially with IA stuff (djvuXML, djvuCoords, plainText etc)
       def filename_for_datastream(datastream, label = nil)
         ds_id = datastream.dsid
-        if ds_id =~ /Master\z/ && ds_id != 'accessMaster' # TODO: what about IA stuff (djvuXML, djvuCoords, plainText etc)
+        #if ds_id =~ /Master\z/ && ds_id != 'accessMaster'
+        if @file_source_data[ds_id] && @file_source_data[ds_id][:ingest_filename]
           puts "@file_source_data = #{@file_source_data}"
           puts "ds_id = #{ds_id}"
           @file_source_data[ds_id][:ingest_filename]
@@ -57,7 +60,11 @@ module Bplmodels
             'AudioMaster'
           when 'epub', 'mobi', 'zip'
             'EbookAccess'
+          when 'mov'
+            'VideoMaster'
           end
+        elsif self.class == Bplmodels::VideoFile && file_type == 'access800'
+          'VideoAccess'
         else
           case legacy_dsid
           when 'preProductionNegativeMaster'
@@ -124,6 +131,10 @@ module Bplmodels
           'wav'
         when 'image/png'
           'png'
+        when 'video/quicktime'
+          'mov'
+        when 'video/mp4'
+          'mp4'
         else
           raise Error
         end
@@ -158,12 +169,12 @@ module Bplmodels
       end
 
       def foxml_hash
-        repo =  ActiveFedora::Base.connection_for_pid(pid)
+        repo = ActiveFedora::Base.connection_for_pid(pid)
         fc3 = Rubydora::Fc3Service.new(repo.config)
         foxml_resp = fc3.export(pid: pid, format: 'info:fedora/fedora-system:FOXML-1.1', content: 'archive')
         foxml_string = foxml_resp.body
         {
-          filename: "#{pid.gsub(/:/, '_')}_foxml.xml",
+          filename: "#{pid.gsub(/:/, '_')}_FOXML.xml",
           created_at: create_date,
           updated_at: modified_date,
           file_type: 'MetadataFOXML',
@@ -172,7 +183,8 @@ module Bplmodels
           md5_checksum: Digest::MD5.hexdigest(foxml_string),
           filestream_of: {
             ark_id: pid
-          }
+          },
+          fedora_content_location: foxml_resp.request.url
         }
       end
     end

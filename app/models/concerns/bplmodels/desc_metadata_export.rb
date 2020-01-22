@@ -36,7 +36,7 @@ module Bplmodels
             part_name: descMetadata.mods(0).title_info(index).part_name[0].presence
           }
           title_hash.compact!
-          if title_hash[:display] == "primary_display"
+          if title_hash[:display] == 'primary'
             titles[:primary] = title_hash
           else
             titles[:other] << title_hash
@@ -293,7 +293,7 @@ module Bplmodels
               this_subject.hierarchical_geographic.any?
             geo_hash = {
               authority_code: authority,
-              id_from_auth: id_from_auth,
+              id_from_auth: id_from_auth
             }
             geo_display_label = this_subject.geographic.display_label.first
             coords = this_subject.cartographics.coordinates[0]
@@ -315,8 +315,8 @@ module Bplmodels
             geo_data[:region] = this_subject.hierarchical_geographic.region[0]
             geo_data[:country] = this_subject.hierarchical_geographic.country[0]
             geo_data[:continent] = this_subject.hierarchical_geographic.continent[0]
+            geo_hash[:area_type] = geo_display_label.presence
             geo_data.each do |k, v|
-              geo_hash[:area_type] = geo_display_label
               break if geo_hash[:label]
               if v
                 geo_hash[:label] = v
