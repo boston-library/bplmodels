@@ -4,7 +4,6 @@ module Bplmodels
     included do
       include Bplmodels::DescMetadataExport
 
-      # TODO: check subsubseries export is working
       def export_for_curator_api(include_filesets = true)
         return nil if is_volume_wrapper?
         export = {}
@@ -29,9 +28,11 @@ module Bplmodels
                        else
                          true
                        end,
+          hosting_status: self.class == Bplmodels::OAIObject ? 'harvested' : 'hosted',
           access_edit_group: rightsMetadata.access(2).machine.group
         }.compact
         export[:metastreams][:workflow] = {
+          ingest_origin: ingest_origin_for_workflow,
           processing_state: workflowMetadata.item_status.processing[0],
           publishing_state: workflowMetadata.item_status.state[0]
         }.compact
@@ -99,37 +100,38 @@ module Bplmodels
 
       def filesets_for_export_hash(include_files = true)
         filesets = []
-        # get file-level filesets (image, documemt, ereader, etc)
+        # get file-level filesets (image, document, video, etc); remove ereader (do 'em separately)
         all_files = Bplmodels::Finder.getFiles(pid)
+        all_files.delete(:ereader)
+        # all_files.delete(:images) # uncomment for easier testing of IA objects
         all_files.each_value do |files_array|
-          files_array.each do |file_doc|
-            fileset_obj = Bplmodels::File.find(file_doc['id'])
-            fileset_hash = fileset_obj.export_fileset_for_bpl_api(include_files)
-            filesets << fileset_hash
-          end
+          filesets.concat filesets_for_files(files_array, include_files)
         end
-        # combine EReader filesets, make EPub the 'master'
-        ereader_filesets = []
-        filesets.each_with_index do |fileset, index|
-          if fileset[:file_set][:fileset_type] == 'ereader'
-            ereader_filesets << fileset
-            filesets.delete_at(index)
-          end
-        end
-        if ereader_filesets.present?
+        # get EReader filesets and combine, make EPub the 'master'
+        ereader_files = Bplmodels::Finder.getEreaderFiles(pid)
+        if ereader_files.present?
           ereader_fileset_for_export = nil
-          ereader_filesets.each_with_index do |er_fileset, index|
-            if er_fileset[:file_set][:files][0][:file][:mime_type] == 'application/epub+zip'
-              ereader_fileset_for_export = er_fileset
-              ereader_filesets.delete_at(index)
-            end
-          end
-          ereader_filesets.each do |er_fileset|
-            er_fileset[:file_set][:files].each do |er_file|
-              if er_file[:file][:file_type] == 'EbookAccess'
-                er_file[:file][:filestream_of][:ark_id] = ereader_fileset_for_export[:ark_id]
-                ereader_fileset_for_export[:file_set][:files] << er_file
+          if include_files
+            ereader_filesets = filesets_for_files(ereader_files, include_files)
+            ereader_filesets.each_with_index do |er_fileset, index|
+              if er_fileset[:file_set][:files][0][:file][:content_type] == 'application/epub+zip'
+                ereader_fileset_for_export = er_fileset
+                ereader_filesets.delete_at(index)
               end
+            end
+            ereader_filesets.each do |er_fileset|
+              er_fileset[:file_set][:files].each do |er_file|
+                if er_file[:file][:file_type] == 'EbookAccess'
+                  er_file[:file][:filestream_of][:ark_id] = ereader_fileset_for_export[:file_set][:ark_id]
+                  ereader_fileset_for_export[:file_set][:files] << er_file
+                end
+              end
+            end
+          else
+            ereader_files = ereader_files.select { |erf| erf["mime_type_tesim"].include?("application/epub+zip") }
+            if ereader_files.present?
+              ereader_fileset_obj = Bplmodels::File.find(ereader_files.first['id'])
+              ereader_fileset_for_export = ereader_fileset_obj.export_fileset_for_curator_api(include_files)
             end
           end
           filesets << ereader_fileset_for_export
@@ -139,15 +141,25 @@ module Bplmodels
         filesets + object_filesets
       end
 
+      def filesets_for_files(files_array, include_files = true)
+        filesets = []
+        files_array.each do |file_doc|
+          fileset_obj = Bplmodels::File.find(file_doc['id'])
+          fileset_hash = fileset_obj.export_fileset_for_curator_api(include_files)
+          filesets << fileset_hash
+        end
+        filesets
+      end
+
       def object_files_for_export
-        { metadata: files_for_export(%w[oaiMetadata descMetadata marcXML iaMeta scanData]),
-          image: files_for_export(['thumbnail300'], false),
+        { metadata: files_for_export(%w[oaiMetadata descMetadata marcXML iaMeta scanData thumbnail300]),
           text: files_for_export(%w[plainText djvuXML], false) }
       end
 
+      # get the object-level files -- metadata, full text, IA data, etc
       def object_filesets_for_export(object_files, include_files = true)
         object_filesets = []
-        %w[metadata image text].each do |fileset_type|
+        %w[metadata text].each do |fileset_type|
           next if object_files[fileset_type.to_sym][:files].blank?
           object_fileset = {
             created_at: create_date,
@@ -157,22 +169,36 @@ module Bplmodels
             metastreams: {
               administrative: { access_edit_group: rightsMetadata.access(2).machine.group },
               workflow: {
-                ingest_filepath: workflowMetadata.source.ingest_filepath[0],
-                ingest_filename: workflowMetadata.source.ingest_filename[0],
-                ingest_datastream: workflowMetadata.source.ingest_datastream[0],
+                # properties below aren't used in Curator
+                # ingest_filepath: workflowMetadata.source.ingest_filepath[0],
+                # ingest_filename: workflowMetadata.source.ingest_filename[0],
+                # ingest_datastream: workflowMetadata.source.ingest_datastream[0],
+                ingest_origin: ingest_origin_for_workflow,
                 processing_state: workflowMetadata.item_status.state[0] == 'published' ? 'complete' : 'derivatives'
               }.compact
             }
           }
+          object_fileset[:exemplary_image_of] = [{ ark_id: pid }] if fileset_type == 'metadata' && self.class == Bplmodels::OAIObject
           object_fileset[:files] = object_files[fileset_type.to_sym][:files] if include_files
-          # remove :filestream_of property from object_files hashes, since it references
-          # DigitalObject rather than as-yet-uncreated FileSet
+          # remove :filestream_of property from object_files hashes,
+          # since it references DigitalObject rather than as-yet-uncreated FileSet
           object_fileset[:files].each do |file_hash|
             file_hash[:file].delete(:filestream_of)
           end
           object_filesets << { fileset: object_fileset }
         end
         object_filesets
+      end
+
+      def ingest_origin_for_workflow
+        if self.class == Bplmodels::OAIObject
+          oaiMetadata.header_information.identifer.first
+        elsif workflowMetadata.source.present? &&
+            workflowMetadata.source.ingest_filepath[0] =~ /archive.org/
+          workflowMetadata.source.ingest_filepath[0].gsub(/\/[a-z\.0-9_]*\z/, '')
+        else
+          'spreadsheet'
+        end
       end
 
       # if this is a wrapper object for Book/Volume, skip it

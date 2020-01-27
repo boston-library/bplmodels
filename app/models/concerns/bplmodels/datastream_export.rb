@@ -34,13 +34,9 @@ module Bplmodels
         { files: datastream_hashes }
       end
 
-      # TODO: test this, especially with IA stuff (djvuXML, djvuCoords, plainText etc)
       def filename_for_datastream(datastream, label = nil)
         ds_id = datastream.dsid
-        #if ds_id =~ /Master\z/ && ds_id != 'accessMaster'
         if @file_source_data[ds_id] && @file_source_data[ds_id][:ingest_filename]
-          puts "@file_source_data = #{@file_source_data}"
-          puts "ds_id = #{ds_id}"
           @file_source_data[ds_id][:ingest_filename]
         else
           new_type = type_for_dsid(ds_id, datastream.mimeType)
@@ -63,7 +59,7 @@ module Bplmodels
           when 'mov'
             'VideoMaster'
           end
-        elsif self.class == Bplmodels::VideoFile && file_type == 'access800'
+        elsif self.class == Bplmodels::VideoFile && legacy_dsid == 'accessMaster'
           'VideoAccess'
         else
           case legacy_dsid
@@ -153,7 +149,10 @@ module Bplmodels
 
       def filepath_for_datastream(datastream)
         ds_id = datastream.dsid
-        return nil unless ds_id =~ /Master\z/ && ds_id != 'accessMaster'
+        if ds_id == 'thumbnail300' && self.class == Bplmodels::OAIObject
+          return oaiMetadata.raw_info.file_urls.first
+        end
+        return nil unless @file_source_data[ds_id] && @file_source_data[ds_id][:ingest_filepath]
         @file_source_data[ds_id][:ingest_filepath]
       end
 

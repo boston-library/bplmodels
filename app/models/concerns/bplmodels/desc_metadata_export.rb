@@ -153,7 +153,6 @@ module Bplmodels
         dates.compact
       end
 
-      # TODO: how to do BC dates?
       # TODO: how to handle inferred dates?
       # TODO: validate EDTF dates?
       # @param start_date_w_qualifier [Hash] e.g. { date_value: '1975', qualifier: 'questionable' }

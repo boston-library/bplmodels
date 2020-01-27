@@ -113,6 +113,7 @@ module Bplmodels
                          else
                            true
                          end,
+            hosting_status: self.class == Bplmodels::OAICollection ? 'harvested' : 'hosted',
             access_edit_group: rightsMetadata.access(2).machine.group
           },
           workflow: {

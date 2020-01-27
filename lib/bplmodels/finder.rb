@@ -1,50 +1,14 @@
 module Bplmodels
   class Finder
 
-    def self.getCollectionObjects(pid)
-      return_hash = {}
-      return_hash[:images] = []
-      return_hash[:documents] = []
-      return_hash[:audio] = []
-      return_hash[:ereader] = []
-      return_hash[:generic] = []
-
-      preceding_pid_lookup = []
-
-      Bplmodels::File.find_in_batches('is_file_of_ssim'=>"info:fedora/#{pid}") do |group|
-        group.each { |solr_object|
-          if solr_object['has_model_ssim'].include?('info:fedora/afmodel:Bplmodels_AudioFile')
-            return_hash[:audio] << solr_object
-          elsif solr_object['has_model_ssim'].include?('info:fedora/afmodel:Bplmodels_ImageFile')
-            return_hash[:images] << solr_object
-          elsif solr_object['has_model_ssim'].include?('info:fedora/afmodel:Bplmodels_DocumentFile')
-            return_hash[:documents] << solr_object
-          elsif solr_object['has_model_ssim'].include?('info:fedora/afmodel:Bplmodels_EreaderFile')
-            return_hash[:ereader] << solr_object
-          else
-            return_hash[:generic] << solr_object
-          end
-        }
-      end
-
-      return_hash[:images] = sort_files(return_hash[:images])
-      return_hash[:documents] = sort_files(return_hash[:documents])
-      return_hash[:audio] = sort_files(return_hash[:audio])
-      return_hash[:ereader] = sort_files(return_hash[:ereader])
-      return_hash[:generic] = sort_files(return_hash[:generic])
-
-      return return_hash
-    end
-
      def self.getFiles(pid)
        return_hash = {}
        return_hash[:images] = []
        return_hash[:documents] = []
        return_hash[:audio] = []
        return_hash[:ereader] = []
+       return_hash[:video] = []
        return_hash[:generic] = []
-
-       preceding_pid_lookup = []
 
        Bplmodels::File.find_in_batches('is_file_of_ssim'=>"info:fedora/#{pid}") do |group|
          group.each { |solr_object|
@@ -56,6 +20,8 @@ module Bplmodels
              return_hash[:documents] << solr_object
            elsif solr_object['has_model_ssim'].include?('info:fedora/afmodel:Bplmodels_EreaderFile')
              return_hash[:ereader] << solr_object
+           elsif solr_object['has_model_ssim'].include?('info:fedora/afmodel:Bplmodels_VideoFile')
+             return_hash[:video] << solr_object
            else
              return_hash[:generic] << solr_object
            end
@@ -66,6 +32,7 @@ module Bplmodels
        return_hash[:documents] = sort_files(return_hash[:documents])
        return_hash[:audio] = sort_files(return_hash[:audio])
        return_hash[:ereader] = sort_files(return_hash[:ereader])
+       return_hash[:video] = sort_files(return_hash[:video])
        return_hash[:generic] = sort_files(return_hash[:generic])
 
        return return_hash

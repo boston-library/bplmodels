@@ -103,7 +103,7 @@ module Bplmodels
 
     end
 
-    def export_fileset_for_bpl_api(include_files = true)
+    def export_fileset_for_curator_api(include_files = true)
       export_hash = {
         ark_id: pid,
         created_at: create_date,
@@ -143,6 +143,7 @@ module Bplmodels
         # ingest_filename: workflowMetadata.source.ingest_filename[0],
         # ingest_datastream: workflowMetadata.source.ingest_datastream[0],
         # ingest_datastream_md5: original_checksum[0],
+        ingest_origin: ingest_origin_for_workflow,
         processing_state: workflowMetadata.item_status.state[0] == 'published' ? 'complete' : 'derivatives'
       }
       export_hash[:files] = export_files_for_bpl_api[:files] if include_files
@@ -166,6 +167,14 @@ module Bplmodels
         end
       end
       sequence
+    end
+
+    def ingest_origin_for_workflow
+      if workflowMetadata.source.ingest_filepath[0] =~ /archive.org/
+        workflowMetadata.source.ingest_filepath[0].gsub(/\/[a-z\.0-9_]*\z/, '')
+      else
+        'spreadsheet'
+      end
     end
 
     def generate_derivatives
