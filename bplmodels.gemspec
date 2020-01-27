@@ -23,5 +23,6 @@ Gem::Specification.new do |s|
   s.add_dependency 'typhoeus'
   s.add_dependency 'om', '~> 3.0'
   s.add_dependency 'bpl-derivatives', '~> 0.2.2'
+  s.add_dependency 'edtf', '~> 3.0.5'
   # s.add_development_dependency "sqlite3"
 end

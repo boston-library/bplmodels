@@ -154,7 +154,6 @@ module Bplmodels
       end
 
       # TODO: how to handle inferred dates?
-      # TODO: validate EDTF dates?
       # @param start_date_w_qualifier [Hash] e.g. { date_value: '1975', qualifier: 'questionable' }
       def date_to_edtf(start_date_w_qualifier, end_date_w_qualifier = {}, range = false)
         output = []
@@ -171,7 +170,10 @@ module Bplmodels
                               end
           output << (date_value_string ? date_value_string + qualifier_string : nil)
         end
-        output.compact.join('/').presence
+        edtf_date = output.compact.join('/').presence
+        return edtf_date if edtf_date.nil?
+        raise "EDTF::ParserError - date could not be parsed: #{edtf_date}" unless EDTF.parse(edtf_date)
+        edtf_date
       end
 
       def langs_for_export_hash
