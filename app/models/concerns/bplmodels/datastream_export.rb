@@ -22,10 +22,10 @@ module Bplmodels
               file_type: type_for_dsid(ds, datastream.mimeType),
               content_type: datastream.mimeType,
               byte_size: datastream.size,
-              checksum: (checksum == 'none' || checksum.blank? ? nil : checksum),
+              checksum_md5: ((checksum == 'none' || checksum.blank?) ? nil : checksum),
               metadata: metadata_for_datastream(datastream),
               filestream_of: { ark_id: pid },
-              fedora_content_location: "#{FEDORA_URL['url']}/objects/#{pid}/#{ds}/content"
+              fedora_content_location: "#{FEDORA_URL['url']}/objects/#{pid}/datastreams/#{ds}/content"
             }
             datastream_hashes << { file: file_hash.compact }
           end
@@ -160,8 +160,8 @@ module Bplmodels
         metadata = {}
         metadata['ingest_filepath'] = filepath_for_datastream(datastream)
         if datastream.dsid == 'productionMaster' && self.class == Bplmodels::ImageFile
-          metadata['height'] = height&.first
-          metadata['width'] = width&.first
+          metadata['height'] = height&.first&.to_i
+          metadata['width'] = width&.first&.to_i
         end
         metadata.compact!
         metadata.present? ? metadata : nil
@@ -173,13 +173,13 @@ module Bplmodels
         foxml_resp = fc3.export(pid: pid, format: 'info:fedora/fedora-system:FOXML-1.1', content: 'archive')
         foxml_string = foxml_resp.body
         {
-          filename: "#{pid.gsub(/:/, '_')}_FOXML.xml",
+          file_name: "#{pid.gsub(/:/, '_')}_FOXML.xml",
           created_at: create_date,
           updated_at: modified_date,
           file_type: 'MetadataFOXML',
-          mime_type: 'application/xml',
-          size: foxml_string.bytesize,
-          md5_checksum: Digest::MD5.hexdigest(foxml_string),
+          content_type: 'application/xml',
+          byte_size: foxml_string.bytesize,
+          checksum_md5: Digest::MD5.hexdigest(foxml_string),
           filestream_of: {
             ark_id: pid
           },

@@ -201,12 +201,8 @@ module Bplmodels
         updated_at: modified_date,
         name: descMetadata.title.first,
         abstract: abstract,
-        location: {
-          label: descMetadata.subject(0).hierarchical_geographic(0).city.first,
-          authority_code: "tgn",
-          id_from_auth: descMetadata.subject(0).valueURI.first.match(/[0-9]*\z/).to_s,
-          coordinates: descMetadata.subject(0).cartographics.coordinates.first
-        },
+        url: descMetadata.identifier.first,
+        location: location_for_export_hash,
         metastreams: {
           administrative: {
             destination_site: workflowMetadata.destination.site,
@@ -218,8 +214,21 @@ module Bplmodels
         }
       }
       thumbnail = Bplmodels::Finder.getImageFiles(pid)
-      export_hash[:thumbnail_pid] = thumbnail.first['id'] if thumbnail.present?
+      if thumbnail.present?
+        thumb_url = "#{FEDORA_URL['url']}/objects/#{thumbnail.first['id']}/thumbnail300/content"
+        export_hash[:thumbnail_path] = thumb_url
+      end
       { institution: export_hash.compact }
+    end
+
+    def location_for_export_hash
+      return nil unless descMetadata.subject(0).hierarchical_geographic(0).city.present?
+      {
+        label: descMetadata.subject(0).hierarchical_geographic(0).city.first,
+        authority_code: "tgn",
+        id_from_auth: descMetadata.subject(0).valueURI.first&.match(/[0-9]*\z/).to_s,
+        coordinates: descMetadata.subject(0).cartographics.coordinates.first
+      }
     end
 
     #Expects the following args:

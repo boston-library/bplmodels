@@ -17,7 +17,7 @@ module Bplmodels
         export[:is_member_of_collection] = collection.map { |col| { ark_id: col.pid, name: col.label } }
         # export[:is_issue_of] = find_issues_for_volume
         export[:metastreams] = {}
-        export[:metastreams][:descripitve] = desc_metadata_for_export_hash
+        export[:metastreams][:descriptive] = desc_metadata_for_export_hash
         export[:metastreams][:administrative] = {
           description_standard: descMetadata.mods(0).record_info.description_standard[0],
           flagged: (workflowMetadata.item_designations(0).flagged_for_content[0] == "true" ? true : false),

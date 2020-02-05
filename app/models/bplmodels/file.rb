@@ -108,7 +108,7 @@ module Bplmodels
         ark_id: pid,
         created_at: create_date,
         updated_at: modified_date,
-        fileset_of: { ark_id: object_id }
+        file_set_of: { ark_id: object_id }
       }
       exemplary_ids = []
       relationships.each_statement do |statement|

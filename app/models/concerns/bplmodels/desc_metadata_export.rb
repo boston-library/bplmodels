@@ -18,16 +18,23 @@ module Bplmodels
       def titles_for_export_hash
         titles = { other: [] }
         descMetadata.mods(0).title.each_with_index do |title, index|
+          primary = false
           title_prefix = self.descMetadata.mods(0).title_info(index).nonSort[0].presence || ''
           supplied = descMetadata.mods(0).title_info(index).supplied[0].presence
           title_id = descMetadata.mods(0).title_info(index).valueURI[0].presence
           display_label = descMetadata.mods(0).title_info(index).display_label[0].presence
+          usage = descMetadata.mods(0).title_info(index).usage[0].presence
+          primary = true if display_label == 'primary_display' || (display_label && usage == 'primary')
           title_hash = {
             label: title_prefix + title,
             subtitle: descMetadata.mods(0).title_info(index).subtitle[0].presence,
-            type: descMetadata.mods(0).title_info(index).type[0],
-            display: (display_label == 'primary_display' ? 'primary' : display_label),
-            usage: descMetadata.mods(0).title_info(index).usage[0].presence,
+            type: if primary
+                    descMetadata.mods(0).title_info(index).type[0]
+                  else
+                    descMetadata.mods(0).title_info(index).type[0].presence || 'alternative'
+                  end,
+            display: primary ? 'primary' : display_label,
+            usage: usage,
             supplied: (supplied == 'yes' ? true : nil),
             language: descMetadata.mods(0).title_info(index).language[0].presence,
             authority_code: descMetadata.mods(0).title_info(index).authority[0].presence,
@@ -36,7 +43,7 @@ module Bplmodels
             part_name: descMetadata.mods(0).title_info(index).part_name[0].presence
           }
           title_hash.compact!
-          if title_hash[:display] == 'primary'
+          if primary
             titles[:primary] = title_hash
           else
             titles[:other] << title_hash
@@ -55,17 +62,19 @@ module Bplmodels
             authority_code: descMetadata.mods(0).name(index).authority[0].presence,
             id_from_auth: (name_id ? name_id.match(/[A-Za-z0-9]*\z/).to_s : nil)
           }
+          # beware of empty <mods:namePart/>
+          name_parts = descMetadata.mods(0).name(index).namePart.reject { |np| np.blank? }
           name_hash[:label] = if nametype == 'corporate'
-                                descMetadata.mods(0).name(index).namePart.join(". ").gsub(/\.\./,'.')
+                                name_parts.join(". ").gsub(/\.\./,'.')
                               else
-                                descMetadata.mods(0).name(index).namePart.join(", ")
+                                name_parts.join(", ")
                               end
           roles = []
           descMetadata.mods(0).name(index).role.each_with_index do |_role, role_index|
             role_id = descMetadata.mods(0).name(index).role.text.valueURI[role_index]
             role_hash = {
               label: descMetadata.mods(0).name(index).role.text[role_index],
-              authority_code: 'relators',
+              authority_code: 'marcrelator',
               id_from_auth: (role_id ? role_id.match(/[A-Za-z0-9]*\z/).to_s : nil)
             }
             roles << role_hash.compact
@@ -246,13 +255,14 @@ module Bplmodels
             # NAMES
             if this_subject.name.any?
               this_subject.name.each do |_name|
-                authority = this_subject.name.authority[0]
-                id_from_auth = this_subject.name.value_uri[0]
+                authority = this_subject.name.authority[0] || authority
+                id_from_auth = this_subject.name.value_uri[0] || id_from_auth
                 nametype = this_subject.name.type[0]
+                name_parts = this_subject.name.name_part_actual.reject { |np| np.blank? }
                 name_value = if nametype == 'corporate'
-                               this_subject.name.name_part_actual.join(". ").gsub(/\.\./,'.')
+                               name_parts.join(". ").gsub(/\.\./,'.')
                              else
-                               this_subject.name.name_part_actual.join(", ")
+                               name_parts.join(", ")
                              end
                 subjects[:names] << { label: name_value, name_type: nametype,
                                      authority_code: authority, id_from_auth: id_from_auth }
@@ -261,8 +271,8 @@ module Bplmodels
 
             # TITLE
             if this_subject.title_info.title.any?
-              authority = this_subject.title_info.authority[0]
-              id_from_auth = this_subject.title_info.valueURI[0]
+              authority = this_subject.title_info.authority[0] || authority
+              id_from_auth = this_subject.title_info.valueURI[0] || id_from_auth
               title_type = this_subject.title_info.type[0]
               subjects[:titles] << { label: this_subject.title_info.title[0], type: title_type,
                                     authority_code: authority, id_from_auth: id_from_auth }
@@ -298,9 +308,9 @@ module Bplmodels
             }
             geo_display_label = this_subject.geographic.display_label.first
             coords = this_subject.cartographics.coordinates[0]
-            if coords.match(/,/)
+            if coords&.match(/,/)
               geo_hash[:coordinates] = coords
-            else
+            elsif coords
               geo_hash[:bounding_box] = coords
             end
             geo_data = {}
