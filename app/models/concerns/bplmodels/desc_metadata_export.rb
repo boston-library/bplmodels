@@ -49,7 +49,7 @@ module Bplmodels
             titles[:other] << title_hash
           end
         end
-        titles
+        titles.reject { |_k, v| v.blank? }
       end
 
       def names_for_export_hash

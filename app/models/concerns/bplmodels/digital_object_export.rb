@@ -41,14 +41,12 @@ module Bplmodels
       end
 
       def desc_metadata_for_export_hash
-        titles = titles_for_export_hash
         related_items = related_items_for_export_hash
         physical_location = physical_location_for_export_hash
         rights = rights_for_export_hash
         descriptive_metadata = {
           identifier: identifiers_for_export_hash,
-          title_primary: titles[:primary],
-          title_other: titles[:other],
+          title: titles_for_export_hash,
           name_roles: names_for_export_hash,
           resource_types: rt_for_export_hash,
           resource_type_manuscript: (descMetadata.mods(0).type_of_resource.manuscript.first == 'yes' ? true : nil),
@@ -58,7 +56,9 @@ module Bplmodels
           place_of_publication: descMetadata.mods(0).origin_info.place.place_term[0].presence,
           publisher: descMetadata.mods(0).origin_info.publisher[0].presence,
           date: dates_for_export_hash,
-          edition_name: descMetadata.mods(0).origin_info.edition[0].presence,
+          publication: {
+            edition_name: descMetadata.mods(0).origin_info.edition[0].presence
+          }.compact,
           issuance: descMetadata.mods(0).origin_info.issuance[0].presence,
           frequency: descMetadata.mods(0).origin_info.frequency[0].presence,
           languages: langs_for_export_hash,
@@ -69,14 +69,18 @@ module Bplmodels
           toc: descMetadata.mods(0).table_of_contents.join(' '),
           toc_url: descMetadata.mods(0).table_of_contents.href[0].presence,
           subject: subjects_for_export_hash,
-          scale: descMetadata.mods(0).subject.cartographics.scale.presence,
-          projection: descMetadata.mods(0).subject.cartographics.projection[0].presence,
+          cartographic: {
+            scale: descMetadata.mods(0).subject.cartographics.scale.presence,
+            projection: descMetadata.mods(0).subject.cartographics.projection[0].presence
+          }.compact,
           host_collections: related_items[:host],
           series: related_items[:series],
           subseries: related_items[:subseries],
           subsubseries: related_items[:subsubseries],
-          related_referenced_by_url: related_items[:referenced_by_url],
-          related_constituent: related_items[:constituent],
+          related: {
+            referenced_by_url: related_items[:referenced_by_url],
+            constituent: related_items[:constituent]
+          }.compact,
           physical_location: { label: physical_location[:label], name_type: 'corporate' },
           physical_location_department: physical_location[:department],
           physical_location_shelf_locator: physical_location[:shelf_locator],
