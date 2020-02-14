@@ -385,13 +385,17 @@ module Bplmodels
       end
 
       def rights_for_export_hash
-        rights_hash = { license: [] }
-        descMetadata.mods(0).use_and_reproduction.each_with_index do |rights, index|
+        rights_hash = {}
+        descMetadata.mods(0).use_and_reproduction.each_with_index do |use, index|
           case descMetadata.mods(0).use_and_reproduction(index).displayLabel[0]
           when 'rights'
-            rights_hash[:rights] = rights
+            rights_hash[:rights] = use
           when 'license'
-            rights_hash[:license] << { label: rights }
+            rights_hash[:license] = { label: use }
+            if use.include?('Creative Commons')
+              cc_term_code = use.match(/\s[BYNCDSA-]{2,}/).to_s.strip.downcase
+              rights_hash[:license][:uri] = "https://creativecommons.org/licenses/#{cc_term_code}/4.0" if cc_term_code.present?
+            end
           end
         end
         rights_hash.reject { |_k, v| v.blank? }
