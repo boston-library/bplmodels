@@ -142,27 +142,29 @@ module Bplmodels
       end
 
       def dates_for_export_hash
+        @inferred = false
         dates = {}
         date_types = %i[dates_created dates_issued dates_copyright]
         date_types.each do |date_type|
           range = descMetadata.mods(0).date(0).send(date_type, 0).point.blank? ? false : true
-          start_date = {}
-          end_date = {}
+          start_date_hash = {}
+          end_date_hash = {}
           descMetadata.mods(0).date(0).send(date_type).each_with_index do |date, index|
+            qualifier = descMetadata.mods(0).date(0).send(date_type, index).qualifier[0].presence
+            @inferred = true if qualifier == 'inferred'
             date_hash = { date_value: date,
-                          qualifier: descMetadata.mods(0).date(0).send(date_type, index).qualifier[0].presence }
+                          qualifier: qualifier }
             if descMetadata.mods(0).date(0).send(date_type, index).point[0] == 'end'
-              end_date = date_hash
+              end_date_hash = date_hash
             else
-              start_date = date_hash
+              start_date_hash = date_hash
             end
           end
-          dates[date_type.to_s.gsub(/dates_/, '').to_sym] = date_to_edtf(start_date, end_date, range)
+          dates[date_type.to_s.gsub(/dates_/, '').to_sym] = date_to_edtf(start_date_hash, end_date_hash, range)
         end
         dates.compact
       end
-
-      # TODO: how to handle inferred dates?
+      
       # @param start_date_w_qualifier [Hash] e.g. { date_value: '1975', qualifier: 'questionable' }
       def date_to_edtf(start_date_w_qualifier, end_date_w_qualifier = {}, range = false)
         output = []
@@ -215,6 +217,7 @@ module Bplmodels
         descMetadata.mods(0).date(0).date_other.each do |date_other|
           notes << { label: date_other, type: 'date' }
         end
+        notes << { label: 'This date is inferred.', type: 'date'} if @inferred
         notes
       end
 
