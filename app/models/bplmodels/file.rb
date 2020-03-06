@@ -122,8 +122,8 @@ module Bplmodels
           export_hash[:exemplary_image_of] << { ark_id: pid }
         end
       end
-      file_type = self.class.to_s.split("::").last.match(/[A-Z][a-z]*/).to_s.downcase
-      export_hash[:file_set_type] = file_type
+      @file_set_type = self.class.to_s.split("::").last.match(/[A-Z][a-z]*/).to_s.downcase
+      export_hash[:file_set_type] = @file_set_type
       export_hash[:position] = get_file_sequence
       export_hash[:file_name_base] = filename.first.gsub(/\.[a-z0-9]*\z/,'')
       export_hash[:metastreams] = {}

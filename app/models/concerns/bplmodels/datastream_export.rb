@@ -24,7 +24,10 @@ module Bplmodels
               byte_size: datastream.size,
               checksum_md5: ((checksum == 'none' || checksum.blank?) ? nil : checksum),
               metadata: metadata_for_datastream(datastream),
-              filestream_of: { ark_id: pid },
+              filestream_of: {
+                ark_id: pid,
+                file_set_type: @file_set_type
+              },
               fedora_content_location: "#{FEDORA_URL['url']}/objects/#{pid}/datastreams/#{ds}/content"
             }
             datastream_hashes << { file: file_hash.compact }
@@ -181,7 +184,8 @@ module Bplmodels
           byte_size: foxml_string.bytesize,
           checksum_md5: Digest::MD5.hexdigest(foxml_string),
           filestream_of: {
-            ark_id: pid
+            ark_id: pid,
+            file_set_type: @file_set_type
           },
           fedora_content_location: foxml_resp.request.url
         }

@@ -65,7 +65,7 @@ module Bplmodels
           note: notes_for_export_hash,
           extent: descMetadata.mods(0).physical_description(0).extent.join(' '),
           text_direction: td_for_export_hash,
-          abstract: descMetadata.mods(0).abstract.join(' '),
+          abstract: descMetadata.mods(0).abstract.join('||'),
           toc: descMetadata.mods(0).table_of_contents.join(' '),
           toc_url: descMetadata.mods(0).table_of_contents.href[0].presence,
           subject: subjects_for_export_hash,
@@ -156,6 +156,7 @@ module Bplmodels
       end
 
       def object_files_for_export
+        @file_set_type = nil # value will be set in #object_filesets_for_export
         { metadata: files_for_export(%w[oaiMetadata descMetadata marcXML iaMeta scanData thumbnail300]),
           text: files_for_export(%w[plainText djvuXML], false) }
       end
@@ -184,10 +185,11 @@ module Bplmodels
           }
           object_fileset[:exemplary_image_of] = [{ ark_id: pid }] if fileset_type == 'metadata' && self.class == Bplmodels::OAIObject
           object_fileset[:files] = object_files[fileset_type.to_sym][:files] if include_files
-          # remove :filestream_of property from object_files hashes,
+          # remove [:filestream_of][:ark_id] property from object_files hashes,
           # since it references DigitalObject rather than as-yet-uncreated FileSet
           object_fileset[:files].each do |file_hash|
-            file_hash[:file].delete(:filestream_of)
+            file_hash[:file][:filestream_of].delete(:ark_id)
+            file_hash[:file][:filestream_of][:file_set_type] = fileset_type
           end
           object_filesets << { fileset: object_fileset }
         end

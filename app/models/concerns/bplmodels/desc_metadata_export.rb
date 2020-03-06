@@ -164,7 +164,7 @@ module Bplmodels
         end
         dates.compact
       end
-      
+
       # @param start_date_w_qualifier [Hash] e.g. { date_value: '1975', qualifier: 'questionable' }
       def date_to_edtf(start_date_w_qualifier, end_date_w_qualifier = {}, range = false)
         output = []
