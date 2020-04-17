@@ -103,7 +103,8 @@ module Bplmodels
         updated_at: modified_date,
         institution: { ark_id: institutions.pid },
         name: descMetadata.title.first,
-        abstract: abstract,
+        # double quotes in #delete arg below are correct, DO NOT CHANGE
+        abstract: abstract.delete("\n").delete("\r").gsub(/<br[ \/]*>/, '<br/>'),
         metastreams: {
           administrative: {
             destination_site: workflowMetadata.destination.site,

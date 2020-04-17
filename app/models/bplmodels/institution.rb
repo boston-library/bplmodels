@@ -200,7 +200,8 @@ module Bplmodels
         created_at: create_date,
         updated_at: modified_date,
         name: descMetadata.title.first,
-        abstract: abstract,
+        # double quotes in #delete arg below are correct, DO NOT CHANGE
+        abstract: abstract.delete("\n").delete("\r").gsub(/<br[ \/]*>/, '<br/>'),
         url: descMetadata.identifier.first,
         location: location_for_export_hash,
         metastreams: {

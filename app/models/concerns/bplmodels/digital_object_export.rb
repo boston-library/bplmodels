@@ -65,7 +65,7 @@ module Bplmodels
           note: notes_for_export_hash,
           extent: descMetadata.mods(0).physical_description(0).extent.join(' '),
           text_direction: td_for_export_hash,
-          abstract: descMetadata.mods(0).abstract.join('||'),
+          abstract: descMetadata.mods(0).abstract.join('<br/><br/>'),
           toc: descMetadata.mods(0).table_of_contents.join(' '),
           toc_url: descMetadata.mods(0).table_of_contents.href[0].presence,
           subject: subjects_for_export_hash,
