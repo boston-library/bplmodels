@@ -85,7 +85,7 @@ module Bplmodels
           physical_location_department: physical_location[:department],
           physical_location_shelf_locator: physical_location[:shelf_locator],
           rights: rights[:rights],
-          licenses: rights[:license],
+          license: rights[:license],
           access_restrictions: descMetadata.mods(0).restriction_on_access[0].presence
         }
         descriptive_metadata.compact.reject { |_k, v| v.blank? }
