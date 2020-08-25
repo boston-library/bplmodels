@@ -871,34 +871,49 @@ module Bplmodels
         # lots of edge cases with non-trad geo subjects (areas, mountains, rivers)
         existing_subjects.each do |esub|
           remove_esub = false
-          if api_result[:hier_geo][:city_section].present?
-            if esub[:geo_hash][:city_section].blank? && esub[:geo_hash][:city] == api_result[:hier_geo][:city]
+          esub_geo = esub[:geo_hash]
+          api_hier_geo = api_result[:hier_geo]
+
+          if api_hier_geo[:city_section].present?
+            if esub_geo[:city_section].blank? && esub_geo[:city] == api_hier_geo[:city]
               remove_esub = true
             end
-          elsif api_result[:hier_geo][:city].present?
-            if esub[:geo_hash][:city].blank? && esub[:geo_hash][:state] == api_result[:hier_geo][:state]
+          elsif api_hier_geo[:city].present?
+            if esub_geo[:city].blank? && esub_geo[:state] == api_hier_geo[:state]
               remove_esub = true
-            elsif esub[:geo_hash][:city] == api_result[:hier_geo][:city]
+            elsif esub_geo[:city] == api_hier_geo[:city]
               return false unless api_result[:non_hier_geo].present?
+
               remove_esub = true
             end
-          elsif api_result[:hier_geo][:state].present?
-            if esub[:geo_hash][:state].blank? && esub[:geo_hash][:country] == api_result[:hier_geo][:country]
+          elsif api_hier_geo[:county].present?
+            if esub_geo[:county].blank? && esub_geo[:state] == api_hier_geo[:state]
               remove_esub = true
-            elsif esub[:geo_hash][:state] == api_result[:hier_geo][:state]
-              return false unless api_result[:non_hier_geo].present? || api_result[:hier_geo][:area].present?
+            elsif esub_geo[:county] == api_hier_geo[:county]
+              return false unless api_result[:non_hier_geo].present?
+
+              remove_esub = true
+            end
+          elsif api_hier_geo[:state].present?
+            if esub_geo[:state].blank? && esub_geo[:country] == api_hier_geo[:country]
+              remove_esub = true
+            elsif esub_geo[:state] == api_hier_geo[:state]
+              return false unless api_result[:non_hier_geo].present? || api_hier_geo[:area].present?
+
               remove_esub = true if self.mods(0).subject(esub[:index]).hierarchical_geographic(0).area.blank?
             end
-          elsif api_result[:hier_geo][:area].present?
-            if esub[:geo_hash][:area] == api_result[:hier_geo][:area]
+          elsif api_hier_geo[:area].present?
+            if esub_geo[:area] == api_hier_geo[:area]
               return false unless api_result[:non_hier_geo].present?
+
               remove_esub = true
             end
-          elsif api_result[:hier_geo][:country].present?
-            if esub[:geo_hash][:country] == api_result[:hier_geo][:country]
+          elsif api_hier_geo[:country].present?
+            if esub_geo[:country] == api_hier_geo[:country]
               return false unless api_result[:non_hier_geo].present?
+
               unless self.mods(0).subject(esub[:index]).hierarchical_geographic(0).city.present? ||
-                  self.mods(0).subject(esub[:index]).hierarchical_geographic(0).state.present?
+                     self.mods(0).subject(esub[:index]).hierarchical_geographic(0).state.present?
                 remove_esub = true
               end
             end
