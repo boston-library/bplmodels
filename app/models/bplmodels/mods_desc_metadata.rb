@@ -72,6 +72,7 @@ module Bplmodels
       t.accessCondition(:path => 'accessCondition') {
         t.displayLabel :path=>{:attribute=>'displayLabel'}
         t.type_at :path=>{:attribute=>"type"}
+        t.href(:path=>{:attribute=>'xlink:href'})
         ::Mods::LANG_ATTRIBS.each { |attr_name|
           t.send attr_name, :path =>{:attribute=>"#{attr_name}"}
         }
@@ -518,6 +519,7 @@ module Bplmodels
       t.use_and_reproduction(:path=>"accessCondition", :attributes=>{:type=>"use and reproduction"}) {
         t.displayLabel :path=>{:attribute=>'displayLabel'}
         t.type(:path=>{:attribute=>"type"})
+        t.href(:path=>{:attribute=>'xlink:href'})
       }
 
       t.restriction_on_access(:path=>"accessCondition", :attributes=>{:type=>"restriction on access"}) {
@@ -707,11 +709,12 @@ module Bplmodels
     end
 
 
-    def insert_rights(value=nil, type=nil, displayLabel=nil)
+    def insert_rights(value=nil, type=nil, displayLabel=nil, url=nil)
       access_index = self.mods(0).accessCondition.count
       self.mods(0).accessCondition(access_index, value) unless value.blank?
       self.mods(0).accessCondition(access_index).type_at = type unless type.blank?
       self.mods(0).accessCondition(access_index).displayLabel = displayLabel unless displayLabel.blank?
+      self.mods(0).accessCondition(access_index).href = url unless url.blank?
     end
 
     def insert_target_audience(value=nil, authority=nil, display_label=nil)
