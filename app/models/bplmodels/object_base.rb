@@ -860,25 +860,27 @@ module Bplmodels
       doc['rights_ssm'] = []
       doc['license_ssm'] = []
       0.upto self.descMetadata.use_and_reproduction.length-1 do |index|
+        uar_value = self.descMetadata.use_and_reproduction(index).first
         case self.descMetadata.use_and_reproduction(index).displayLabel.first
-          when 'rights'
-            doc['rights_ssm'] << self.descMetadata.use_and_reproduction(index).first
-          when 'license'
-            license_text = self.descMetadata.use_and_reproduction(index).first
-            reuse = if license_text.downcase.include?('public domain') ||
-                         license_text.downcase.include?('no known restrictions')
-                      'no restrictions'
-                    elsif license_text.downcase.include?('creative commons')
-                      'creative commons'
-                    elsif license_text.downcase.include?('contact host')
-                      'contact host'
-                    elsif license_text.downcase.include?('all rights reserved')
-                      'all rights reserved'
-                    else
-                      nil
-                    end
-            doc['reuse_allowed_ssi'] = reuse
-            doc['license_ssm'] << license_text
+        when 'rights'
+          doc['rights_ssm'] << uar_value
+        when 'license'
+          reuse = if uar_value.downcase.include?('public domain') ||
+              uar_value.downcase.include?('no known restrictions')
+                    'no restrictions'
+                  elsif uar_value.downcase.include?('creative commons')
+                    'creative commons'
+                  elsif uar_value.downcase.include?('contact host')
+                    'contact host'
+                  elsif uar_value.downcase.include?('all rights reserved')
+                    'all rights reserved'
+                  else
+                    nil
+                  end
+          doc['reuse_allowed_ssi'] = reuse
+          doc['license_ssm'] << uar_value
+        when 'rightsstatements.org'
+          doc['rightsstatement_ss'] = uar_value
         end
       end
 
