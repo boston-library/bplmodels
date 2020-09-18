@@ -709,12 +709,25 @@ module Bplmodels
     end
 
 
-    def insert_rights(value=nil, type=nil, displayLabel=nil, url=nil)
+    def insert_rights(value=nil, type=nil, displayLabel=nil)
       access_index = self.mods(0).accessCondition.count
       self.mods(0).accessCondition(access_index, value) unless value.blank?
       self.mods(0).accessCondition(access_index).type_at = type unless type.blank?
       self.mods(0).accessCondition(access_index).displayLabel = displayLabel unless displayLabel.blank?
-      self.mods(0).accessCondition(access_index).href = url unless url.blank?
+    end
+
+    define_template :use_and_reproduction_xref do |xml, value, displayLabel, url|
+      xml.accessCondition(:type => "use and reproduction", :displayLabel => displayLabel, 'xlink:href'=> url) {
+        xml.text value
+      }
+    end
+
+    def insert_rights_href(value=nil, displayLabel=nil, url=nil)
+      add_child_node(ng_xml.root, :use_and_reproduction_xref, value, displayLabel, url)
+    end
+
+    def remove_rights_href(index)
+      self.find_by_terms(:use_and_reproduction_xref).slice(index.to_i).remove
     end
 
     def insert_target_audience(value=nil, authority=nil, display_label=nil)
