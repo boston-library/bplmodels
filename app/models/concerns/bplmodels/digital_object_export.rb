@@ -29,6 +29,7 @@ module Bplmodels
                          true
                        end,
           hosting_status: self.class == Bplmodels::OAIObject ? 'harvested' : 'hosted',
+          oai_header_id: self.class == Bplmodels::OAIObject ? oaiMetadata.header_information.identifer[0] : nil,
           access_edit_group: rightsMetadata.access(2).machine.group
         }.compact
         export[:metastreams][:workflow] = {
