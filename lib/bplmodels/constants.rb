@@ -141,5 +141,20 @@ module Bplmodels
       uma un un' una une unei unha uno uns unui y ye yr
     ].freeze
 
+    # from https://rightsstatements.org/en/statements/
+    RIGHTS_STATEMENTS = [
+        { label: 'In Copyright', uri: 'http://rightsstatements.org/vocab/InC/1.0/' },
+        { label: 'In Copyright - EU Orphan Work', uri: 'http://rightsstatements.org/vocab/InC-OW-EU/1.0/' },
+        { label: 'In Copyright - Educational Use Permitted', uri: 'http://rightsstatements.org/vocab/InC-EDU/1.0/' },
+        { label: 'In Copyright - Non-Commercial Use Permitted', uri: 'http://rightsstatements.org/vocab/InC-NC/1.0/' },
+        { label: 'In Copyright - Rights-Holder(s) Unlocatable Or Unidentifiable', uri: 'http://rightsstatements.org/vocab/InC-RUU/1.0/' },
+        { label: 'No Copyright - Contractual Restrictions', uri: 'http://rightsstatements.org/vocab/NoC-CR/1.0/' },
+        { label: 'No Copyright - Non-Commercial Use Only', uri: 'http://rightsstatements.org/vocab/NoC-NC/1.0/' },
+        { label: 'No Copyright - Other Known Legal Restrictions', uri: 'http://rightsstatements.org/vocab/NoC-OKLR/1.0/' },
+        { label: 'No Copyright - United States', uri: 'http://rightsstatements.org/vocab/NoC-US/1.0/' },
+        { label: 'Copyright Not Evaluated', uri: 'http://rightsstatements.org/vocab/CNE/1.0/' },
+        { label: 'Copyright Undetermined', uri: 'http://rightsstatements.org/vocab/UND/1.0/' },
+        { label: 'No Known Copyright', uri: 'http://rightsstatements.org/vocab/NKC/1.0/' }
+    ].freeze
   end
 end
