@@ -399,6 +399,11 @@ module Bplmodels
               cc_term_code = use.match(/\s[BYNCDSA-]{2,}/).to_s.strip.downcase
               rights_hash[:license][:uri] = "https://creativecommons.org/licenses/#{cc_term_code}/4.0" if cc_term_code.present?
             end
+          when 'rightsstatements.org'
+            rights_hash[:rightsstatement] = {
+              label: use,
+              uri: descMetadata.mods(0).use_and_reproduction(index).href[0]
+            }
           end
         end
         rights_hash.reject { |_k, v| v.blank? }
