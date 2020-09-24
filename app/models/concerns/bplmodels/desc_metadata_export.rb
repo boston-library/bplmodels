@@ -392,7 +392,9 @@ module Bplmodels
         descMetadata.mods(0).use_and_reproduction.each_with_index do |use, index|
           case descMetadata.mods(0).use_and_reproduction(index).displayLabel[0]
           when 'rights'
-            rights_hash[:rights] = use
+            # some OAI objects have multiple values, which is no longer supported,
+            # so only use the first value
+            rights_hash[:rights] ||= use
           when 'license'
             rights_hash[:license] = { label: use }
             if use.include?('Creative Commons')

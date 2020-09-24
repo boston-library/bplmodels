@@ -902,6 +902,12 @@ module Bplmodels
 
               remove_esub = true
             end
+          elsif api_hier_geo[:area].present?
+            if esub_geo[:area] == api_hier_geo[:area]
+              return false unless api_result[:non_hier_geo].present?
+
+              remove_esub = true
+            end
           elsif api_hier_geo[:county].present?
             if esub_geo[:county].blank? && esub_geo[:state] == api_hier_geo[:state]
               remove_esub = true
@@ -917,12 +923,6 @@ module Bplmodels
               return false unless api_result[:non_hier_geo].present? || api_hier_geo[:area].present?
 
               remove_esub = true if self.mods(0).subject(esub[:index]).hierarchical_geographic(0).area.blank?
-            end
-          elsif api_hier_geo[:area].present?
-            if esub_geo[:area] == api_hier_geo[:area]
-              return false unless api_result[:non_hier_geo].present?
-
-              remove_esub = true
             end
           elsif api_hier_geo[:country].present?
             if esub_geo[:country] == api_hier_geo[:country]
