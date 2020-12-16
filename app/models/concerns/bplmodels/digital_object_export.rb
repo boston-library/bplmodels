@@ -127,10 +127,10 @@ module Bplmodels
             end
             ereader_filesets.each do |er_fileset|
               er_fileset[:file_set][:files].each do |er_file|
-                if er_file[:file][:file_type] == 'EbookAccess'
-                  er_file[:file][:filestream_of][:ark_id] = ereader_fileset_for_export[:file_set][:ark_id]
-                  ereader_fileset_for_export[:file_set][:files] << er_file
-                end
+                next unless er_file[:file][:file_type].match?(/EbookAccess/)
+
+                er_file[:file][:filestream_of][:ark_id] = ereader_fileset_for_export[:file_set][:ark_id]
+                ereader_fileset_for_export[:file_set][:files] << er_file
               end
             end
           else
