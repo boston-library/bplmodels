@@ -52,7 +52,7 @@ module Bplmodels
           resource_types: rt_for_export_hash,
           resource_type_manuscript: (descMetadata.mods(0).type_of_resource.manuscript.first == 'yes' ? true : nil),
           genres: genres_for_export_hash,
-          digital_origin: descMetadata.mods(0).physical_description.digital_origin[0].presence,
+          digital_origin: descMetadata.mods(0).physical_description.digital_origin[0].presence&.parameterize(separator: '_'),
           origin_event: descMetadata.mods(0).origin_info.event_type[0].presence,
           place_of_publication: descMetadata.mods(0).origin_info.place.place_term[0].presence,
           publisher: descMetadata.mods(0).origin_info.publisher[0].presence,
