@@ -20,7 +20,7 @@ module Bplmodels
         export[:metastreams][:descriptive] = desc_metadata_for_export_hash
         export[:metastreams][:administrative] = {
           description_standard: descMetadata.mods(0).record_info.description_standard[0],
-          flagged: (workflowMetadata.item_designations(0).flagged_for_content[0] == "true" ? true : false),
+          flagged: workflowMetadata.item_designations(0).flagged_for_content[0],
           destination_site: workflowMetadata.destination.site,
           harvestable: if workflowMetadata.item_status.harvestable[0] =~ /[Ff]alse/ ||
               workflowMetadata.item_status.harvestable[0] == false
