@@ -46,6 +46,37 @@ module Bplmodels
         end
       end
 
+      ##
+      # convert a DMS coordinate string into decimal format
+      # based on guides here: https://en.wikiversity.org/wiki/Geographic_coordinate_conversion
+      # @param dms [String] e.g. 42°21'29"N 071°03'49"W
+      # @return [String] e.g. "42.35805555555555,-71.06361111111111"
+      def dms_to_decimal(dms)
+        degree_regex = /([0-8]?\d(°|\s)[0-5]?\d('|\s)[0-5]?\d(\.\d{1,6})?"?|90(°|\s)0?0('|\s)0?0"?)\s{0,}[NnSs]\s{1,}([0-1]?[0-7]?\d(°|\s)[0-5]?\d('|\s)[0-5]?\d(\.\d{1,6})?"?|180(°|\s)0?0('|\s)0?0"?)\s{0,}[EeOoWw]/
+        return nil unless dms.match?(degree_regex)
+
+        lat, lon = nil, nil
+        coords = dms.split(/\s(?=[\d])/)
+        coords.each do |coord|
+          east, west, north, south, seconds, minutes, degrees = nil, nil, nil, nil, nil, nil, nil
+          %w(east west north south).each do |cp|
+            binding.local_variable_set(cp.to_sym, true) if coord.match(/[a-zA-Z]/).to_s.downcase == cp.first
+          end
+          seconds = coord.split("'").last&.gsub(/"(\w|\s)*/, '')
+          minutes = coord.match(/\d+(?=['])/)&.to_s
+          degrees = coord.match(/\A\d+(?=[\D])/)&.to_s
+          return nil unless seconds && minutes && degrees
+
+          total_secs = (minutes.to_i * 60) + seconds.to_i
+          decimal_part = total_secs.to_f / 3600
+          prefix = (west || south) ? '-' : ''
+          output = "#{prefix}#{degrees.to_f + decimal_part}"
+          lat = output if (north || south)
+          lon = output if (east || west)
+        end
+        lat && lon ? "#{lat},#{lon}" : nil
+      end
+
       private
 
       ##
