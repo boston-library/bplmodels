@@ -4,7 +4,7 @@ module Bplmodels
 
     included do
       # if JP2 is both productionMaster and accessMaster, remove productionMaster
-      def files_for_export(datastreams_for_export, include_foxml = true)
+      def filestreams_for_export(datastreams_for_export, include_foxml = true)
         datastream_hashes = []
         @file_source_data = file_source_data
         datastreams_for_export.each do |ds|
@@ -14,26 +14,29 @@ module Bplmodels
           next unless datastream.present?
 
           checksum = datastream.checksum
-          created = datastream.createDate&.strftime('%Y-%m-%dT%T.%LZ')
+          #created = datastream.createDate&.strftime('%Y-%m-%dT%T.%LZ')
           file_hash = {
             file_name: filename_for_datastream(datastream, datastreams["productionMaster"]&.label),
-            created_at: created,
-            updated_at: (datastream.lastModifiedDate&.strftime('%Y-%m-%dT%T.%LZ') || created),
+            #created_at: created,
+            #updated_at: (datastream.lastModifiedDate&.strftime('%Y-%m-%dT%T.%LZ') || created),
             file_type: type_for_dsid(ds, datastream.mimeType),
             content_type: datastream.mimeType,
             byte_size: datastream.size,
-            checksum_md5: ((checksum == 'none' || checksum.blank?) ? nil : checksum),
+            checksum: ((checksum == 'none' || checksum.blank?) ? nil : checksum),
             metadata: metadata_for_datastream(datastream),
-            filestream_of: {
-              ark_id: pid,
-              file_set_type: @file_set_type
-            },
-            fedora_content_location: "#{FEDORA_URL['url']}/objects/#{pid}/datastreams/#{ds}/content"
+            #filestream_of: {
+            #  ark_id: pid,
+            #  file_set_type: @file_set_type
+            #},
+            io: {
+              fedora_content_location: "#{FEDORA_URL['url']}/objects/#{pid}/datastreams/#{ds}/content"
+            }
           }
-          datastream_hashes << { file: file_hash.compact }
+          datastream_hashes << file_hash.compact
         end
-        datastream_hashes << { file: foxml_hash } if include_foxml
-        { files: datastream_hashes }
+        datastream_hashes << foxml_hash if include_foxml
+        #{ files: datastream_hashes }
+        datastream_hashes
       end
 
       def filename_for_datastream(datastream, label = nil)
@@ -180,17 +183,17 @@ module Bplmodels
         foxml_string = foxml_resp.body
         {
           file_name: "#{pid.gsub(/:/, '_')}_FOXML.xml",
-          created_at: create_date,
-          updated_at: modified_date,
+          # created_at: create_date,
+          # updated_at: modified_date,
           file_type: 'MetadataFOXML',
           content_type: 'application/xml',
           byte_size: foxml_string.bytesize,
-          checksum_md5: Digest::MD5.hexdigest(foxml_string),
-          filestream_of: {
-            ark_id: pid,
-            file_set_type: @file_set_type
-          },
-          fedora_content_location: foxml_resp.request.url
+          checksum: Digest::MD5.hexdigest(foxml_string),
+          #filestream_of: {
+          #  ark_id: pid,
+          #  file_set_type: @file_set_type
+          #},
+          io: { fedora_content_location: foxml_resp.request.url }
         }
       end
     end

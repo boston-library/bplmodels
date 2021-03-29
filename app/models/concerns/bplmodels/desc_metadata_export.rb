@@ -362,7 +362,8 @@ module Bplmodels
           when 'series'
             related_items[:series] = ri_title
           when 'isReferencedBy'
-            related_items[:referenced_by_url] << descMetadata.mods(0).related_item(index).href[0]
+            related_items[:referenced_by] << { url: descMetadata.mods(0).related_item(index).href[0],
+                                               label: descMetadata.mods(0).related_item(index).displayLabel[0] }
           when 'constituent'
             related_items[:constituent] = ri_title
           end

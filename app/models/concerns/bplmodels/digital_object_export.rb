@@ -4,7 +4,13 @@ module Bplmodels
     included do
       include Bplmodels::DescMetadataExport
 
-      def export_for_curator_api(include_filesets = true)
+      def export_to_curator
+        exp = Bplmodels::CuratorExportService.new(payload: export_data_for_curator_api)
+        exp.export
+      end
+
+      # exports DigitalObject
+      def export_data_for_curator_api # (include_filesets = true)
         return nil if is_volume_wrapper?
         export = {}
         export[:ark_id] = pid
@@ -37,7 +43,7 @@ module Bplmodels
           processing_state: workflowMetadata.item_status.processing[0],
           publishing_state: workflowMetadata.item_status.state[0]
         }.compact
-        export[:filesets] = filesets_for_export_hash if include_filesets
+        # export[:filesets] = filesets_for_export if include_filesets
         { digital_object: export.compact }
       end
 
@@ -104,7 +110,7 @@ module Bplmodels
         issue_ids.map { |v| { ark_id: v } } unless issue_ids.blank?
       end
 
-      def filesets_for_export_hash(include_files = true)
+      def filesets_for_export(include_files = true)
         filesets = []
         # get file-level filesets (image, document, video, etc); remove ereader (do 'em separately)
         all_files = Bplmodels::Finder.getFiles(pid)
@@ -120,16 +126,16 @@ module Bplmodels
           if include_files
             ereader_filesets = filesets_for_files(ereader_files, include_files)
             ereader_filesets.each_with_index do |er_fileset, index|
-              if er_fileset[:file_set][:files][0][:file][:content_type] == 'application/epub+zip'
+              if er_fileset[:file_set][:files][0][:content_type] == 'application/epub+zip'
                 ereader_fileset_for_export = er_fileset
                 ereader_filesets.delete_at(index)
               end
             end
             ereader_filesets.each do |er_fileset|
               er_fileset[:file_set][:files].each do |er_file|
-                next unless er_file[:file][:file_type].match?(/EbookAccess/)
+                next unless er_file[:file_type].match?(/EbookAccess/)
 
-                er_file[:file][:filestream_of][:ark_id] = ereader_fileset_for_export[:file_set][:ark_id]
+                #er_file[:file][:filestream_of][:ark_id] = ereader_fileset_for_export[:file_set][:ark_id]
                 ereader_fileset_for_export[:file_set][:files] << er_file
               end
             end
@@ -137,13 +143,13 @@ module Bplmodels
             ereader_files = ereader_files.select { |erf| erf["mime_type_tesim"].include?("application/epub+zip") }
             if ereader_files.present?
               ereader_fileset_obj = Bplmodels::File.find(ereader_files.first['id'])
-              ereader_fileset_for_export = ereader_fileset_obj.export_fileset_for_curator_api(include_files)
+              ereader_fileset_for_export = ereader_fileset_obj.export_data_for_curator_api(include_files)
             end
           end
           filesets << ereader_fileset_for_export
         end
         # get the object-level filesets (metadata, plainText, etc)
-        object_filesets = object_filesets_for_export(object_files_for_export)
+        object_filesets = object_filesets_for_export(object_filestreams_for_export)
         filesets + object_filesets
       end
 
@@ -151,23 +157,23 @@ module Bplmodels
         filesets = []
         files_array.each do |file_doc|
           fileset_obj = Bplmodels::File.find(file_doc['id'])
-          fileset_hash = fileset_obj.export_fileset_for_curator_api(include_files)
+          fileset_hash = fileset_obj.export_data_for_curator_api(include_files)
           filesets << fileset_hash
         end
         filesets
       end
 
-      def object_files_for_export
+      def object_filestreams_for_export
         @file_set_type = nil # value will be set in #object_filesets_for_export
-        { metadata: files_for_export(%w[oaiMetadata descMetadata marcXML iaMeta scanData thumbnail300]),
-          text: files_for_export(%w[plainText djvuXML], false) }
+        { metadata: filestreams_for_export(%w[oaiMetadata descMetadata marcXML iaMeta scanData thumbnail300]),
+          text: filestreams_for_export(%w[plainText djvuXML], false) }
       end
 
       # get the object-level files -- metadata, full text, IA data, etc
       def object_filesets_for_export(object_files, include_files = true)
         object_filesets = []
         %w[metadata text].each do |fileset_type|
-          next if object_files[fileset_type.to_sym][:files].blank?
+          next if object_files[fileset_type.to_sym].blank?
           object_fileset = {
             created_at: create_date,
             updated_at: modified_date,
@@ -186,13 +192,13 @@ module Bplmodels
             }
           }
           object_fileset[:exemplary_image_of] = [{ ark_id: pid }] if fileset_type == 'metadata' && self.class == Bplmodels::OAIObject
-          object_fileset[:files] = object_files[fileset_type.to_sym][:files] if include_files
+          object_fileset[:files] = object_files[fileset_type.to_sym] if include_files
           # remove [:filestream_of][:ark_id] property from object_files hashes,
           # since it references DigitalObject rather than as-yet-uncreated FileSet
-          object_fileset[:files].each do |file_hash|
-            file_hash[:file][:filestream_of].delete(:ark_id)
-            file_hash[:file][:filestream_of][:file_set_type] = fileset_type
-          end
+          #object_fileset[:files].each do |file_hash|
+          #  file_hash[:file][:filestream_of].delete(:ark_id)
+          #  file_hash[:file][:filestream_of][:file_set_type] = fileset_type
+          #end
           object_filesets << { fileset: object_fileset }
         end
         object_filesets

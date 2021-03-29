@@ -470,6 +470,7 @@ module Bplmodels
       t.related_item(:path=>"relatedItem") {
         t.type(:path=>{:attribute=>"type"})
         t.href(:path=>{:attribute=>'xlink:href'})
+        t.displayLabel :path=>{:attribute=>'displayLabel'}
         t.title_info(:path=>"titleInfo") {
           t.title
           t.nonSort(:path=>"nonSort")
@@ -1770,14 +1771,14 @@ module Bplmodels
     end
 
 
-    define_template :related_item_xref do |xml, value|
-      xml.relatedItem(:type=>"isReferencedBy", 'xlink:href'=>value)
+    define_template :related_item_xref do |xml, value, label|
+      xml.relatedItem(:type=>"isReferencedBy", 'xlink:href'=>value, 'displayLabel'=>label)
     end
 
-    def insert_related_item_xref(value=nil)
+    def insert_related_item_xref(value=nil, label=nil)
       puts 'told to insert related item xref'
       if value != nil && value.length > 0
-        add_child_node(ng_xml.root, :related_item_xref, value)
+        add_child_node(ng_xml.root, :related_item_xref, value, label)
       end
     end
 

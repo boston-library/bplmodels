@@ -103,7 +103,12 @@ module Bplmodels
 
     end
 
-    def export_fileset_for_curator_api(include_files = true)
+    def export_to_curator(include_files = true)
+      exp = Bplmodels::CuratorExportService.new(payload: export_data_for_curator_api(include_files))
+      exp.export
+    end
+
+    def export_data_for_curator_api(include_files = true)
       export_hash = {
         ark_id: pid,
         created_at: create_date,
@@ -138,7 +143,7 @@ module Bplmodels
         access_edit_group: rightsMetadata.access(2).machine.group
       }
       export_hash[:metastreams][:workflow] = {
-        # these were moved to Bplmodels::DatastreamExport#files_for_export
+        # these were moved to Bplmodels::DatastreamExport#filestreams_for_export
         # ingest_filepath: workflowMetadata.source.ingest_filepath[0],
         # ingest_filename: workflowMetadata.source.ingest_filename[0],
         # ingest_datastream: workflowMetadata.source.ingest_datastream[0],
@@ -146,15 +151,15 @@ module Bplmodels
         ingest_origin: ingest_origin_for_workflow,
         processing_state: workflowMetadata.item_status.state[0] == 'published' ? 'complete' : 'derivatives'
       }
-      export_hash[:files] = export_files_for_bpl_api[:files] if include_files
+      export_hash[:files] = export_filestreams_for_curator_api if include_files
       { file_set: export_hash.compact }
     end
 
-    def export_files_for_bpl_api
+    def export_filestreams_for_curator_api
       datastreams_for_export = %w[productionMaster accessMaster thumbnail300 characterization
                                   access800 georectifiedMaster preProductionNegativeMaster
                                   ocrMaster djvuCoords]
-      files_for_export(datastreams_for_export)
+      filestreams_for_export(datastreams_for_export)
     end
 
     # sequence will be 0 if this is the only file

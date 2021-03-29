@@ -69,7 +69,7 @@ module Bplmodels
 
           total_secs = (minutes.to_i * 60) + seconds.to_i
           decimal_part = total_secs.to_f / 3600
-          prefix = (west || south) ? '-' : ''
+          prefix = west || south ? '-' : ''
           output = "#{prefix}#{degrees.to_f + decimal_part}"
           lat = output if (north || south)
           lon = output if (east || west)

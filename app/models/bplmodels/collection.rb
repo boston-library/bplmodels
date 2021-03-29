@@ -96,7 +96,7 @@ module Bplmodels
 
     end
 
-    def export_for_curator_api
+    def export_data_for_curator_api
       export_hash = {
         ark_id: pid,
         created_at: create_date,

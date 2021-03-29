@@ -1,5 +1,6 @@
 module Bplmodels
   class Institution < Bplmodels::RelationBase
+    include Bplmodels::DatastreamExport
 
     has_many :collections, :class_name=> "Bplmodels::Collection", :property=> :is_member_of
 
@@ -194,14 +195,14 @@ module Bplmodels
 
     end
 
-    def export_for_curator_api
+    def export_data_for_curator_api(include_files = false)
       export_hash = {
         ark_id: pid,
         created_at: create_date,
         updated_at: modified_date,
         name: descMetadata.title.first,
         # double quotes in #delete arg below are correct, DO NOT CHANGE
-        abstract: abstract.delete("\n").delete("\r").gsub(/<br[ \/]*>/, '<br/>'),
+        abstract: (abstract.delete("\n").delete("\r").gsub(/<br[ \/]*>/, '<br/>') if abstract.present?),
         url: descMetadata.identifier.first,
         location: location_for_export_hash,
         metastreams: {
@@ -214,10 +215,11 @@ module Bplmodels
           }
         }
       }
-      thumbnail = Bplmodels::Finder.getImageFiles(pid)
-      if thumbnail.present?
-        thumb_url = "#{FEDORA_URL['url']}/objects/#{thumbnail.first['id']}/thumbnail300/content"
-        export_hash[:thumbnail_path] = thumb_url
+      thumbnail_files = Bplmodels::Finder.getImageFiles(pid)
+      if thumbnail_files.present?
+        thumbnail = Bplmodels::ImageFile.find(thumbnail_files.first['id'])
+        thumb_export = thumbnail.filestreams_for_export(['thumbnail300'], false)
+        export_hash[:files] = thumb_export if include_files
       end
       { institution: export_hash.compact }
     end
