@@ -192,6 +192,17 @@ module Bplmodels
         descMetadata.mods(0).language.each_with_index do |_lang, index|
           lang_term = descMetadata.mods(0).language(index).language_term[0]
           lang_id = descMetadata.mods(0).language(index).language_term.lang_val_uri[0].presence
+          # various normalization to ISO-639-2 per Metadata team
+          lang_id.gsub!(/\/fre\z/, '/fra')
+          lang_id.gsub!(/\/ger\z/, '/deu')
+          lang_id.gsub!(/\/slo\z/, '/slk')
+          lang_id.gsub!(/\/cze\z/, '/ces')
+          lang_id.gsub!(/\/tib\z/, '/bod')
+          lang_term.gsub!(/\ASpanish\z/, 'Spanish |  Castilian')
+          lang_term.gsub!(/\ACatalan\z/, 'Catalan |  Valencian')
+          lang_term.gsub!(/\ADutch\z/, 'Dutch |  Flemish')
+          lang_term.gsub!(/\AFilipino\z/, 'Filipino |  Pilipino')
+          lang_term.gsub!(/\ALuxembourgish\z/, 'Luxembourgish |  Letzeburgesch')
           lang_hash = {
             label: lang_term,
             authority_code: (lang_id ? 'iso639-2' : nil),
@@ -352,7 +363,7 @@ module Bplmodels
       end
 
       def related_items_for_export_hash
-        related_items = { host: [], referenced_by_url: [] }
+        related_items = { host: [], referenced_by: [] }
         descMetadata.mods(0).related_item.each_with_index do |_ri, index|
           ri_type = self.descMetadata.mods(0).related_item(index).type[0]
           ri_title = (descMetadata.mods(0).related_item(index).title_info.nonSort[0].presence || '') + (descMetadata.mods(0).related_item(index).title_info.title[0].presence || '')

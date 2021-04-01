@@ -105,6 +105,7 @@ module Bplmodels
 
     def export_to_curator(include_files = true)
       exp = Bplmodels::CuratorExportService.new(payload: export_data_for_curator_api(include_files))
+      puts "exporting #{self.class} with id: #{pid}"
       exp.export
     end
 

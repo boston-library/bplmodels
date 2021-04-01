@@ -22,7 +22,7 @@ module Bplmodels
             file_type: type_for_dsid(ds, datastream.mimeType),
             content_type: datastream.mimeType,
             byte_size: datastream.size,
-            checksum: ((checksum == 'none' || checksum.blank?) ? nil : checksum),
+            checksum_md5: ((checksum == 'none' || checksum.blank?) ? nil : checksum),
             metadata: metadata_for_datastream(datastream),
             #filestream_of: {
             #  ark_id: pid,
@@ -188,7 +188,7 @@ module Bplmodels
           file_type: 'MetadataFOXML',
           content_type: 'application/xml',
           byte_size: foxml_string.bytesize,
-          checksum: Digest::MD5.hexdigest(foxml_string),
+          checksum_md5: Digest::MD5.hexdigest(foxml_string),
           #filestream_of: {
           #  ark_id: pid,
           #  file_set_type: @file_set_type

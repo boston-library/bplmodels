@@ -6,6 +6,7 @@ module Bplmodels
 
       def export_to_curator
         exp = Bplmodels::CuratorExportService.new(payload: export_data_for_curator_api)
+        puts "exporting #{self.class} with id: #{pid}"
         exp.export
       end
 
@@ -16,11 +17,8 @@ module Bplmodels
         export[:ark_id] = pid
         export[:created_at] = create_date
         export[:updated_at] = modified_date
-        export[:admin_set] = {
-          ark_id: admin_set.pid,
-          name: admin_set.label
-        }
-        export[:is_member_of_collection] = collection.map { |col| { ark_id: col.pid, name: col.label } }
+        export[:admin_set] = { ark_id: admin_set.pid } # name: admin_set.label
+        export[:is_member_of_collection] = collection.map { |col| { ark_id: col.pid } } # name: col.label
         # export[:is_issue_of] = find_issues_for_volume
         export[:metastreams] = {}
         export[:metastreams][:descriptive] = desc_metadata_for_export_hash
@@ -85,7 +83,7 @@ module Bplmodels
           subseries: related_items[:subseries],
           subsubseries: related_items[:subsubseries],
           related: {
-            referenced_by_url: related_items[:referenced_by_url],
+            referenced_by: related_items[:referenced_by],
             constituent: related_items[:constituent]
           }.compact,
           physical_location: { label: physical_location[:label], name_type: 'corporate' },
