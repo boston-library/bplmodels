@@ -218,7 +218,7 @@ module Bplmodels
       thumbnail_files = Bplmodels::Finder.getImageFiles(pid)
       if thumbnail_files.present?
         thumbnail = Bplmodels::ImageFile.find(thumbnail_files.first['id'])
-        thumb_export = thumbnail.filestreams_for_export(['thumbnail300'], false)
+        thumb_export = thumbnail.filestreams_for_export(['thumbnail300'], 'institution', false)
         export_hash[:files] = thumb_export if include_files
       end
       { institution: export_hash.compact }

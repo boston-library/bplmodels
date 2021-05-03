@@ -19,7 +19,7 @@ module Bplmodels
         export[:updated_at] = modified_date
         export[:admin_set] = { ark_id: admin_set.pid } # name: admin_set.label
         export[:is_member_of_collection] = collection.map { |col| { ark_id: col.pid } } # name: col.label
-        # export[:is_issue_of] = find_issues_for_volume
+
         export[:metastreams] = {}
         export[:metastreams][:descriptive] = desc_metadata_for_export_hash
         export[:metastreams][:administrative] = {
@@ -41,7 +41,7 @@ module Bplmodels
           processing_state: workflowMetadata.item_status.processing[0],
           publishing_state: workflowMetadata.item_status.state[0]
         }.compact
-        # export[:filesets] = filesets_for_export if include_filesets
+
         { digital_object: export.compact }
       end
 
@@ -58,8 +58,8 @@ module Bplmodels
           genres: genres_for_export_hash,
           digital_origin: descMetadata.mods(0).physical_description.digital_origin[0].presence&.parameterize(separator: '_'),
           origin_event: descMetadata.mods(0).origin_info.event_type[0].presence,
-          place_of_publication: descMetadata.mods(0).origin_info.place.place_term[0].presence,
-          publisher: descMetadata.mods(0).origin_info.publisher[0].presence,
+          place_of_publication: descMetadata.mods(0).origin_info.place.place_term[0].presence&.gsub(/\|\|/, ' ; '),
+          publisher: descMetadata.mods(0).origin_info.publisher[0].presence&.gsub(/\|\|/, ' ; '),
           date: dates_for_export_hash,
           publication: {
             edition_name: descMetadata.mods(0).origin_info.edition[0].presence
@@ -117,7 +117,7 @@ module Bplmodels
         all_files.each_value do |files_array|
           filesets.concat filesets_for_files(files_array, include_files)
         end
-        # get EReader filesets and combine, make EPub the 'master'
+        # get EReader filesets and combine, make EPub the 'primary'
         ereader_files = Bplmodels::Finder.getEreaderFiles(pid)
         if ereader_files.present?
           ereader_fileset_for_export = nil
@@ -131,9 +131,8 @@ module Bplmodels
             end
             ereader_filesets.each do |er_fileset|
               er_fileset[:file_set][:files].each do |er_file|
-                next unless er_file[:file_type].match?(/EbookAccess/)
+                next unless er_file[:file_type].match?(/ebook_access/)
 
-                #er_file[:file][:filestream_of][:ark_id] = ereader_fileset_for_export[:file_set][:ark_id]
                 ereader_fileset_for_export[:file_set][:files] << er_file
               end
             end
@@ -163,8 +162,9 @@ module Bplmodels
 
       def object_filestreams_for_export
         @file_set_type = nil # value will be set in #object_filesets_for_export
-        { metadata: filestreams_for_export(%w[oaiMetadata descMetadata marcXML iaMeta scanData thumbnail300]),
-          text: filestreams_for_export(%w[plainText djvuXML], false) }
+        { metadata: filestreams_for_export(%w[oaiMetadata descMetadata marcXML iaMeta scanData thumbnail300],
+                                           'metadata'),
+          text: filestreams_for_export(%w[plainText djvuXML], 'text', false) }
       end
 
       # get the object-level files -- metadata, full text, IA data, etc
@@ -180,10 +180,6 @@ module Bplmodels
             metastreams: {
               administrative: { access_edit_group: rightsMetadata.access(2).machine.group },
               workflow: {
-                # properties below aren't used in Curator
-                # ingest_filepath: workflowMetadata.source.ingest_filepath[0],
-                # ingest_filename: workflowMetadata.source.ingest_filename[0],
-                # ingest_datastream: workflowMetadata.source.ingest_datastream[0],
                 ingest_origin: ingest_origin_for_workflow,
                 processing_state: workflowMetadata.item_status.state[0] == 'published' ? 'complete' : 'derivatives'
               }.compact
@@ -191,12 +187,6 @@ module Bplmodels
           }
           object_fileset[:exemplary_image_of] = [{ ark_id: pid }] if fileset_type == 'metadata' && self.class == Bplmodels::OAIObject
           object_fileset[:files] = object_files[fileset_type.to_sym] if include_files
-          # remove [:filestream_of][:ark_id] property from object_files hashes,
-          # since it references DigitalObject rather than as-yet-uncreated FileSet
-          #object_fileset[:files].each do |file_hash|
-          #  file_hash[:file][:filestream_of].delete(:ark_id)
-          #  file_hash[:file][:filestream_of][:file_set_type] = fileset_type
-          #end
           object_filesets << { fileset: object_fileset }
         end
         object_filesets

@@ -37,7 +37,7 @@ module Bplmodels
             usage: usage,
             supplied: (supplied == 'yes' ? true : nil),
             language: descMetadata.mods(0).title_info(index).language[0].presence,
-            authority_code: descMetadata.mods(0).title_info(index).authority[0].presence,
+            authority_code: normalize_authority(descMetadata.mods(0).title_info(index).authority[0].presence),
             id_from_auth: (title_id ? title_id.match(/[A-Za-z0-9]*\z/).to_s : nil),
             part_number: descMetadata.mods(0).title_info(index).part_number[0].presence,
             part_name: descMetadata.mods(0).title_info(index).part_name[0].presence
@@ -59,7 +59,7 @@ module Bplmodels
           name_id = descMetadata.mods(0).name(index).valueURI[0].presence
           name_hash = {
             name_type: nametype,
-            authority_code: descMetadata.mods(0).name(index).authority[0].presence,
+            authority_code: normalize_authority(descMetadata.mods(0).name(index).authority[0].presence),
             id_from_auth: (name_id ? name_id.match(/[A-Za-z0-9]*\z/).to_s : nil)
           }
           # beware of empty <mods:namePart/>
@@ -80,7 +80,7 @@ module Bplmodels
             roles << role_hash.compact
           end
           roles.each do |role_hash|
-            names << { name: name_hash.compact, role: role_hash}
+            names << { name: name_hash.compact, role: role_hash }
           end
         end
         names
@@ -122,7 +122,7 @@ module Bplmodels
           genre_id = descMetadata.mods(0).genre(index).valueURI[0].presence
           genre_hash = {
             label: genre,
-            authority_code: descMetadata.mods(0).genre(index).authority[0].presence,
+            authority_code: normalize_authority(descMetadata.mods(0).genre(index).authority[0].presence),
             id_from_auth: (genre_id ? genre_id.match(/[A-Za-z0-9]*\z/).to_s : nil)
           }
           genre_hash[:basic] = true if descMetadata.mods(0).genre(index).displayLabel[0] == 'general'
@@ -242,12 +242,11 @@ module Bplmodels
         td ? td.to_s.insert(1, 't') : nil
       end
 
-      # TODO: weird geographics with display labels
       def subjects_for_export_hash
         subjects = { topics: [], names: [], geos: [], titles: [], temporals: [], dates: [] }
         descMetadata.mods(0).subject.each_with_index do |_subject, index|
           this_subject = descMetadata.mods(0).subject(index)
-          authority = this_subject.authority[0]
+          authority = normalize_authority(this_subject.authority[0])
           id_from_auth = this_subject.valueURI[0]
           multipart = false
 
@@ -269,7 +268,7 @@ module Bplmodels
             # NAMES
             if this_subject.name.any?
               this_subject.name.each do |_name|
-                authority = this_subject.name.authority[0] || authority
+                authority = normalize_authority(this_subject.name.authority[0]) || authority
                 id_from_auth = this_subject.name.value_uri[0] || id_from_auth
                 nametype = this_subject.name.type[0]
                 name_parts = this_subject.name.name_part_actual.reject { |np| np.blank? }
@@ -285,7 +284,7 @@ module Bplmodels
 
             # TITLE
             if this_subject.title_info.title.any?
-              authority = this_subject.title_info.authority[0] || authority
+              authority = normalize_authority(this_subject.title_info.authority[0]) || authority
               id_from_auth = this_subject.title_info.valueURI[0] || id_from_auth
               title_type = this_subject.title_info.type[0]
               subjects[:titles] << { label: this_subject.title_info.title[0], type: title_type,
@@ -345,7 +344,7 @@ module Bplmodels
               break if geo_hash[:label]
               if v
                 geo_hash[:label] = v
-                geo_hash[:area_type] ||= k.to_s unless k == :raw_geo # TODO test set type from displayLabel
+                geo_hash[:area_type] ||= k.to_s unless k == :raw_geo
               end
             end
             subjects[:geos] << geo_hash if geo_hash[:label] || coords
@@ -411,7 +410,7 @@ module Bplmodels
             rights_hash[:license] = { label: use }
             if use.include?('Creative Commons')
               cc_term_code = use.match(/\s[BYNCDSA-]{2,}/).to_s.strip.downcase
-              rights_hash[:license][:uri] = "https://creativecommons.org/licenses/#{cc_term_code}/4.0" if cc_term_code.present?
+              rights_hash[:license][:uri] = "https://creativecommons.org/licenses/#{cc_term_code}/4.0/" if cc_term_code.present?
             end
           when 'rightsstatements.org'
             rights_hash[:rights_statement] = {
@@ -421,6 +420,39 @@ module Bplmodels
           end
         end
         rights_hash.reject { |_k, v| v.blank? }
+      end
+
+      def publisher_for_export_hash
+        pub_val = descMetadata.mods(0).origin_info.publisher[0].presence
+        pub_val&.gsub!(/\|\|/, ' ; ')
+      end
+
+      def normalize_authority(auth_code)
+        return nil unless auth_code
+
+        ac = auth_code.downcase
+        valid_auth_codes = %w(aat geonames gmgpc homoit iso639-2 lcgft lctgm lcsh local
+                              naf marcgt marcrelator mesh rbbin rbgenr rbpap rbpri rbprov
+                              rbpub rbtyp resourceTypes tgn ulan viaf)
+        return ac if valid_auth_codes.include?(ac)
+
+        if ac == 'homosaurus'
+          'homoit'
+        elsif ac == 'at' || ac == 'att'
+          'aat'
+        elsif ac == 'gmpcg'
+          'gmgpc'
+        elsif ac.match(/lcs/) || ac == 'clsh' || ac == 'lcah' || ac == 'lchs' || ac == 'lsch' ||
+              ac == 'lsh' || ac == 'lcash' || ac == 'lch' || ac == 'lcnsh' || ac == 'lnsh'
+          'lcsh'
+        elsif ac.match(/tgm/)
+          'lctgm'
+        elsif (ac.match(/naf/) && !ac.match(/cal/)) || ac == 'lcanf' || ac == 'lncaf' || ac == 'maf' || ac == 'baf' ||
+              ac == 'bnf' || ac == 'http://id.loc.gov/authorities/names' || ac == 'lcnf' || ac == 'lcnsf'
+          'naf'
+        else
+          'local'
+        end
       end
     end
   end

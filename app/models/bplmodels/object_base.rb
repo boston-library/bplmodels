@@ -1545,7 +1545,7 @@ module Bplmodels
           preceding_document = Bplmodels::DocumentFile.find(document_id['id'])
           preceding_document.add_relationship(:is_preceding_document_of, "info:fedora/#{document_file.pid}", true)
           preceding_document.save
-          preceding_document.add_relationship(:is_following_document_of, "info:fedora/#{document_id['id']}", true)
+          document_file.add_relationship(:is_following_document_of, "info:fedora/#{document_id['id']}", true)
         }
       end
 

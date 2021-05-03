@@ -4,7 +4,8 @@ module Bplmodels
 
     included do
       # if JP2 is both productionMaster and accessMaster, remove productionMaster
-      def filestreams_for_export(datastreams_for_export, include_foxml = true)
+      def filestreams_for_export(datastreams_for_export, fs_type = nil, include_foxml = true)
+        @file_set_type = fs_type if fs_type.present?
         datastream_hashes = []
         @file_source_data = file_source_data
         datastreams_for_export.each do |ds|
@@ -16,10 +17,10 @@ module Bplmodels
           checksum = datastream.checksum
           #created = datastream.createDate&.strftime('%Y-%m-%dT%T.%LZ')
           file_hash = {
-            file_name: filename_for_datastream(datastream, datastreams["productionMaster"]&.label),
+            file_name: filename_for_datastream(datastream),
             #created_at: created,
             #updated_at: (datastream.lastModifiedDate&.strftime('%Y-%m-%dT%T.%LZ') || created),
-            file_type: type_for_dsid(ds, datastream.mimeType),
+            file_type: attachment_type_for_dsid(ds, datastream.mimeType),
             content_type: datastream.mimeType,
             byte_size: datastream.size,
             checksum_md5: ((checksum == 'none' || checksum.blank?) ? nil : checksum),
@@ -32,6 +33,7 @@ module Bplmodels
               fedora_content_location: "#{FEDORA_URL['url']}/objects/#{pid}/datastreams/#{ds}/content"
             }
           }
+          file_hash[:key] = key_for_datastream(datastream) if parent_pid
           datastream_hashes << file_hash.compact
         end
         datastream_hashes << foxml_hash if include_foxml
@@ -39,67 +41,106 @@ module Bplmodels
         datastream_hashes
       end
 
-      def filename_for_datastream(datastream, label = nil)
+      def filename_for_datastream(datastream)
         ds_id = datastream.dsid
+
         if @file_source_data[ds_id] && @file_source_data[ds_id][:ingest_filename]
           @file_source_data[ds_id][:ingest_filename]
         else
-          new_type = type_for_dsid(ds_id, datastream.mimeType)
-          "#{(label || pid.gsub(/:/, '_'))}_#{new_type}.#{filename_extension(datastream.mimeType)}"
+          att_type = attachment_type_for_dsid(ds_id, datastream.mimeType)
+          extension = filename_extension(datastream.mimeType)
+          "#{att_type}.#{extension}"
         end
       end
 
-      def type_for_dsid(legacy_dsid, mime_type)
+      def key_for_datastream(datastream)
+        ds_id = datastream.dsid
+        extension = filename_extension(datastream.mimeType)
+
+        if @file_source_data[ds_id] && @file_source_data[ds_id][:ingest_filename] &&
+           extension != 'pdf'
+          filename = if ds_id == 'productionMaster'
+                       @file_source_data[ds_id][:ingest_filename]
+                     else
+                       "#{attachment_type_for_nonmaster_dsid(ds_id, extension)}.#{extension}"
+                     end
+          "#{@file_set_type.pluralize}/#{parent_pid}/#{filename}"
+        else
+          att_type = attachment_type_for_dsid(ds_id, datastream.mimeType)
+          "#{@file_set_type.pluralize}/#{parent_pid}/#{att_type}.#{extension}"
+        end
+      end
+
+      def parent_pid
+        return object_id if @file_set_type == 'institution'
+
+        return nil if [self.class.superclass, self.class.superclass&.superclass].include?(Bplmodels::ObjectBase)
+
+        pid
+      end
+
+      def attachment_type_for_dsid(legacy_dsid, mime_type)
         file_type = filename_extension(mime_type)
         if legacy_dsid == 'productionMaster'
           case file_type
           when 'tif', 'jpg', 'png'
-            'ImageMaster'
-          when 'doc', 'pdf'
-            'DocumentMaster'
+            'image_primary'
+          when 'doc'
+            'document_primary'
+          when 'pdf'
+            'document_access'
           when 'wav', 'mp3'
-            'AudioMaster'
+            'audio_primary'
           when 'epub'
-            'EbookAccessEpub'
+            'ebook_access_epub'
           when 'mobi'
-            'EbookAccessMobi'
+            'ebook_access_mobi'
           when 'zip'
-            'EbookAccessDaisy'
+            'ebook_access_daisy'
           when 'mov'
-            'VideoMaster'
+            'video_primary'
           end
         elsif self.class == Bplmodels::VideoFile && legacy_dsid == 'accessMaster'
-          'VideoAccess'
+          'video_access_mp4'
+        else
+          attachment_type_for_nonmaster_dsid(legacy_dsid, file_type)
+        end
+      end
+
+      def attachment_type_for_nonmaster_dsid(legacy_dsid, file_type)
+        # edge case where PDF DocumentFiles sometimes have Word doc as preProductionNegativeMaster
+        if legacy_dsid == 'preProductionNegativeMaster' && file_type == 'doc'
+          'document_primary'
         else
           case legacy_dsid
           when 'preProductionNegativeMaster'
-            'ImageNegativeMaster'
+            'image_negative_primary'
           when 'ocrMaster', 'plainText'
-            'TextPlain'
+            'text_plain'
           when 'djvuXML'
-            'TextCoordinatesMaster'
+            'text_coordinates_primary'
           when 'djvuCoords'
-            'TextCoordinatesAccess'
+            'text_coordinates_access'
           when 'accessMaster'
-            'ImageService'
+            'image_service'
           when 'access800'
-            'ImageAccess800'
+            'image_access_800'
           when 'thumbnail300'
-            'ImageThumbnail300'
+            'image_thumbnail_300'
           when 'characterization'
-            legacy_dsid.capitalize
+            legacy_dsid
           when 'georectifiedMaster'
-            'ImageGeorectifiedMaster'
+            'image_georectified_primary'
           when 'oaiMetadata'
-            'MetadataOAI'
+            'metadata_oai'
           when 'marcXML'
-            'MetadataMARCXML'
+            'metadata_marc_xml'
           when 'iaMeta'
-            'MetadataIA'
+            'metadata_ia'
           when 'scanData'
-            'MetadataIAScan'
+            'metadata_ia_scan'
           when 'descMetadata'
-            'MetadataMODS'
+            'metadata_mods'
           else
             raise Error
           end
@@ -181,20 +222,16 @@ module Bplmodels
         fc3 = Rubydora::Fc3Service.new(repo.config)
         foxml_resp = fc3.export(pid: pid, format: 'info:fedora/fedora-system:FOXML-1.1', content: 'archive')
         foxml_string = foxml_resp.body
-        {
-          file_name: "#{pid.gsub(/:/, '_')}_FOXML.xml",
-          # created_at: create_date,
-          # updated_at: modified_date,
-          file_type: 'MetadataFOXML',
+        file_hash = {
+          file_name: "metadata_foxml.xml",
+          file_type: 'metadata_foxml',
           content_type: 'application/xml',
           byte_size: foxml_string.bytesize,
           checksum_md5: Digest::MD5.hexdigest(foxml_string),
-          #filestream_of: {
-          #  ark_id: pid,
-          #  file_set_type: @file_set_type
-          #},
           io: { fedora_content_location: foxml_resp.request.url }
         }
+        file_hash[:key] = "#{@file_set_type.pluralize}/#{parent_pid}/metadata_foxml.xml" if parent_pid
+        file_hash
       end
     end
   end
