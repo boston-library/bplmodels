@@ -3,14 +3,21 @@ module Bplmodels
     extend ActiveSupport::Concern
 
     included do
-      # if JP2 is both productionMaster and accessMaster, remove productionMaster
+
       def filestreams_for_export(datastreams_for_export, fs_type = nil, include_foxml = true)
         @file_set_type = fs_type if fs_type.present?
         datastream_hashes = []
         @file_source_data = file_source_data
         datastreams_for_export.each do |ds|
           datastream = datastreams[ds]
+
+          # if JP2 is both productionMaster and accessMaster, remove productionMaster
           next if ds == 'productionMaster' && datastream.mimeType == 'image/jp2'
+
+          # if DocumentFile with duplicate of productionMaster and ocrMaster
+          next if @file_set_type == 'document' && ds == 'productionMaster' &&
+                  datastream.mimeType == 'text/plain' && datastreams['ocrMaster'].present? &&
+                  datastream.size == datastreams['ocrMaster'].size
 
           next unless datastream.present?
 
@@ -56,19 +63,8 @@ module Bplmodels
       def key_for_datastream(datastream)
         ds_id = datastream.dsid
         extension = filename_extension(datastream.mimeType)
-
-        if @file_source_data[ds_id] && @file_source_data[ds_id][:ingest_filename] &&
-           extension != 'pdf'
-          filename = if ds_id == 'productionMaster'
-                       @file_source_data[ds_id][:ingest_filename]
-                     else
-                       "#{attachment_type_for_nonmaster_dsid(ds_id, extension)}.#{extension}"
-                     end
-          "#{@file_set_type.pluralize}/#{parent_pid}/#{filename}"
-        else
-          att_type = attachment_type_for_dsid(ds_id, datastream.mimeType)
-          "#{@file_set_type.pluralize}/#{parent_pid}/#{att_type}.#{extension}"
-        end
+        att_type = attachment_type_for_dsid(ds_id, datastream.mimeType)
+        "#{@file_set_type.pluralize}/#{parent_pid}/#{att_type}.#{extension}"
       end
 
       def parent_pid

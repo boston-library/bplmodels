@@ -65,10 +65,11 @@ module Bplmodels
           # beware of empty <mods:namePart/>
           name_parts = descMetadata.mods(0).name(index).namePart.reject { |np| np.blank? }
           name_hash[:label] = if nametype == 'corporate'
-                                name_parts.join(". ").gsub(/\.\./,'.')
+                                name_parts.join(". ").gsub(/\.\./, '.')
                               else
                                 name_parts.join(", ")
                               end
+          name_hash[:label].gsub(/[,]{2,}/, ',')
           roles = []
           descMetadata.mods(0).name(index).role.each_with_index do |_role, role_index|
             role_id = descMetadata.mods(0).name(index).role.text.valueURI[role_index]
@@ -351,11 +352,13 @@ module Bplmodels
           end
         end
 
-        # remove all nils, parse URIs for IDs
+        # remove all nils, dupes, parse URIs for IDs, final cleanup, etc.
         %i[topics names geos titles].each do |subject_type|
           subjects[subject_type].map!(&:compact)
+          subjects[subject_type].uniq!
           subjects[subject_type].each do |subject|
             subject[:id_from_auth] = subject[:id_from_auth].match(/[A-Za-z0-9]*\z/).to_s if subject[:id_from_auth]
+            subject[:label].gsub(/[,]{2,}/, ',')
           end
         end
         subjects.reject { |_k, v| v.blank? }
@@ -428,7 +431,7 @@ module Bplmodels
       end
 
       def normalize_authority(auth_code)
-        return nil unless auth_code
+        return nil unless auth_code.present?
 
         ac = auth_code.downcase
         valid_auth_codes = %w(aat geonames gmgpc homoit iso639-2 lcgft lctgm lcsh local

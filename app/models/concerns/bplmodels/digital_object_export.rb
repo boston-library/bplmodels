@@ -4,10 +4,25 @@ module Bplmodels
     included do
       include Bplmodels::DescMetadataExport
 
-      def export_to_curator
+      def export_to_curator(include_files = true)
         exp = Bplmodels::CuratorExportService.new(payload: export_data_for_curator_api)
         puts "exporting #{self.class} with id: #{pid}"
-        exp.export
+        result = exp.export
+        if include_files && result
+          export_filesets_to_curator
+        elsif result
+          result
+        end
+      end
+
+      def export_filesets_to_curator
+        result = false
+        filesets_for_export.each do |fs_for_export|
+          exp = Bplmodels::CuratorExportService.new(payload: fs_for_export)
+          puts "exporting #{fs_for_export[:file_set][:file_set_type]} fileset with id: #{fs_for_export[:file_set][:ark_id]}"
+          result = exp.export
+        end
+        result
       end
 
       # exports DigitalObject
@@ -113,7 +128,7 @@ module Bplmodels
         # get file-level filesets (image, document, video, etc); remove ereader (do 'em separately)
         all_files = Bplmodels::Finder.getFiles(pid)
         all_files.delete(:ereader)
-        # all_files.delete(:images) # uncomment for easier testing of IA objects
+        ## all_files.delete(:images) # uncomment for easier testing of IA objects
         all_files.each_value do |files_array|
           filesets.concat filesets_for_files(files_array, include_files)
         end
@@ -177,6 +192,7 @@ module Bplmodels
             updated_at: modified_date,
             file_set_of: { ark_id: pid },
             file_set_type: fileset_type,
+            file_name_base: "#{pid}_#{fileset_type}",
             metastreams: {
               administrative: { access_edit_group: rightsMetadata.access(2).machine.group },
               workflow: {
@@ -185,9 +201,20 @@ module Bplmodels
               }.compact
             }
           }
-          object_fileset[:exemplary_image_of] = [{ ark_id: pid }] if fileset_type == 'metadata' && self.class == Bplmodels::OAIObject
+          exemplary_ids = []
+          relationships.each_statement do |statement|
+            if statement.predicate =~ /isExemplaryImageOf/
+              exemplary_ids << statement.object.to_s.gsub(/info:fedora\//,'')
+            end
+          end
+          unless exemplary_ids.blank?
+            object_fileset[:exemplary_image_of] = []
+            exemplary_ids.uniq.each do |pid|
+              object_fileset[:exemplary_image_of] << { ark_id: pid }
+            end
+          end
           object_fileset[:files] = object_files[fileset_type.to_sym] if include_files
-          object_filesets << { fileset: object_fileset }
+          object_filesets << { file_set: object_fileset }
         end
         object_filesets
       end
