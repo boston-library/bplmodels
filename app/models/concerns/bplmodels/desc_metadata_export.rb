@@ -358,7 +358,7 @@ module Bplmodels
           subjects[subject_type].uniq!
           subjects[subject_type].each do |subject|
             subject[:id_from_auth] = subject[:id_from_auth].match(/[A-Za-z0-9]*\z/).to_s if subject[:id_from_auth]
-            subject[:label].gsub(/[,]{2,}/, ',')
+            subject[:label].gsub(/[,]{2,}/, ',') if subject[:label].present?
           end
         end
         subjects.reject { |_k, v| v.blank? }
