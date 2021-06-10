@@ -125,6 +125,7 @@ module Bplmodels
 
       def filesets_for_export(include_files = true)
         filesets = []
+        has_ereader_files = false
         # get file-level filesets (image, document, video, etc); remove ereader (do 'em separately)
         all_files = Bplmodels::Finder.getFiles(pid)
         all_files.delete(:ereader)
@@ -135,6 +136,7 @@ module Bplmodels
         # get EReader filesets and combine, make EPub the 'primary'
         ereader_files = Bplmodels::Finder.getEreaderFiles(pid)
         if ereader_files.present?
+          has_ereader_files = true
           ereader_fileset_for_export = nil
           if include_files
             ereader_filesets = filesets_for_files(ereader_files, include_files)
@@ -159,6 +161,22 @@ module Bplmodels
             end
           end
           filesets << ereader_fileset_for_export
+        end
+        # have to modify keys of ebook_access_mobi and ebook_access_daisy files to use epub pid
+        if has_ereader_files
+          filesets.each do |fs|
+            fileset = fs[:file_set]
+            next unless fileset[:file_set_type] == 'ereader'
+
+            pid_for_key = fileset[:ark_id]
+            fileset[:files].each do |file|
+              if file[:file_type] == 'ebook_access_daisy' || file[:file_type] == 'ebook_access_mobi'
+                key_parts = file[:key].split('/')
+                key_parts[1] = pid_for_key if key_parts[1].match?(/[\w-]*:[0-9a-z]*/)
+                file[:key] = key_parts.join('/')
+              end
+            end
+          end
         end
         # get the object-level filesets (metadata, plainText, etc)
         object_filesets = object_filesets_for_export(object_filestreams_for_export)

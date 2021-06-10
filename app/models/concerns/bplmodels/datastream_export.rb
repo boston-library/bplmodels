@@ -21,7 +21,17 @@ module Bplmodels
 
           next unless datastream.present?
 
-          checksum = datastream.checksum
+          # calculate checksum if doesn't exist (should only be a problem in Test Fedora)
+          checksum = if datastream.checksum == 'none' || datastream.checksum.blank?
+                       ds_content = datastream.content
+                       if ds_content.is_a?(String)
+                         Digest::MD5.hexdigest(ds_content)
+                       elsif ds_content.is_a?(RestClient::Response)
+                         Digest::MD5.hexdigest(ds_content.body)
+                       end
+                     else
+                       datastream.checksum
+                     end
           #created = datastream.createDate&.strftime('%Y-%m-%dT%T.%LZ')
           file_hash = {
             file_name: filename_for_datastream(datastream),
@@ -30,7 +40,7 @@ module Bplmodels
             file_type: attachment_type_for_dsid(ds, datastream.mimeType),
             content_type: datastream.mimeType,
             byte_size: datastream.size,
-            checksum_md5: ((checksum == 'none' || checksum.blank?) ? nil : checksum),
+            checksum_md5: checksum,
             metadata: metadata_for_datastream(datastream),
             #filestream_of: {
             #  ark_id: pid,
