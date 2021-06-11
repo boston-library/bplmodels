@@ -7,7 +7,7 @@ module Bplmodels
       def export_to_curator(include_files = true)
         exp = Bplmodels::CuratorExportService.new(payload: export_data_for_curator_api)
         puts "exporting #{self.class} with id: #{pid}"
-        result = exp.export
+        result = { success: exp.export }
         if include_files && result
           export_filesets_to_curator
         elsif result
@@ -16,12 +16,21 @@ module Bplmodels
       end
 
       def export_filesets_to_curator
-        result = false
+        result = { success: false }
+        total_bytes = 0
+        total_filesets = 0
+        total_blobs = 0
         filesets_for_export.each do |fs_for_export|
           exp = Bplmodels::CuratorExportService.new(payload: fs_for_export)
           puts "exporting #{fs_for_export[:file_set][:file_set_type]} fileset with id: #{fs_for_export[:file_set][:ark_id]}"
-          result = exp.export
+          result[:success] = exp.export
+          total_filesets += 1
+          total_blobs += fs_for_export[:file_set][:files].count
+          total_bytes += fs_for_export[:file_set][:files].map { |f| f[:byte_size] }.sum
         end
+        result[:total_bytes] = total_bytes
+        result[:total_filesets] = total_filesets
+        result[:total_blobs] = total_blobs
         result
       end
 
