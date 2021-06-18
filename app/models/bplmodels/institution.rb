@@ -211,14 +211,14 @@ module Bplmodels
 
       cols_objects = {}
       all_cols.each do |col|
-        cols_objects[col.pid] = []
-        Bplmodels::ObjectBase.find_in_batches("is_member_of_collection_ssim" => "info:fedora/#{col.pid}") do |batch|
-          batch.each { |doc| cols_objects[col.pid] << doc['id'] }
+        cols_objects[col.pid] = { success: false, pids: [] }
+        Bplmodels::ObjectBase.find_in_batches("administrative_set_ssim" => "info:fedora/#{col.pid}") do |batch|
+          batch.each { |doc| cols_objects[col.pid][:pids] << doc['id'] }
         end
       end
       objs_count = 0
-      cols_objects.values.each do |obj_array|
-        objs_count += obj_array.count
+      cols_objects.each_value do |col_hash|
+        objs_count += col_hash[:pids].count
       end
       puts "#{objs_count} DigitalObjects found"
 
@@ -234,13 +234,22 @@ module Bplmodels
           puts "exporting collection #{index + 1} of #{cols_count}"
           col_result = col.export_to_curator(include_files)
           if col_result[:success] == true
+            cols_objects[col.pid][:success] = true
             cols_exported << col.pid
+          end
+        end
 
+        puts "---------------------------------------"
+        puts "---------------------------------------"
+        puts "Finished exporting collections"
+
+        cols_objects.each do |col_key, col_hash|
+          if col_hash[:success] == true
             puts "---------------------------------------"
             puts "---------------------------------------"
-            puts "Starting object export for collection"
-            col_objs_count = cols_objects[col.pid].count
-            cols_objects[col.pid].each_with_index do |obj_pid, o_index|
+            puts "Starting object export for collection: #{col_key}"
+            col_objs_count = col_hash[:pids].count
+            col_hash[:pids].each_with_index do |obj_pid, o_index|
               puts "exporting object #{o_index + 1} of #{col_objs_count}"
               obj = Bplmodels::ObjectBase.find(obj_pid)
               begin
