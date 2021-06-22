@@ -314,8 +314,9 @@ module Bplmodels
           end
 
           # GEOGRAPHIC
-          if this_subject.cartographics.coordinates.any? || this_subject.geographic.any? ||
-              this_subject.hierarchical_geographic.any?
+          # but *not* the <mods:geographic> elements of a multipart subject
+          if (this_subject.cartographics.coordinates.any? || this_subject.geographic.any? ||
+              this_subject.hierarchical_geographic.any?) && this_subject.topic.blank?
             geo_hash = {
               authority_code: authority,
               id_from_auth: id_from_auth
@@ -328,7 +329,7 @@ module Bplmodels
               geo_hash[:bounding_box] = coords
             end
             geo_data = {}
-            geo_data[:raw_geo] = this_subject.geographic[0]
+            geo_data[:raw_geo] = this_subject.geographic.join('--')
             geo_data[:area] = this_subject.hierarchical_geographic.area[0]
             geo_data[:island] = this_subject.hierarchical_geographic.island[0]
             geo_data[:city_section] = this_subject.hierarchical_geographic.city_section[0]
@@ -344,7 +345,7 @@ module Bplmodels
             geo_data.each do |k, v|
               break if geo_hash[:label]
               if v
-                geo_hash[:label] = v
+                geo_hash[:label] = v.presence
                 geo_hash[:area_type] ||= k.to_s unless k == :raw_geo
               end
             end
