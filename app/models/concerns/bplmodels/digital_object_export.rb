@@ -47,7 +47,7 @@ module Bplmodels
         export[:metastreams] = {}
         export[:metastreams][:descriptive] = desc_metadata_for_export_hash
         export[:metastreams][:administrative] = {
-          description_standard: descMetadata.mods(0).record_info.description_standard[0],
+          description_standard: desc_std_for_admin,
           flagged: workflowMetadata.item_designations(0).flagged_for_content[0],
           destination_site: workflowMetadata.destination.site,
           harvestable: if workflowMetadata.item_status.harvestable[0] =~ /[Ff]alse/ ||
@@ -262,6 +262,13 @@ module Bplmodels
       def is_volume_wrapper?
         volumes = Bplmodels::Finder.getVolumeObjects(pid)
         volumes.present? ? true : false
+      end
+
+      def desc_std_for_admin
+        ds_value = descMetadata.mods(0).record_info.description_standard[0]
+        allowed = ["aacr", "cco", "dacs", "gihc", "local", "rda", "dcrmg", "amremm",
+                   "dcrmb", "dcrmc", "dcrmmss", "appm"]
+        allowed.include?(ds_value) ? ds_value : nil
       end
     end
   end

@@ -84,7 +84,7 @@ module Bplmodels
             names << { name: name_hash.compact, role: role_hash }
           end
         end
-        names
+        names.uniq
       end
 
       def rt_for_export_hash
@@ -192,6 +192,8 @@ module Bplmodels
         langs = []
         descMetadata.mods(0).language.each_with_index do |_lang, index|
           lang_term = descMetadata.mods(0).language(index).language_term[0]
+          next if lang_term.match?(/([Uu]nknown|[Uu]ndetermined)/)
+
           lang_id = descMetadata.mods(0).language(index).language_term.lang_val_uri[0].presence
           # various normalization to ISO-639-2 per Metadata team
           lang_id.gsub!(/\/fre\z/, '/fra')
@@ -199,11 +201,13 @@ module Bplmodels
           lang_id.gsub!(/\/slo\z/, '/slk')
           lang_id.gsub!(/\/cze\z/, '/ces')
           lang_id.gsub!(/\/tib\z/, '/bod')
+          lang_id.gsub!(/\/rum\z/, '/ron')
           lang_term.gsub!(/\ASpanish\z/, 'Spanish |  Castilian')
           lang_term.gsub!(/\ACatalan\z/, 'Catalan |  Valencian')
           lang_term.gsub!(/\ADutch\z/, 'Dutch |  Flemish')
           lang_term.gsub!(/\AFilipino\z/, 'Filipino |  Pilipino')
           lang_term.gsub!(/\ALuxembourgish\z/, 'Luxembourgish |  Letzeburgesch')
+          lang_term.gsub!(/\ARomanian\z/, 'Romanian |  Moldavian |  Moldovan')
           lang_hash = {
             label: lang_term,
             authority_code: (lang_id ? 'iso639-2' : nil),
@@ -211,7 +215,7 @@ module Bplmodels
           }
           langs << lang_hash.compact
         end
-        langs
+        langs.uniq
       end
 
       def notes_for_export_hash
@@ -289,7 +293,7 @@ module Bplmodels
               id_from_auth = this_subject.title_info.valueURI[0] || id_from_auth
               title_type = this_subject.title_info.type[0]
               subjects[:titles] << { label: this_subject.title_info.title[0], type: title_type,
-                                    authority_code: authority, id_from_auth: id_from_auth }
+                                     authority_code: authority, id_from_auth: id_from_auth }
             end
 
             # TEMPORAL / DATE
@@ -357,9 +361,41 @@ module Bplmodels
         %i[topics names geos titles].each do |subject_type|
           subjects[subject_type].map!(&:compact)
           subjects[subject_type].uniq!
-          subjects[subject_type].each do |subject|
+          subjects[subject_type].reject! { |v| v[:label].blank? } unless subject_type == :geos
+
+          subjects[subject_type].each_with_index do |subject, _sindex|
             subject[:id_from_auth] = subject[:id_from_auth].match(/[A-Za-z0-9]*\z/).to_s if subject[:id_from_auth]
             subject[:label].gsub(/[,]{2,}/, ',') if subject[:label].present?
+          end
+
+          # reject any subjects with duplicate label but without auth data
+          # this gets tricky because once we remove a subject,
+          # the array's index is updated, have to re-scan for other dupes
+          0.upto subjects[subject_type].length do |_sindex|
+            label_indices = subjects[subject_type].each_with_index.group_by { |s, _i| s[:label] }.each { |_k, v| v.map!(&:last) }
+
+            removal_candidates = []
+            dupe_with_auth = []
+            label_indices.each do |_lk, lv|
+              next if lv.count < 2 || removal_candidates.present? || dupe_with_auth.present?
+
+              lv.each do |dindex|
+                if subjects[subject_type][dindex][:authority_code].present?
+                  dupe_with_auth << dindex
+                else
+                  removal_candidates << dindex
+                end
+              end
+              if dupe_with_auth.present?
+                removal_candidates.reverse.each do |rc|
+                  subjects[subject_type].delete_at(rc)
+                end
+              else
+                removal_candidates.reverse.each_with_index do |rc, ri|
+                  subjects[subject_type].delete_at(rc) unless ri == 0
+                end
+              end
+            end
           end
         end
         subjects.reject { |_k, v| v.blank? }
