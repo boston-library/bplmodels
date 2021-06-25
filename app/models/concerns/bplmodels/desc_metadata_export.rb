@@ -375,20 +375,31 @@ module Bplmodels
             label_indices = subjects[subject_type].each_with_index.group_by { |s, _i| s[:label] }.each { |_k, v| v.map!(&:last) }
 
             removal_candidates = []
-            dupe_with_auth = []
+            keeper_candidates = []
+            keeper = nil
             label_indices.each do |_lk, lv|
-              next if lv.count < 2 || removal_candidates.present? || dupe_with_auth.present?
+              next if lv.count < 2 || removal_candidates.present? || keeper_candidates.present?
 
               lv.each do |dindex|
                 if subjects[subject_type][dindex][:authority_code].present?
-                  dupe_with_auth << dindex
+                  keeper_candidates << dindex
                 else
                   removal_candidates << dindex
                 end
               end
-              if dupe_with_auth.present?
+              if keeper_candidates.count > 1
+                keeper_candidates.each do |kindex|
+                  if subjects[subject_type][kindex][:id_from_auth].present?
+                    keeper = kindex
+                  else
+                    removal_candidates << kindex
+                  end
+                end
+                keeper ||= keeper_candidates.first
+              end
+              if keeper_candidates.present?
                 removal_candidates.reverse.each do |rc|
-                  subjects[subject_type].delete_at(rc)
+                  subjects[subject_type].delete_at(rc) unless rc == keeper
                 end
               else
                 removal_candidates.reverse.each_with_index do |rc, ri|
@@ -426,6 +437,7 @@ module Bplmodels
           ri_title = (descMetadata.mods(0).related_item.subseries.subsubseries(0).title_info.nonSort[0].presence || '') + descMetadata.mods(0).related_item.subseries.subsubseries(0).title_info.title[0]
           related_items[:subsubseries] = ri_title
         end
+        related_items.values.map(&:uniq!)
         related_items.compact.reject { |_k, v| v.blank? }
       end
 
