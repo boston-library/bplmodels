@@ -437,7 +437,7 @@ module Bplmodels
           ri_title = (descMetadata.mods(0).related_item.subseries.subsubseries(0).title_info.nonSort[0].presence || '') + descMetadata.mods(0).related_item.subseries.subsubseries(0).title_info.title[0]
           related_items[:subsubseries] = ri_title
         end
-        related_items.values.map(&:uniq!)
+        related_items.values.map { |rv| rv.uniq! if rv.respond_to?(:uniq!) }
         related_items.compact.reject { |_k, v| v.blank? }
       end
 
