@@ -15,6 +15,7 @@ module Bplmodels
         ids
       end
 
+      # TODO: raise an error if title[:primary] is blank?
       def titles_for_export_hash
         titles = { other: [] }
         descMetadata.mods(0).title.each_with_index do |title, index|
@@ -202,12 +203,17 @@ module Bplmodels
           lang_id.gsub!(/\/cze\z/, '/ces')
           lang_id.gsub!(/\/tib\z/, '/bod')
           lang_id.gsub!(/\/rum\z/, '/ron')
+          lang_id.gsub!(/\/gre\z/, '/ell')
           lang_term.gsub!(/\ASpanish\z/, 'Spanish |  Castilian')
           lang_term.gsub!(/\ACatalan\z/, 'Catalan |  Valencian')
           lang_term.gsub!(/\ADutch\z/, 'Dutch |  Flemish')
           lang_term.gsub!(/\AFilipino\z/, 'Filipino |  Pilipino')
           lang_term.gsub!(/\ALuxembourgish\z/, 'Luxembourgish |  Letzeburgesch')
           lang_term.gsub!(/\ARomanian\z/, 'Romanian |  Moldavian |  Moldovan')
+          lang_term.gsub!(/\AGreek, Ancient\z/, 'Greek, Ancient (to 1453)')
+          lang_term.gsub!(/\AGreek\z/, 'Greek, Ancient (to 1453)')
+          lang_term.gsub!(/\AAlgonquian\z/, 'Algonquian languages')
+          lang_term.gsub!(/\AMicmac\z/, "Mi'kmaq |  Micmac")
           lang_hash = {
             label: lang_term,
             authority_code: (lang_id ? 'iso639-2' : nil),
