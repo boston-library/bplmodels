@@ -213,6 +213,7 @@ module Bplmodels
           lang_term.gsub!(/\AGreek, Ancient\z/, 'Greek, Ancient (to 1453)')
           lang_term.gsub!(/\AGreek\z/, 'Greek, Ancient (to 1453)')
           lang_term.gsub!(/\AAlgonquian\z/, 'Algonquian languages')
+          lang_term.gsub!(/\APassamaquoddy\z/, 'Algonquian languages')
           lang_term.gsub!(/\AMicmac\z/, "Mi'kmaq |  Micmac")
           lang_hash = {
             label: lang_term,
