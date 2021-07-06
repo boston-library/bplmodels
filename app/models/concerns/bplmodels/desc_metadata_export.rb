@@ -12,6 +12,12 @@ module Bplmodels
           id_hash[:invalid] = true if descMetadata.identifier(index).invalid[0] == 'yes'
           ids << id_hash
         end
+        if self.class == Bplmodels::OAIObject
+          descMetadata.item_location.url.each_with_index do |url, index|
+            url_type = descMetadata.item_location.url(index).access[0]
+            ids << { label: url, type: 'uri-preview' } if url_type == 'preview'
+          end
+        end
         ids
       end
 
