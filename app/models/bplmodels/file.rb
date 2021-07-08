@@ -144,13 +144,13 @@ module Bplmodels
         access_edit_group: rightsMetadata.access(2).machine.group
       }
       export_hash[:metastreams][:workflow] = {
-        # these were moved to Bplmodels::DatastreamExport#filestreams_for_export
-        # ingest_filepath: workflowMetadata.source.ingest_filepath[0],
-        # ingest_filename: workflowMetadata.source.ingest_filename[0],
-        # ingest_datastream: workflowMetadata.source.ingest_datastream[0],
-        # ingest_datastream_md5: original_checksum[0],
         ingest_origin: ingest_origin_for_workflow,
-        processing_state: workflowMetadata.item_status.state[0] == 'published' ? 'complete' : 'derivatives'
+        processing_state: case workflowMetadata.item_status.state[0]
+                          when 'published', nil # older items don't have any value for this field
+                            'complete'
+                          else
+                            'derivatives'
+                          end
       }
       export_hash[:files] = export_filestreams_for_curator_api if include_files
       { file_set: export_hash.compact }

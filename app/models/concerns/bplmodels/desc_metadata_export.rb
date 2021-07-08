@@ -136,16 +136,10 @@ module Bplmodels
           genre_hash[:basic] = true if descMetadata.mods(0).genre(index).displayLabel[0] == 'general'
           genres << genre_hash.compact
         end
-        # volume stuff from DC2 is deprecated
-        # volumes = Bplmodels::Finder.getVolumeObjects(pid)
-        # if volumes.present?
-        #   genres << {
-        #     label: 'Serial publications',
-        #     authority_code: 'lcgft',
-        #     id_from_auth: 'gf2014026174',
-        #     basic: true
-        #   }
-        # end
+        # per dpucci, add Manuscripts if <mods:typeOfResource manuscript="yes">
+        if descMetadata.mods(0).type_of_resource.manuscript.first == 'yes' && !genres.pluck(:label).include?('Manuscripts')
+          genres << { label: 'Manuscripts', authority_code: 'gmgpc', id_from_auth: 'tgm012286' }
+        end
         genres
       end
 
