@@ -18,7 +18,7 @@ module Bplmodels
             ids << { label: url, type: 'uri-preview' } if url_type == 'preview'
           end
         end
-        ids
+        ids.uniq
       end
 
       # TODO: raise an error if title[:primary] is blank?
@@ -92,6 +92,19 @@ module Bplmodels
           end
         end
         names.uniq
+
+        # check for quasi-duplicates (one name with/out id_from_auth etc)
+        # some starter code below, but not going to implement this now,
+        # need to see how widespread of an issue this is
+        # names.uniq!
+        # all_namerole_labels = names.map { |v| [v[:name][:label], v[:role][:label]] }
+        # if all_namerole_labels.count != all_namerole_labels.uniq.count
+        #   0.upto names.length do |_nindex|
+        #    removal_candidates = []
+        #    keeper_candidates = []
+        #    keeper = nil
+        #  end
+        # end
       end
 
       def rt_for_export_hash
