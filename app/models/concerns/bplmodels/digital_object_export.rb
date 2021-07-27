@@ -8,9 +8,9 @@ module Bplmodels
         exp = Bplmodels::CuratorExportService.new(payload: export_data_for_curator_api)
         puts "exporting #{self.class} with id: #{pid}"
         result = { success: exp.export }
-        if include_files && result
+        if include_files && result[:success]
           export_filesets_to_curator
-        elsif result
+        else
           result
         end
       end
