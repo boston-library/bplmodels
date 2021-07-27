@@ -116,9 +116,9 @@ module Bplmodels
       end
 
       def attachment_type_for_nonmaster_dsid(legacy_dsid, file_type)
-        # edge case where PDF DocumentFiles sometimes have Word doc as preProductionNegativeMaster
+        # edge case where DocumentFile objects sometimes have Word doc as preProductionNegativeMaster
         if legacy_dsid == 'preProductionNegativeMaster' &&
-           (file_type == 'application/msword' || file_type == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+           %w(doc docx application/msword application/vnd.openxmlformats-officedocument.wordprocessingml.document).include?(file_type)
           'document_primary'
         else
           case legacy_dsid
