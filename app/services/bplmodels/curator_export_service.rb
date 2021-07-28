@@ -4,12 +4,6 @@ module Bplmodels
       @payload = payload
       @request = Typhoeus::Request.new(export_url, body: @payload.to_json, method: :post,
                                        headers: { 'Content-Type' => 'application/json' })
-      @request.on_complete do |response|
-        return true if response.code == 201
-
-        raise StandardError,
-              "The export failed with status: #{response.code}. Error: #{response.body.presence || response.return_code}"
-      end
     end
 
     def export
@@ -17,7 +11,11 @@ module Bplmodels
 
       retries = 0
       begin
-        @request.run
+        response = @request.run
+        return true if response.code == 201
+
+        raise StandardError,
+              "The export failed with status: #{response.code}. Error: #{response.body.presence || response.return_code}"
       rescue
         retry if (retries += 1) < 2
 
