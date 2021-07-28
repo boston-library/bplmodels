@@ -2,25 +2,20 @@ module Bplmodels
   class CuratorExportService
     def initialize(payload: {})
       @payload = payload
-      @request = Typhoeus::Request.new(export_url, body: @payload.to_json, method: :post,
-                                       headers: { 'Content-Type' => 'application/json' })
     end
 
     def export
       return true if object_exists?
 
-      retries = 0
-      begin
-        response = @request.run
+      request = Typhoeus::Request.new(export_url, body: @payload.to_json, method: :post,
+                                      headers: { 'Content-Type' => 'application/json' })
+      request.on_complete do |response|
         return true if response.code == 201
 
         raise StandardError,
-              "The export failed with status: #{response.code}. Error: #{response.body.presence || response.return_code}"
-      rescue
-        retry if (retries += 1) < 2
-
-        raise
+              "The export failed with status: #{response.code}. Error: #{response.body}"
       end
+      request.run
     end
 
     def export_url
