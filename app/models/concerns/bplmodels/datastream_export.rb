@@ -62,7 +62,9 @@ module Bplmodels
         ds_id = datastream.dsid
 
         if @file_source_data[ds_id] && @file_source_data[ds_id][:ingest_filename]
-          @file_source_data[ds_id][:ingest_filename]
+          orig_fn_arr = @file_source_data[ds_id][:ingest_filename].split('.')
+          orig_fn_arr.last.downcase!
+          orig_fn_arr.join('.')
         else
           att_type = attachment_type_for_dsid(ds_id, datastream.mimeType)
           extension = filename_extension(datastream.mimeType)
