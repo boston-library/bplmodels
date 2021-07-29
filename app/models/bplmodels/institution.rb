@@ -196,6 +196,9 @@ module Bplmodels
     end
 
     def export_all_to_curator(include_files = true)
+      export_logfile = Logger.new("log/#{pid.gsub(/\:/, '_')}_curator-export-failures.log")
+      export_logfile.level = Logger::DEBUG
+      export_logfile.debug "\n------\n------\nError log for #{label} (#{pid})"
       cols_exported = []
       objs_exported = []
       objs_failed = []
@@ -262,6 +265,7 @@ module Bplmodels
                 end
               rescue => e
                 objs_failed << [obj_pid, e]
+                export_logfile.debug "PID: #{obj_pid}, ERROR: #{e}"
                 puts "OBJECT EXPORT FAILED! PID: #{obj_pid}, ERROR: #{e}"
               end
             end
@@ -286,8 +290,10 @@ module Bplmodels
         puts "Total time: #{elapsed_str}"
         puts "Total bytes exported: #{total_bytes_str}"
         puts "Bytes per minute: #{bytes_per_min_str}\n\n"
-        puts "Writing reports as CSV to /tmp/#{pid.gsub(/\:/, '_')}_export-report_*.csv"
-        CSV.open("/tmp/#{pid.gsub(/\:/, '_')}_export-report_summary.csv", 'w') do |csv_obj|
+        report_alert = "Writing reports as CSV to #{BPL_CONFIG_GLOBAL['export_reports_location']}/#{pid.gsub(/\:/, '_')}_export-report_*.csv"
+        puts report_alert
+        export_logfile.debug report_alert
+        CSV.open("#{BPL_CONFIG_GLOBAL['export_reports_location']}/#{pid.gsub(/\:/, '_')}_export-report_summary.csv", 'w') do |csv_obj|
           csv_obj << ['EXPORT SUMMARY FOR:', "#{label} (#{pid})"]
           csv_obj << ['', '']
           csv_obj << ["Collections found:", cols_count]
@@ -303,7 +309,7 @@ module Bplmodels
           csv_obj << ['Bytes per minute:', bytes_per_min_str]
         end
         %w[cols_exported objs_exported objs_failed].each do |arr_name|
-          CSV.open("/tmp/#{pid.gsub(/\:/, '_')}_export-report_#{arr_name}.csv", 'w') do |csv_obj|
+          CSV.open("#{BPL_CONFIG_GLOBAL['export_reports_location']}/#{pid.gsub(/\:/, '_')}_export-report_#{arr_name}.csv", 'w') do |csv_obj|
             eval(arr_name).each do |arr_pid|
               csv_obj << if arr_name == 'objs_failed'
                            [arr_pid[0], arr_pid[1]]
