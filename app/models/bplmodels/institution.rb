@@ -254,8 +254,8 @@ module Bplmodels
             col_objs_count = col_hash[:pids].count
             col_hash[:pids].each_with_index do |obj_pid, o_index|
               puts "exporting object #{o_index + 1} of #{col_objs_count}"
-              obj = Bplmodels::ObjectBase.find(obj_pid)
               begin
+                obj = Bplmodels::ObjectBase.find(obj_pid).adapt_to_cmodel
                 obj_result = obj.export_to_curator(include_files)
                 if obj_result[:success] == true
                   objs_exported << obj_pid
