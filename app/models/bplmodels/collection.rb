@@ -117,7 +117,8 @@ module Bplmodels
                            true
                          end,
             hosting_status: self.class == Bplmodels::OAICollection ? 'harvested' : 'hosted',
-            access_edit_group: rightsMetadata.access(2).machine.group
+            access_edit_group: rightsMetadata.access(2).machine.group,
+            oai_header_id: self.class == Bplmodels::OAICollection ? "oai-collection-export:#{Digest::MD5.hexdigest(pid)}" : nil,
           },
           workflow: {
             publishing_state: workflowMetadata.item_status.state[0]
