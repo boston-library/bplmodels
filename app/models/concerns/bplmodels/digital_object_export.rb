@@ -248,7 +248,7 @@ module Bplmodels
 
       def ingest_origin_for_workflow
         if self.class == Bplmodels::OAIObject
-          oaiMetadata.header_information.identifer.first
+          oaiMetadata.header_information.identifer.first&.strip
         elsif workflowMetadata.source.present? &&
             workflowMetadata.source.ingest_filepath[0] =~ /archive.org/
           workflowMetadata.source.ingest_filepath[0].gsub(/\/[a-z\.0-9_]*\z/, '')
