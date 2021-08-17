@@ -7,15 +7,20 @@ module Bplmodels
     def export
       return true if object_exists?
 
-      request = Typhoeus::Request.new(export_url, body: @payload.to_json, method: :post,
-                                      headers: { 'Content-Type' => 'application/json' })
-      request.on_complete do |response|
-        return true if response.code == 201
+      response = Typhoeus::Request.post(export_url, body: @payload.to_json, headers: { 'Content-Type' => 'application/json' })
 
-        raise StandardError,
-              "The export failed with status: #{response.code}. Error: #{response.body}"
-      end
-      request.run
+      return true if response.code == 201
+
+      raise StandardError, "The export failed with status: #{response.code}. Error: #{response.body}"
+      # request = Typhoeus::Request.new(export_url, body: @payload.to_json, method: :post,
+      #                                 headers: { 'Content-Type' => 'application/json' })
+      # request.on_complete do |response|
+      #   return true if response.code == 201
+      #
+      #   raise StandardError,
+      #         "The export failed with status: #{response.code}. Error: #{response.body}"
+      # end
+      # request.run
     end
 
     def export_url
