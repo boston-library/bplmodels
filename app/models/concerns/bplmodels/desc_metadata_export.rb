@@ -134,7 +134,7 @@ module Bplmodels
           { label: rt_hash.keys.first.capitalize,
             authority_code: 'resourceTypes',
             id_from_auth: rt_hash.values.first }
-        end
+        end.uniq
       end
 
       def genres_for_export_hash

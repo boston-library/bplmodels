@@ -259,9 +259,9 @@ module Bplmodels
                 obj_result = obj.export_to_curator(include_files)
                 if obj_result[:success] == true
                   objs_exported << obj_pid
-                  total_bytes += obj_result[:total_bytes]
-                  filesets_count += obj_result[:total_filesets]
-                  blobs_count += obj_result[:total_blobs]
+                  total_bytes += obj_result[:total_bytes] if obj_result[:total_bytes]
+                  filesets_count += obj_result[:total_filesets] if obj_result[:total_filesets]
+                  blobs_count += obj_result[:total_blobs] if obj_result[:total_blobs]
                 end
               rescue => e
                 objs_failed << [obj_pid, e]
@@ -363,6 +363,53 @@ module Bplmodels
         id_from_auth: descMetadata.subject(0).valueURI.first&.match(/[0-9]*\z/).to_s,
         coordinates: descMetadata.subject(0).cartographics.coordinates.first
       }
+    end
+
+    # create export manifest CSV, to be verified after migration
+    # CSV contains object class and ark id for all collections, objects, filesets, attachments
+    def curator_export_manifest(path_to_csv = nil)
+      puts "Creating export manifest, this may take a minute..."
+      path_to_csv ||= BPL_CONFIG_GLOBAL['export_reports_location']
+      data_for_csv = []
+      data_for_csv << %w(curator_model ark_id attachment_type parent_ark_id file_name_base)
+      data_for_csv << ['Institution', pid, '', '', '']
+
+      col_pids = collections.map(&:pid)
+      col_pids.each do |col_pid|
+        data_for_csv << ['Collection', col_pid, '', '', '']
+      end
+
+      col_obj_pids = []
+      col_pids.each do |col_pid|
+        Bplmodels::ObjectBase.find_in_batches("administrative_set_ssim" => "info:fedora/#{col_pid}") do |batch|
+          batch.each { |doc| col_obj_pids << doc['id'] }
+        end
+      end
+
+      col_obj_pids.each do |obj_pid|
+        obj = Bplmodels::ObjectBase.find(obj_pid).adapt_to_cmodel
+        data_for_csv << ['DigitalObject', obj.pid, '', '', '']
+        filesets = obj.filesets_for_export
+        filesets.each do |fileset|
+          fs_hash = fileset.fetch(:file_set)
+          fs_ark_id = fs_hash.fetch(:ark_id, '')
+
+          fs_parent_ark_id = fs_hash.fetch(:file_set_of).fetch(:ark_id)
+          fs_fn_base = fs_hash.fetch(:file_name_base)
+          data_for_csv << ["Filestreams::#{fs_hash.fetch(:file_set_type).capitalize}", fs_ark_id, '',
+                           fs_parent_ark_id, fs_fn_base]
+          fs_hash.fetch(:files).each do |f_hash|
+            data_for_csv << ["ActiveStorage::Attachment", fs_ark_id, f_hash.fetch(:file_type),
+                             fs_parent_ark_id, fs_fn_base]
+          end
+        end
+      end
+
+      csv_fullpath = "#{path_to_csv}/#{pid}_export-manifest_#{Time.zone.now.strftime('%Y-%m-%d')}.csv"
+      CSV.open(csv_fullpath, 'w') do |csv_obj|
+        data_for_csv.each { |v| csv_obj << v }
+      end
+      puts "Export manifest created: #{csv_fullpath}"
     end
 
     #Expects the following args:
