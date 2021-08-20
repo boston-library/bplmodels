@@ -290,10 +290,10 @@ module Bplmodels
         puts "Total time: #{elapsed_str}"
         puts "Total bytes exported: #{total_bytes_str}"
         puts "Bytes per minute: #{bytes_per_min_str}\n\n"
-        report_alert = "Writing reports as CSV to #{BPL_CONFIG_GLOBAL['export_reports_location']}/#{pid.gsub(/\:/, '_')}_export-report_*.csv"
+        report_alert = "Writing reports as CSV to #{BPL_CONFIG_GLOBAL['export_reports_location']}/#{name_abbreviation}_#{pid.gsub(/\:/, '_')}_export-report_*.csv"
         puts report_alert
         export_logfile.debug report_alert
-        CSV.open("#{BPL_CONFIG_GLOBAL['export_reports_location']}/#{pid.gsub(/\:/, '_')}_export-report_summary.csv", 'w') do |csv_obj|
+        CSV.open("#{BPL_CONFIG_GLOBAL['export_reports_location']}/#{name_abbreviation}_#{pid.gsub(/\:/, '_')}_export-report_summary.csv", 'w') do |csv_obj|
           csv_obj << ['EXPORT SUMMARY FOR:', "#{label} (#{pid})"]
           csv_obj << ['', '']
           csv_obj << ["Collections found:", cols_count]
@@ -309,7 +309,7 @@ module Bplmodels
           csv_obj << ['Bytes per minute:', bytes_per_min_str]
         end
         %w[cols_exported objs_exported objs_failed].each do |arr_name|
-          CSV.open("#{BPL_CONFIG_GLOBAL['export_reports_location']}/#{pid.gsub(/\:/, '_')}_export-report_#{arr_name}.csv", 'w') do |csv_obj|
+          CSV.open("#{BPL_CONFIG_GLOBAL['export_reports_location']}/#{name_abbreviation}_#{pid.gsub(/\:/, '_')}_export-report_#{arr_name}.csv", 'w') do |csv_obj|
             eval(arr_name).each do |arr_pid|
               csv_obj << if arr_name == 'objs_failed'
                            [arr_pid[0], arr_pid[1]]
@@ -405,11 +405,15 @@ module Bplmodels
         end
       end
 
-      csv_fullpath = "#{path_to_csv}/#{pid}_export-manifest_#{Time.zone.now.strftime('%Y-%m-%d')}.csv"
+      csv_fullpath = "#{path_to_csv}/#{name_abbreviation}_#{pid.gsub(/\:/, '_')}_export-manifest_#{Time.zone.now.strftime('%Y-%m-%d')}.csv"
       CSV.open(csv_fullpath, 'w') do |csv_obj|
         data_for_csv.each { |v| csv_obj << v }
       end
       puts "Export manifest created: #{csv_fullpath}"
+    end
+
+    def name_abbreviation
+      label.split(' ').map { |v| v.first.downcase }.join.gsub(/\W/, '')
     end
 
     #Expects the following args:
