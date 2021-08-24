@@ -153,7 +153,7 @@ module Bplmodels
         if descMetadata.mods(0).type_of_resource.manuscript.first == 'yes' && !genres.pluck(:label).include?('Manuscripts')
           genres << { label: 'Manuscripts', authority_code: 'gmgpc', id_from_auth: 'tgm012286' }
         end
-        genres
+        genres.uniq
       end
 
       def dates_for_export_hash
