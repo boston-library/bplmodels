@@ -7,20 +7,17 @@ module Bplmodels
     def export
       return true if object_exists?
 
-      response = Typhoeus::Request.post(export_url, body: @payload.to_json, headers: { 'Content-Type' => 'application/json' })
+      response = Typhoeus::Request.post(export_url, body: @payload.to_json, headers: { 'Content-Type' => 'application/json' }, http_version: http_version)
 
       return true if response.code == 201
 
       raise StandardError, "The export failed with status: #{response.code}. Error: #{response.body}"
-      # request = Typhoeus::Request.new(export_url, body: @payload.to_json, method: :post,
-      #                                 headers: { 'Content-Type' => 'application/json' })
-      # request.on_complete do |response|
-      #   return true if response.code == 201
-      #
-      #   raise StandardError,
-      #         "The export failed with status: #{response.code}. Error: #{response.body}"
-      # end
-      # request.run
+    end
+
+    def http_version
+      return :httpv2_0 if export_url.starts_with?('https')
+
+      :httpv1_1
     end
 
     def export_url
@@ -36,7 +33,7 @@ module Bplmodels
       ark = @payload.fetch(@payload.keys.first).fetch(:ark_id, nil) || ark_for_fileset
       return false if ark.blank?
 
-      response = Typhoeus.head("#{export_url}/#{ark}")
+      response = Typhoeus::Request.head("#{export_url}/#{ark}", http_version: http_version)
       response.code == 200
     end
 
