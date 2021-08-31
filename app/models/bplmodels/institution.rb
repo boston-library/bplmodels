@@ -199,9 +199,8 @@ module Bplmodels
       export_logfile = Logger.new("log/#{pid.gsub(/\:/, '_')}_curator-export-failures.log")
       export_logfile.level = Logger::DEBUG
       export_logfile.debug "\n------\n------\nError log for #{label} (#{pid})"
-      cols_exported = []
-      objs_exported = []
-      objs_failed = []
+
+      export_results = Hash.new { |h, k| h[k] = [] }
       total_bytes = 0
       filesets_count = 0
       blobs_count = 0
@@ -238,7 +237,7 @@ module Bplmodels
           col_result = col.export_to_curator(include_files)
           if col_result[:success] == true
             cols_objects[col.pid][:success] = true
-            cols_exported << col.pid
+            export_results[:cols_exported] << col.pid
           end
         end
 
@@ -258,13 +257,13 @@ module Bplmodels
                 obj = Bplmodels::ObjectBase.find(obj_pid).adapt_to_cmodel
                 obj_result = obj.export_to_curator(include_files)
                 if obj_result[:success] == true
-                  objs_exported << obj_pid
+                  export_results[:objs_exported] << obj_pid
                   total_bytes += obj_result[:total_bytes] if obj_result[:total_bytes]
                   filesets_count += obj_result[:total_filesets] if obj_result[:total_filesets]
                   blobs_count += obj_result[:total_blobs] if obj_result[:total_blobs]
                 end
               rescue => e
-                objs_failed << [obj_pid, e]
+                export_results[:objs_failed] << [obj_pid, e]
                 export_logfile.debug "PID: #{obj_pid}, ERROR: #{e}"
                 puts "OBJECT EXPORT FAILED! PID: #{obj_pid}, ERROR: #{e}"
               end
@@ -282,11 +281,11 @@ module Bplmodels
         puts "---------------------------------------"
         puts "---------------------------------------\n"
         puts "Export finished for #{label} (#{pid})!\n"
-        puts "#{cols_exported.count} of #{cols_count} Collections exported"
-        puts "#{objs_exported.count} of #{objs_count} DigitalObjects exported"
+        puts "#{export_results[:cols_exported].count} of #{cols_count} Collections exported"
+        puts "#{export_results[:objs_exported].count} of #{objs_count} DigitalObjects exported"
         puts "#{filesets_count} FileSets exported"
         puts "#{blobs_count} Blobs exported"
-        puts "#{objs_failed.count} failures\n\n"
+        puts "#{export_results[:objs_failed].count} failures\n\n"
         puts "Total time: #{elapsed_str}"
         puts "Total bytes exported: #{total_bytes_str}"
         puts "Bytes per minute: #{bytes_per_min_str}\n\n"
@@ -297,21 +296,21 @@ module Bplmodels
           csv_obj << ['EXPORT SUMMARY FOR:', "#{label} (#{pid})"]
           csv_obj << ['', '']
           csv_obj << ["Collections found:", cols_count]
-          csv_obj << ["Collections exported:", cols_exported.count]
+          csv_obj << ["Collections exported:", export_results[:cols_exported].count]
           csv_obj << ["DigitalObjects found:", objs_count]
-          csv_obj << ["DigitalObjects exported:", objs_exported.count]
+          csv_obj << ["DigitalObjects exported:", export_results[:objs_exported].count]
           csv_obj << ["FileSets exported:", filesets_count]
           csv_obj << ["Blobs exported:", blobs_count]
-          csv_obj << ["Failures:", objs_failed.count]
+          csv_obj << ["Failures:", export_results[:objs_failed].count]
           csv_obj << ['', '']
           csv_obj << ['Total time:', elapsed_str]
           csv_obj << ['Total bytes:', total_bytes_str]
           csv_obj << ['Bytes per minute:', bytes_per_min_str]
         end
-        %w[cols_exported objs_exported objs_failed].each do |arr_name|
+        export_results.each do |arr_name, arr|
           CSV.open("#{BPL_CONFIG_GLOBAL['export_reports_location']}/#{name_abbreviation}_#{pid.gsub(/\:/, '_')}_export-report_#{arr_name}.csv", 'w') do |csv_obj|
-            eval(arr_name).each do |arr_pid|
-              csv_obj << if arr_name == 'objs_failed'
+            arr.each do |arr_pid|
+              csv_obj << if arr_name == :objs_failed
                            [arr_pid[0], arr_pid[1]]
                          else
                            [arr_pid]
