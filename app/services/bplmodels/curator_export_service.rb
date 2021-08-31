@@ -1,5 +1,7 @@
 module Bplmodels
   class CuratorExportService
+    USER_AGENT='Bplmodels/export'
+
     def initialize(payload: {})
       @payload = payload
     end
@@ -7,17 +9,11 @@ module Bplmodels
     def export
       return true if object_exists?
 
-      response = Typhoeus::Request.post(export_url, body: @payload.to_json, headers: { 'Content-Type' => 'application/json' }, http_version: http_version)
+      response = Typhoeus::Request.post(export_url, body: @payload.to_json, headers: { 'Content-Type' => 'application/json', 'User-Agent' => USER_AGENT })
 
       return true if response.code == 201
 
       raise StandardError, "The export failed with status: #{response.code}. Error: #{response.body}"
-    end
-
-    def http_version
-      return :httpv2_0 if export_url.starts_with?('https')
-
-      :httpv1_1
     end
 
     def export_url
@@ -33,7 +29,7 @@ module Bplmodels
       ark = @payload.fetch(@payload.keys.first).fetch(:ark_id, nil) || ark_for_fileset
       return false if ark.blank?
 
-      response = Typhoeus::Request.head("#{export_url}/#{ark}", http_version: http_version)
+      response = Typhoeus::Request.head("#{export_url}/#{ark}", headers: { 'User-Agent' => USER_AGENT })
       response.code == 200
     end
 
