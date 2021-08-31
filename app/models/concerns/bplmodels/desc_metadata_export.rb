@@ -217,6 +217,7 @@ module Bplmodels
           lang_id.gsub!(/\/tib\z/, '/bod')
           lang_id.gsub!(/\/rum\z/, '/ron')
           lang_id.gsub!(/\/gre\z/, '/ell')
+          lang_id.gsub!(/\/zho\z/, '/chi')
           lang_term.gsub!(/\ASpanish\z/, 'Spanish |  Castilian')
           lang_term.gsub!(/\ACatalan\z/, 'Catalan |  Valencian')
           lang_term.gsub!(/\ADutch\z/, 'Dutch |  Flemish')
