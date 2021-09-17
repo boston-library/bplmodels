@@ -128,6 +128,130 @@ module Bplmodels
       { collection: export_hash.compact }
     end
 
+    def export_all_to_curator(include_files = true)
+      export_logfile = Logger.new("log/#{pid.gsub(/\:/, '_')}_curator-export-failures.log")
+      export_logfile.level = Logger::DEBUG
+      export_logfile.debug "\n------\n------\nError log for #{label} (#{pid})"
+
+      export_results = {
+         objs_exported: [],
+         objs_failed: [],
+         objs_count: 0,
+         total_bytes: 0,
+         filesets_count: 0,
+         blobs_count: 0
+       }
+      col_objects = { success: false, pids: [] }
+
+      puts "Starting export for #{label} (#{pid})"
+      puts 'Gathering collection info ...'
+      Bplmodels::ObjectBase.find_in_batches("administrative_set_ssim" => "info:fedora/#{self.pid}") do |batch|
+        col_objects[:pids] += batch.flat_map { |doc| doc['id'] }
+      end
+
+      export_results[:objs_count] = col_objects[:pids].count
+      puts "#{export_results[:objs_count]} DigitalObjects found"
+      puts "---------------------------------------"
+      puts "---------------------------------------"
+      start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+      result = export_to_curator(include_files)
+      if result[:success] == true
+        puts "---------------------------------------"
+        puts "---------------------------------------"
+        puts "Starting object export for collection: #{self.pid}"
+        col_objects[:pids].each_with_index do |obj_pid, o_index|
+          puts "exporting object #{o_index + 1} of #{export_results[:objs_count]}"
+          begin
+            obj = Bplmodels::ObjectBase.find(obj_pid).adapt_to_cmodel
+            obj_result = obj.export_to_curator(include_files)
+            if obj_result[:success] == true
+              export_results[:objs_exported] << obj_pid
+              export_results[:total_bytes] += obj_result[:total_bytes] if obj_result[:total_bytes]
+              export_results[:filesets_count] += obj_result[:total_filesets] if obj_result[:total_filesets]
+              export_results[:blobs_count] += obj_result[:total_blobs] if obj_result[:total_blobs]
+              next
+            end
+          rescue => e
+            export_results[:objs_failed] << [obj_pid, e]
+            export_logfile.debug "PID: #{obj_pid}, ERROR: #{e}"
+            puts "OBJECT EXPORT FAILED! PID: #{obj_pid}, ERROR: #{e}"
+            next
+          end
+        end
+      end
+
+      end_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+      elapsed = end_time - start_time
+      export_results[:elapsed_str] = Time.at(elapsed).utc.strftime("%H:%M:%S")
+      export_results[:total_bytes_str] = ApplicationController.helpers.number_to_human_size(export_results[:total_bytes])
+      export_results[:bytes_per_min_str] = ApplicationController.helpers.number_to_human_size(export_results[:total_bytes] / (elapsed / 60))
+
+      puts "---------------------------------------"
+      puts "---------------------------------------\n"
+      puts "Export finished for #{label} (#{pid})!\n"
+      puts "#{export_results[:objs_exported].count} of #{export_results[:objs_count]} DigitalObjects exported"
+      puts "#{export_results[:filesets_count]} FileSets exported"
+      puts "#{export_results[:blobs_count]} Blobs exported"
+      puts "#{export_results[:objs_failed].count} failures\n\n"
+      puts "Total time: #{export_results[:elapsed_str]}"
+      puts "Total bytes exported: #{export_results[:total_bytes_str]}"
+      puts "Bytes per minute: #{export_result[:bytes_per_min_str]}\n\n"
+
+      inst_folder_name = "#{institution.name_abbreviation}_#{institution.pid.gsub(/\:/, '_')}"
+      csv_folder = File.join(BPL_CONFIG_GLOBAL['export_reports_location'], inst_folder_name)
+
+      FileUtils.mkdir_p(csv_folder)
+
+      report_alert = "Writing reports as CSV to #{csv_folder}/#{name_abbreviation}_#{pid.gsub(/\:/, '_')}_export-report_*.csv"
+      puts report_alert
+      export_logfile.debug report_alert
+      output_export_results_to_csv(csv_folder, export_logfile, export_results)
+    end
+
+
+    def output_export_results_to_csv(csv_folder, export_logfile, export_results = {})
+      # output results
+      begin
+        CSV.open("#{csv_folder}/#{name_abbreviation}_#{pid.gsub(/\:/, '_')}_export-report_summary.csv", 'w+') do |csv_obj|
+          csv_obj << ['EXPORT SUMMARY FOR:', "#{label} (#{pid})"]
+          csv_obj << ['', '']
+          csv_obj << ["DigitalObjects found:", export_results[:objs_count]]
+          csv_obj << ["DigitalObjects exported:", export_results[:objs_exported].count]
+          csv_obj << ["FileSets exported:", export_result[:filesets_count]]
+          csv_obj << ["Blobs exported:", export_results[:blobs_count]]
+          csv_obj << ["Failures:", export_results[:objs_failed].count]
+          csv_obj << ['', '']
+          csv_obj << ['Total time:', export_results[:elapsed_str]]
+          csv_obj << ['Total bytes:', total_bytes_str]
+          csv_obj << ['Bytes per minute:', bytes_per_min_str]
+        end
+      rescue => e
+        puts "Failed Writing Summary CSV!"
+        puts "Reason #{e.message}"
+        export_logfile.error "Failed Writing Summary CSV!"
+        export_logfile.error "Reason #{e.message}"
+      end
+      export_results.slice(:objs_exported, :objs_failed).each do |res_name, res_array|
+        begin
+          CSV.open("#{csv_path}/#{name_abbreviation}_#{pid.gsub(/\:/, '_')}_export-report_#{res_name}.csv", 'w+') do |csv_obj|
+            res_array.each do |res_pid|
+              case res_name
+              when :objs_failed
+                csv_obj << [res_pid[0], res_pid[1]]
+              else
+                csv_obj << [res_pid]
+              end
+            end
+          end
+        rescue => e
+          puts "Failed writing *_#{res_name}.csv"
+          puts "Reason #{e.message}"
+          export_logfile.error "Failed writing *_#{res_name}.csv"
+          export_logfile.error "Reason #{e.message}"
+        end
+      end
+    end
+
     #Expects the following args:
     #parent_pid => id of the parent object
     #local_id => local ID of the object

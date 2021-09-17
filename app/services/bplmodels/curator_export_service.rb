@@ -1,6 +1,6 @@
 module Bplmodels
   class CuratorExportService
-    USER_AGENT='Bplmodels/export'
+    USER_AGENT='Bplmodels/export'.freeze
 
     def initialize(payload: {})
       @payload = payload
@@ -9,7 +9,7 @@ module Bplmodels
     def export
       return true if object_exists?
 
-      response = Typhoeus::Request.post(export_url, body: @payload.to_json, headers: { 'Content-Type' => 'application/json', 'User-Agent' => USER_AGENT })
+      response = Typhoeus::Request.post(export_url, body: @payload.to_json, headers: { 'Content-Type' => 'application/json', 'User-Agent' => USER_AGENT }, cache: false, http_version: http_version)
 
       return true if response.code == 201
 
@@ -25,11 +25,15 @@ module Bplmodels
       "#{BPL_CONFIG_GLOBAL['curator_api']}/#{api_route}"
     end
 
+    def http_version
+      BPL_CONFIG_GLOBAL.fetch('curator_api_http_ver') { :httpv1_1 }.to_sym
+    end
+
     def object_exists?
       ark = @payload.fetch(@payload.keys.first).fetch(:ark_id, nil) || ark_for_fileset
       return false if ark.blank?
 
-      response = Typhoeus::Request.head("#{export_url}/#{ark}", headers: { 'User-Agent' => USER_AGENT })
+      response = Typhoeus::Request.head("#{export_url}/#{ark}", headers: { 'User-Agent' => USER_AGENT }, http_version: http_version)
       response.code == 200
     end
 
