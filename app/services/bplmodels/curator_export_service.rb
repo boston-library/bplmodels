@@ -9,7 +9,7 @@ module Bplmodels
     def export
       return true if object_exists?
 
-      response = Typhoeus::Request.post(export_url, body: @payload.to_json, headers: { 'Content-Type' => 'application/json', 'User-Agent' => USER_AGENT }, cache: false, http_version: http_version)
+      response = Typhoeus::Request.post(export_url, body: @payload.to_json, headers: {'Accept' => 'application/json', 'Content-Type' => 'application/json', 'User-Agent' => USER_AGENT }, cache: false, http_version: :httpv1_1)
 
       return true if response.code == 201
 
