@@ -559,8 +559,9 @@ module Bplmodels
       }
 
       t.role {
-        t.text(:path=>'roleTerm',:attributes=>{:type=>'text', :authority=>'marcrelator', :authorityURI=>'http://id.loc.gov/vocabulary/relators'}) {
+        t.text(:path=>'roleTerm',:attributes=>{:type=>'text', :authority=>'marcrelator'}) {#, :authorityURI=>'http://id.loc.gov/vocabulary/relators'}) {
           t.valueURI(:path=>{:attribute=>'valueURI'})
+          t.authorityURI(:path=>{:attribute=>'authorityURI'})
         }
         t.code(:path=>'roleTerm',:attributes=>{:type=>'code'})
       }
