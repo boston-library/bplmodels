@@ -197,7 +197,7 @@ module Bplmodels
       puts "Total bytes exported: #{export_results[:total_bytes_str]}"
       puts "Bytes per minute: #{export_results[:bytes_per_min_str]}\n\n"
 
-      inst_folder_name = "#{institution.name_abbreviation}_#{institution.pid.gsub(/\:/, '_')}"
+      inst_folder_name = "#{institutions.name_abbreviation}_#{institutions.pid.gsub(/\:/, '_')}"
       csv_folder = File.join(BPL_CONFIG_GLOBAL['export_reports_location'], inst_folder_name)
 
       FileUtils.mkdir_p(csv_folder)
