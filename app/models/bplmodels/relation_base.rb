@@ -107,6 +107,10 @@ module Bplmodels
 
     end
 
+    def name_abbreviation
+      label.split(' ').map { |v| v.first.downcase }.join.gsub(/\W/, '')
+    end
+
     def export_to_curator(include_files = false)
       exp = Bplmodels::CuratorExportService.new(payload: export_data_for_curator_api(include_files))
       puts "exporting #{self.class} with id: #{pid}"
