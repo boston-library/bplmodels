@@ -195,7 +195,7 @@ module Bplmodels
       puts "#{export_results[:objs_failed].count} failures\n\n"
       puts "Total time: #{export_results[:elapsed_str]}"
       puts "Total bytes exported: #{export_results[:total_bytes_str]}"
-      puts "Bytes per minute: #{export_result[:bytes_per_min_str]}\n\n"
+      puts "Bytes per minute: #{export_results[:bytes_per_min_str]}\n\n"
 
       inst_folder_name = "#{institution.name_abbreviation}_#{institution.pid.gsub(/\:/, '_')}"
       csv_folder = File.join(BPL_CONFIG_GLOBAL['export_reports_location'], inst_folder_name)
@@ -217,7 +217,7 @@ module Bplmodels
           csv_obj << ['', '']
           csv_obj << ["DigitalObjects found:", export_results[:objs_count]]
           csv_obj << ["DigitalObjects exported:", export_results[:objs_exported].count]
-          csv_obj << ["FileSets exported:", export_result[:filesets_count]]
+          csv_obj << ["FileSets exported:", export_results[:filesets_count]]
           csv_obj << ["Blobs exported:", export_results[:blobs_count]]
           csv_obj << ["Failures:", export_results[:objs_failed].count]
           csv_obj << ['', '']
