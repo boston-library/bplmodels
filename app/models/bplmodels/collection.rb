@@ -222,8 +222,8 @@ module Bplmodels
           csv_obj << ["Failures:", export_results[:objs_failed].count]
           csv_obj << ['', '']
           csv_obj << ['Total time:', export_results[:elapsed_str]]
-          csv_obj << ['Total bytes:', total_bytes_str]
-          csv_obj << ['Bytes per minute:', bytes_per_min_str]
+          csv_obj << ['Total bytes:', export_results[:total_bytes_str]]
+          csv_obj << ['Bytes per minute:', export_results[:bytes_per_min_str]]
         end
       rescue => e
         puts "Failed Writing Summary CSV!"
@@ -233,7 +233,7 @@ module Bplmodels
       end
       export_results.slice(:objs_exported, :objs_failed).each do |res_name, res_array|
         begin
-          CSV.open("#{csv_path}/#{name_abbreviation}_#{pid.gsub(/\:/, '_')}_export-report_#{res_name}.csv", 'w+') do |csv_obj|
+          CSV.open("#{csv_folder}/#{name_abbreviation}_#{pid.gsub(/\:/, '_')}_export-report_#{res_name}.csv", 'w+') do |csv_obj|
             res_array.each do |res_pid|
               case res_name
               when :objs_failed
