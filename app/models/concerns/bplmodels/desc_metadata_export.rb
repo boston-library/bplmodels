@@ -62,7 +62,7 @@ module Bplmodels
       def names_for_export_hash
         names = []
         descMetadata.mods(0).name.each_with_index do |_name, index|
-          nametype = descMetadata.mods(0).name(index).type[0].presence
+          nametype = descMetadata.mods(0).name(index).type[0].presence&.downcase
           name_id = descMetadata.mods(0).name(index).valueURI[0].presence
           name_hash = {
             name_type: nametype,
@@ -296,7 +296,7 @@ module Bplmodels
               this_subject.name.each do |_name|
                 authority = normalize_authority(this_subject.name.authority[0]) || authority
                 id_from_auth = this_subject.name.value_uri[0] || id_from_auth
-                nametype = this_subject.name.type[0]
+                nametype = this_subject.name.type[0].presence&.downcase
                 name_parts = this_subject.name.name_part_actual.reject { |np| np.blank? }
                 name_value = if nametype == 'corporate'
                                name_parts.join(". ").gsub(/\.\./,'.')
