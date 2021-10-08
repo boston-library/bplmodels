@@ -131,7 +131,13 @@ module Bplmodels
       @file_set_type = self.class.to_s.split("::").last.match(/[A-Z][a-z]*/).to_s.downcase
       export_hash[:file_set_type] = @file_set_type
       export_hash[:position] = get_file_sequence
-      export_hash[:file_name_base] = filename.first.gsub(/\.[a-z0-9]*\z/,'')
+      # older items have "Parent Item Title File" for #filename instead of actual file name
+      filename_for_base = if filename.first.match?(/\sFile\z/) && !label.match?(/\sFile\z/)
+                            label
+                          else
+                            filename.first
+                          end
+      export_hash[:file_name_base] = filename_for_base.gsub(/\.[a-z0-9]*\z/,'')
       export_hash[:metastreams] = {}
       unless datastreams["pageMetadata"].blank?
         export_hash[:pagination] = {
