@@ -229,6 +229,7 @@ module Bplmodels
           lang_term.gsub!(/\AAlgonquian\z/, 'Algonquian languages')
           lang_term.gsub!(/\APassamaquoddy\z/, 'Algonquian languages')
           lang_term.gsub!(/\AMicmac\z/, "Mi'kmaq |  Micmac")
+          lang_term.gsub!(/\AKhmer\z/, 'Central Khmer')
           lang_hash = {
             label: lang_term,
             authority_code: (lang_id ? 'iso639-2' : nil),
