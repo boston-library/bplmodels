@@ -110,7 +110,7 @@ module Bplmodels
       def rt_for_export_hash
         resource_types = []
         descMetadata.mods(0).type_of_resource.each do |rt|
-          rt_hash = case rt
+          rt_hash = case rt.downcase
                     when 'still image'
                       { rt.to_s => 'img' }
                     when 'text'
