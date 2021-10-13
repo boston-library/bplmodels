@@ -102,7 +102,7 @@ module Bplmodels
         created_at: create_date,
         updated_at: modified_date,
         institution: { ark_id: institutions.pid },
-        name: descMetadata.title.first,
+        name: (descMetadata.mods(0).title_info(0).nonSort[0].presence || '') + descMetadata.title.first,
         # double quotes in #delete arg below are correct, DO NOT CHANGE
         abstract: if abstract
                     abstract.delete("\n").delete("\r").gsub(/<br[ \/]*>/, '<br/>')
