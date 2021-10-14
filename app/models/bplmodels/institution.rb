@@ -366,14 +366,14 @@ module Bplmodels
 
     # create export manifest CSV, to be verified after migration
     # CSV contains object class and ark id for all collections, objects, filesets, attachments
-    def curator_export_manifest(path_to_csv = nil)
+    def curator_export_manifest(path_to_csv = nil, collection_pids = nil)
       puts "Creating export manifest, this may take a minute..."
       path_to_csv ||= BPL_CONFIG_GLOBAL['export_reports_location']
       data_for_csv = []
       data_for_csv << %w(curator_model ark_id attachment_type parent_ark_id file_name_base)
       data_for_csv << ['Institution', pid, '', '', '']
 
-      col_pids = collections.map(&:pid)
+      col_pids = collection_pids || collections.map(&:pid)
       col_pids.each do |col_pid|
         data_for_csv << ['Collection', col_pid, '', '', '']
       end
