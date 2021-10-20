@@ -158,15 +158,15 @@ module Bplmodels
                             'derivatives'
                           end
       }
-      export_hash[:files] = export_filestreams_for_curator_api if include_files
+      export_hash[:files] = export_filestreams_for_curator_api(@file_set_type) if include_files
       { file_set: export_hash.compact }
     end
 
-    def export_filestreams_for_curator_api
+    def export_filestreams_for_curator_api(file_set_type = nil)
       datastreams_for_export = %w[productionMaster accessMaster thumbnail300 characterization
                                   access800 georectifiedMaster preProductionNegativeMaster
                                   ocrMaster djvuCoords]
-      filestreams_for_export(datastreams_for_export)
+      filestreams_for_export(datastreams_for_export, file_set_type)
     end
 
     # sequence will be 0 if this is the only file
