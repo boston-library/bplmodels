@@ -24,6 +24,7 @@ module Bplmodels
           # have to check if [:files] is set; #filesets_for_export doesn't return all the data we need
           if fs_for_export[:file_set][:files].blank?
             f = Bplmodels::File.find(fs_for_export[:file_set][:ark_id])
+            @file_set_type = f.class.to_s.split("::").last.match(/[A-Z][a-z]*/).to_s.downcase
             fs_for_export[:file_set][:files] = f.export_filestreams_for_curator_api
           end
           exp = Bplmodels::CuratorExportService.new(payload: fs_for_export)
