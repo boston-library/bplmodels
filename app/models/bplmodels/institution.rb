@@ -400,7 +400,7 @@ module Bplmodels
           # have to check if [:files] is set; #filesets_for_export doesn't return all the data we need
           if fs_hash.fetch(:files, nil).blank?
             f = Bplmodels::File.find(fs_hash.fetch(:ark_id))
-            fs_hash[:files] = f.export_filestreams_for_curator_api(true)
+            fs_hash[:files] = f.export_filestreams_for_curator_api
           end
           fs_hash.fetch(:files).each do |f_hash|
             data_for_csv << ["ActiveStorage::Attachment", fs_ark_id, f_hash.fetch(:file_type),
