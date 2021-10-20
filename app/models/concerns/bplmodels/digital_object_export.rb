@@ -21,6 +21,11 @@ module Bplmodels
         total_filesets = 0
         total_blobs = 0
         filesets_for_export.each do |fs_for_export|
+          # have to check if [:files] is set; #filesets_for_export doesn't return all the data we need
+          if fs_for_export[:file_set][:files].blank?
+            f = Bplmodels::File.find(fs_for_export[:file_set][:ark_id])
+            fs_for_export[:file_set][:files] = f.export_filestreams_for_curator_api(true)
+          end
           exp = Bplmodels::CuratorExportService.new(payload: fs_for_export)
           puts "exporting #{fs_for_export[:file_set][:file_set_type]} fileset with id: #{fs_for_export[:file_set][:ark_id]}"
           result[:success] = exp.export
@@ -132,6 +137,10 @@ module Bplmodels
         issue_ids.map { |v| { ark_id: v } } unless issue_ids.blank?
       end
 
+      # the object returned is too large in certain cases (items with 900+ pages)
+      # so we don't include all the file/attachment data for "normal" (non-Ereader) Bplmodels::File objects
+      # upstream methods will have to call #export_data_for_curator_api(true) to get
+      # the export has with files included.
       def filesets_for_export(include_files = true)
         filesets = []
         has_ereader_files = false
@@ -140,7 +149,7 @@ module Bplmodels
         all_files.delete(:ereader)
         ## all_files.delete(:images) # uncomment for easier testing of IA objects
         all_files.each_value do |files_array|
-          filesets.concat filesets_for_files(files_array, include_files)
+          filesets.concat filesets_for_files(files_array, false)
         end
         # get EReader filesets and combine, make EPub the 'primary'
         ereader_files = Bplmodels::Finder.getEreaderFiles(pid)
