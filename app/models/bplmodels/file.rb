@@ -132,7 +132,7 @@ module Bplmodels
       export_hash[:file_set_type] = @file_set_type
       export_hash[:position] = get_file_sequence
       # older items have "Parent Item Title File" for #filename instead of actual file name
-      filename_for_base = if filename.first.match?(/\sFile\z/) && !label.match?(/\sFile\z/)
+      filename_for_base = if (filename.first.match?(/\sFile\z/) && !label.match?(/\sFile\z/)) || filename.first.blank?
                             label
                           else
                             filename.first
