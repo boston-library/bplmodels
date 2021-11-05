@@ -147,13 +147,14 @@ module Bplmodels
         has_ereader_files = false
         # get file-level filesets (image, document, video, etc); remove ereader (do 'em separately)
         all_files = Bplmodels::Finder.getFiles(pid)
-        all_files.delete(:ereader)
+
+        ereader_files = all_files.delete(:ereader) || []
+
         ## all_files.delete(:images) # uncomment for easier testing of IA objects
-        all_files.each_value do |files_array|
-          filesets.concat filesets_for_files(files_array, false)
-        end
+        # Make all non ereader files part of a "lazy" eumerator see Enumerator::Lazy at https://ruby-doc.org/core-2.6.8/Enumerator/Lazy.html
+        # Note all_files.values.reduce(:+) will flatten the values in the all_files hash into a single array
+        filesets = filesets_for_files_lazy(all_files.values.reduce(:+), include_files)
         # get EReader filesets and combine, make EPub the 'primary'
-        ereader_files = Bplmodels::Finder.getEreaderFiles(pid)
         if ereader_files.present?
           has_ereader_files = true
           ereader_fileset_for_export = nil
@@ -179,16 +180,14 @@ module Bplmodels
               ereader_fileset_for_export = ereader_fileset_obj.export_data_for_curator_api(include_files)
             end
           end
-          filesets << ereader_fileset_for_export
-        end
-        # have to modify keys of ebook_access_mobi and ebook_access_daisy files to use epub pid
-        if has_ereader_files
-          filesets.each do |fs|
-            fileset = fs[:file_set]
-            next unless fileset[:file_set_type] == 'ereader'
 
-            pid_for_key = fileset[:ark_id]
-            fileset[:files].each do |file|
+          # have to modify keys of ebook_access_mobi and ebook_access_daisy files to use epub pid
+          # NOTE on moving this up from below
+          # Instead of reiterating through all of the fileset objects to check for the ereader object we just added...
+          # modify the one we are adding before putting it into the filesets enum
+          if ereader_fileset_for_export.present?
+            pid_for_key = ereader_fileset_for_export.dig(:file_set, :ark_id)
+            ereader_fileset_for_export[:file_set][:files].each do |file|
               if file[:file_type] == 'ebook_access_daisy' || file[:file_type] == 'ebook_access_mobi'
                 key_parts = file[:key].split('/')
                 key_parts[1] = pid_for_key if key_parts[1].match?(/[\w-]*:[0-9a-z]*/)
@@ -196,20 +195,44 @@ module Bplmodels
               end
             end
           end
+          # NOTE since filesets is a Enumerator::Lazy object the << operator does not work anymore
+          # Instead you have to wrap the object into a Enumerator subtype(Array in this case) and add(+) it
+          # This will create an Enumerator::Chain object
+          filesets + Array.wrap(ereader_fileset_for_export)
         end
+
+        # if has_ereader_files
+        #   filesets.each do |fs|
+        #     fileset = fs[:file_set]
+        #     next unless fileset[:file_set_type] == 'ereader'
+        #
+        #     pid_for_key = fileset[:ark_id]
+        #     fileset[:files].each do |file|
+        #       if file[:file_type] == 'ebook_access_daisy' || file[:file_type] == 'ebook_access_mobi'
+        #         key_parts = file[:key].split('/')
+        #         key_parts[1] = pid_for_key if key_parts[1].match?(/[\w-]*:[0-9a-z]*/)
+        #         file[:key] = key_parts.join('/')
+        #       end
+        #     end
+        #   end
+        # end
         # get the object-level filesets (metadata, plainText, etc)
         object_filesets = object_filesets_for_export(object_filestreams_for_export)
         filesets + object_filesets
       end
 
-      def filesets_for_files(files_array, include_files = true)
-        filesets = []
-        files_array.each do |file_doc|
+      def filesets_for_files_lazy(files_array, include_files = true)
+        files_array.lazy.map do |file_doc|
           fileset_obj = Bplmodels::File.find(file_doc['id'])
-          fileset_hash = fileset_obj.export_data_for_curator_api(include_files)
-          filesets << fileset_hash
+          fileset_obj.export_data_for_curator_api(include_files)
         end
-        filesets
+      end
+
+      def filesets_for_files(files_array, include_files = true)
+        files_array.map do |file_doc|
+          fileset_obj = Bplmodels::File.find(file_doc['id'])
+          fileset_obj.export_data_for_curator_api(include_files)
+        end
       end
 
       def object_filestreams_for_export
@@ -221,9 +244,8 @@ module Bplmodels
 
       # get the object-level files -- metadata, full text, IA data, etc
       def object_filesets_for_export(object_files, include_files = true)
-        object_filesets = []
-        %w[metadata text].each do |fileset_type|
-          next if object_files[fileset_type.to_sym].blank?
+        %w[metadata text].inject([]) do |ret, fileset_type|
+          next ret if object_files[fileset_type.to_sym].blank?
           object_fileset = {
             created_at: create_date,
             updated_at: modified_date,
@@ -251,9 +273,8 @@ module Bplmodels
             end
           end
           object_fileset[:files] = object_files[fileset_type.to_sym] if include_files
-          object_filesets << { file_set: object_fileset }
+          ret << { file_set: object_fileset }
         end
-        object_filesets
       end
 
       def ingest_origin_for_workflow
