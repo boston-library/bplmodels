@@ -388,8 +388,8 @@ module Bplmodels
       col_obj_pids.each do |obj_pid|
         obj = Bplmodels::ObjectBase.find(obj_pid).adapt_to_cmodel
         data_for_csv << ['DigitalObject', obj.pid, '', '', '']
-        filesets = obj.filesets_for_export
-        filesets.each do |fileset|
+        # filesets = obj.filesets_for_export
+        obj.filesets_for_export.each do |fileset|
           fs_hash = fileset.fetch(:file_set)
           fs_ark_id = fs_hash.fetch(:ark_id, '')
 
