@@ -198,7 +198,7 @@ module Bplmodels
           # NOTE since filesets is a Enumerator::Lazy object the << operator does not work anymore
           # Instead you have to wrap the object into a Enumerator subtype(Array in this case) and add(+) it
           # This will create an Enumerator::Chain object
-          filesets + Array.wrap(ereader_fileset_for_export)
+          filesets = filesets + Array.wrap(ereader_fileset_for_export)
         end
 
         # if has_ereader_files
